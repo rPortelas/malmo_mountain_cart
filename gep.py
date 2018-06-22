@@ -17,21 +17,24 @@ class GEP(object):
         self.interests = {}
 
         self.policy_nb_dims = config['policy_nb_dims']
-        self.total_outcome_range = config['total_outcome_range']
         self.modules_config = config['modules']
-        self.full_outcome_bounds = config['full_outcome_bounds']
         print explo_noise
         # init learning modules
         self.modules = {}
         print'MODULES:'
         print config['modules']
+        self.total_outcome_range = 0
         for m_name,m in self.modules_config.items():
+            outcome_size = len(m['outcome_range'])
             self.modules[m_name] = LearningModule(self.policy_nb_dims, 
-                                                  m['outcome_bounds'], 
+                                                  outcome_size, 
                                                   model_babbling_mode, 
                                                   explo_noise=explo_noise,
                                                   update_interest_step=update_interest_step)
+            self.modules_config[m_name]['outcome_size'] = outcome_size
+            self.total_outcome_range += outcome_size
             self.interests[m_name] = []
+        print self.total_outcome_range
         #self.current_module = None
         self.current_policy = None
 
@@ -91,8 +94,6 @@ class GEP(object):
 
     def perceive(self, outcome):
         assert(outcome.shape[0] == self.total_outcome_range)
-        # scale outcome dimensions to [-1,1]
-        outcome = scale_vector(outcome, self.full_outcome_bounds)
         
         if self.model_babbling_mode == "active":
             # update interest module of choosen module if not bootstraping

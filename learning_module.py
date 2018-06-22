@@ -7,11 +7,10 @@ from gep_utils import scale_vector
 
 class LearningModule(object):
     # outcome_bounds must be a 2d array with column 1 = mins and column 2 = maxs
-    def __init__(self, policy_nb_dims, outcome_bounds, babbling_mode, explo_noise=0.1, n_neighbors=1,
+    def __init__(self, policy_nb_dims, outcome_size, babbling_mode, explo_noise=0.1, n_neighbors=1,
                  interest_running_mean=200, update_interest_step=5):
         self.policy_nb_dims = policy_nb_dims
-        self.o_bounds = outcome_bounds
-        self.o_size = outcome_bounds.shape[0]
+        self.o_size = outcome_size
         self.explo_noise = explo_noise
         self.babbling_mode = babbling_mode
 

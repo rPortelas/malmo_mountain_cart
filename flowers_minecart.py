@@ -302,23 +302,15 @@ total_policy_params = hidden_layer_size*input_size + hidden_layer_size*action_se
 if args.model_type == "random_flat":
     outcome1 = full_outcome
     config = {'policy_nb_dims': total_policy_params,
-              'total_outcome_range': len(full_outcome) , #agent x y z pos, minecart x pos and number of recovered bread
-              'full_outcome_bounds': np.array(full_outcome_bounds),
-              'modules':{'mod1':{'outcome_bounds': np.array(b.get_bounds(outcome1)),
-                                 'outcome_range': np.array([full_outcome.index(var) for var in outcome1])}}}
+              'modules':{'mod1':{'outcome_range': np.array([full_outcome.index(var) for var in outcome1])}}}
 elif (args.model_type == "random_modular") or (args.model_type == "active_modular"):
     outcome1 = ['agent_x','agent_y','agent_z']
     outcome2 = ['cart_x']
     outcome3 = ['breads']
     config = {'policy_nb_dims': total_policy_params,
-              'total_outcome_range': len(full_outcome) , #agent x y z pos, minecart x pos and number of recovered bread
-              'full_outcome_bounds': np.array(full_outcome_bounds),
-              'modules':{'agent_final_pos':{'outcome_bounds':np.array(b.get_bounds(outcome1)),
-                                            'outcome_range': np.array([full_outcome.index(var) for var in outcome1])},
-                         'cart_final_pos':{'outcome_bounds':np.array(b.get_bounds(outcome2)),
-                                           'outcome_range': np.array([full_outcome.index(var) for var in outcome2])},
-                         'bread_final_count':{'outcome_bounds':np.array(b.get_bounds(outcome3)),
-                                              'outcome_range':np.array([full_outcome.index(var) for var in outcome3])}}}
+              'modules':{'agent_final_pos':{'outcome_range': np.array([full_outcome.index(var) for var in outcome1])},
+                         'cart_final_pos':{'outcome_range': np.array([full_outcome.index(var) for var in outcome2])},
+                         'bread_final_count':{'outcome_range':np.array([full_outcome.index(var) for var in outcome3])}}}
     if args.model_type == "active_modular": model_babbling_mode ="active"
 else:
     raise NotImplementedError
@@ -376,6 +368,8 @@ for i in range(starting_iteration,max_iterations):
     # generate policy using gep
     policy_params = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
     outcome, last_state = run_episode(policy_params)
+    # scale outcome dimensions to [-1,1]
+    outcome = scale_vector(outcome, np.array(full_outcome_bounds))
     gep.perceive(outcome)
 
     # boring book keeping
