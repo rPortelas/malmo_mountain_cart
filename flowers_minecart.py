@@ -139,7 +139,7 @@ def get_outcome(state):
     s = state.tolist()
     # in case state and outcome are not ordered the same way
     # ORDER MUST BE LIKE DEFINED GET STATE TODO FIX
-    return  np.array(s[0:3] + [s[6]] + [sum(s[-len(bread_positions):])])
+    return  np.array(s[0:3] + [s[6]] + s[-len(bread_positions):])
 
 def save_gep(gep, iteration, book_keeping, savefile_name, book_keeping_name):
     with open(savefile_name, 'wb') as handle:
@@ -291,7 +291,7 @@ action_set_size = 2
 param_policy = Simple_NN(input_size, input_bounds, action_set_size , hidden_layer_size)
 
 # init goal exploration process
-full_outcome = ['agent_x','agent_y','agent_z','cart_x', 'breads']
+full_outcome = ['agent_x','agent_y','agent_z','cart_x'] + ['bread_'+str(i) for i in range(len(bread_positions))]
 full_outcome_bounds = b.get_bounds(full_outcome)
 
 exploration_noise = float(args.explo_noise) if args.explo_noise else 0.10
@@ -306,7 +306,7 @@ if args.model_type == "random_flat":
 elif (args.model_type == "random_modular") or (args.model_type == "active_modular"):
     outcome1 = ['agent_x','agent_y','agent_z']
     outcome2 = ['cart_x']
-    outcome3 = ['breads']
+    outcome3 = ['bread_'+str(i) for i in range(len(bread_positions))]
     config = {'policy_nb_dims': total_policy_params,
               'modules':{'agent_final_pos':{'outcome_range': np.array([full_outcome.index(var) for var in outcome1])},
                          'cart_final_pos':{'outcome_range': np.array([full_outcome.index(var) for var in outcome2])},
@@ -383,7 +383,8 @@ for i in range(starting_iteration,max_iterations):
     #  print("saving this AMAZING SET OF PARAMETERS, OMG THEY ARE SO GOOD")
     #  with open('policy_that_swinged_up_cart_'+str(i)+'.pickle', 'wb') as handle:
     #      pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    b_k['final_bread_recovered'].append(outcome[full_outcome.index('breads')])
+    b_k['final_bread_recovered'].append(int(sum(last_state[-5:])))
+    print(b_k['final_bread_recovered'])
     for k in range(len(bread_positions)):
         b_k['bread_'+str(k)].append(last_state[input_names.index('bread_'+str(k))])
     

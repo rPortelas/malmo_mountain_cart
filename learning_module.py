@@ -14,16 +14,6 @@ class LearningModule(object):
         self.explo_noise = explo_noise
         self.babbling_mode = babbling_mode
 
-        '''
-        # Init K-Neirest Neighbor to store (policy,outcome) pairs
-        self.knn = KNeighborsRegressor(n_neighbors=n_neighbors,
-                                          metric='euclidean',
-                                          algorithm='ball_tree',
-                                          weights='distance')
-        self.knn_X = None # X = observed outcome
-        self.knn_Y = None # Y = produced policies' parameters
-        '''
-
         if self.babbling_mode == "active":
             self.mean_rate = 100. # running mean window 
             self.generated_goals = None
@@ -33,7 +23,6 @@ class LearningModule(object):
             self.interest_knn = NearestNeighbors(n_neighbors=1, metric='euclidean', algorithm='ball_tree')
             self.update_interest_step = update_interest_step # 4 exploration for 1 exploitation
             self.counter = 0
-
 
     # sample a goal in outcome space and find closest neighbor in (param,outcome) database
     # RETURN policy param with added gaussian noise

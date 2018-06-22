@@ -49,11 +49,9 @@ class GEP(object):
     # returns policy parameters following and exploration process if no goal is provided
     # if a goal is provided, returns best parameter policy using NN exploitation
     def produce(self, normalized_goal=None, goal_range=None, bootstrap=False, context=None):
-        if normalized_goal is not None: 
+        if normalized_goal is not None:
+            
             # use main neirest neighbor model to find best policy
-            #print 'returning best policy bruuuuudah'
-            #print self.knn_X.shape
-            #print self.knn_Y.shape
             subgoal_space = self.knn_X[:,goal_range]
             #print subgoal_space.shape
             self.knn.fit(subgoal_space, self.knn_Y)
