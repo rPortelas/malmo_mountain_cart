@@ -140,7 +140,7 @@ def get_state(obs):
     return np.array([agent_x, agent_y, agent_z, cart_x] + breads.tolist())
 
 def get_outcome(state):
-    return  s
+    return  state
 
 def save_gep(gep, iteration, book_keeping, savefile_name, book_keeping_name):
     with open(savefile_name, 'wb') as handle:
@@ -384,7 +384,7 @@ for i in range(starting_iteration,max_iterations):
     #  with open('policy_that_swinged_up_cart_'+str(i)+'.pickle', 'wb') as handle:
     #      pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
     b_k['final_bread_recovered'].append(int(sum(last_state[-5:])))
-    print(b_k['final_bread_recovered'])
+    #print(b_k['final_bread_recovered'])
     for k in range(len(bread_positions)):
         b_k['bread_'+str(k)].append(last_state[input_names.index('bread_'+str(k))])
     
