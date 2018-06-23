@@ -369,8 +369,8 @@ for i in range(starting_iteration,max_iterations):
     policy_params = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
     outcome, last_state = run_episode(policy_params)
     # scale outcome dimensions to [-1,1]
-    outcome = scale_vector(outcome, np.array(full_outcome_bounds))
-    gep.perceive(outcome)
+    scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
+    gep.perceive(scaled_outcome)
 
     # boring book keeping
     b_k['final_agent_x_reached'].append(outcome[full_outcome.index('agent_x')])
