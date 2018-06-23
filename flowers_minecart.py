@@ -140,9 +140,6 @@ def get_state(obs):
     return np.array([agent_x, agent_y, agent_z, cart_x] + breads.tolist())
 
 def get_outcome(state):
-    s = state.tolist()
-    # in case state and outcome are not ordered the same way
-    # ORDER MUST BE LIKE DEFINED GET STATE TODO FIX
     return  s
 
 def save_gep(gep, iteration, book_keeping, savefile_name, book_keeping_name):
