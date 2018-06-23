@@ -111,6 +111,10 @@ missionXML='''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                   <ObservationFromFullStats/>
                   <ContinuousMovementCommands turnSpeedDegs="180"/>
                   <AgentQuitFromReachingCommandQuota total="'''+ str((2*total_allowed_actions)+1) +'''"/>
+                    <VideoProducer>
+                      <Width>40</Width>
+                      <Height>30</Height>
+                    </VideoProducer>
                 </AgentHandlers>
 
               </AgentSection>
@@ -133,13 +137,13 @@ def get_state(obs):
             breads[bread_idx] = 0 #if bread is in arena it's not in our agent's pocket, so 0
 
     # ORDER MUST BE LIKE DEFINED INPUT_NAMES
-    return np.array([agent_x, agent_y, agent_z, agent_vx, agent_vy, agent_vz, cart_x, cart_vx] + breads.tolist())
+    return np.array([agent_x, agent_y, agent_z, cart_x] + breads.tolist())
 
 def get_outcome(state):
     s = state.tolist()
     # in case state and outcome are not ordered the same way
     # ORDER MUST BE LIKE DEFINED GET STATE TODO FIX
-    return  np.array(s[0:3] + [s[6]] + s[-len(bread_positions):])
+    return  s
 
 def save_gep(gep, iteration, book_keeping, savefile_name, book_keeping_name):
     with open(savefile_name, 'wb') as handle:
@@ -281,8 +285,7 @@ plot_step = 100000
 #eval_step = 200
 
 # init neural network policy
-input_names = ['agent_x','agent_y','agent_z','agent_vx','agent_vy','agent_vz',
-               'cart_x', 'cart_vx'] + ['bread_'+str(i) for i in range(len(bread_positions))]
+input_names = ['agent_x','agent_y','agent_z','cart_x'] + ['bread_'+str(i) for i in range(len(bread_positions))]
 input_bounds = b.get_bounds(input_names)
 print('input_bounds: %s' % input_bounds) 
 hidden_layer_size = 64

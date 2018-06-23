@@ -15,26 +15,26 @@ import collections
 
 
 # init neural network policy
-state_bounds = np.array([[-1.,1.]]*21)
+state_bounds = np.array([[-1.,1.]]*9)
 hidden_layer_size = 64
-state_size = 21
+state_size = 9
 action_set_size = 2
 model = Simple_NN(state_size, state_bounds, action_set_size , hidden_layer_size)
 policy_nb_dims = model.nb_w1_weights + model.nb_w2_weights
 
 # test output distribution when generating random weight and input values
-nb_iterations = 1000000
+nb_iterations = 100000
 outputs = np.zeros((nb_iterations, action_set_size))
 
-temperature_param = [0.11, 0.12,0.13,0.14] # 0.17 (or 0.12 when input=21) works great !
+temperature_param = [0.24,0.28] # 0.17 (or 0.12 when input=21) works great !
 for tmp in temperature_param:
     print "using tanh temperature of %s" % temperature_param
     model.tmp_controller = tmp
     print model.tmp_controller
     # random weights
-    for k in range(10000):
+    for k in range(nb_iterations//100):
         weights = np.random.random(policy_nb_dims) * 2 - 1
-        for i in range(100):
+        for i in range(nb_iterations//1000):
             # random input
             x = np.random.random(state_size) * 2 - 1
             for j,v in enumerate(x[8:].tolist()):
@@ -46,7 +46,7 @@ for tmp in temperature_param:
             out = model.forward(x.reshape(1,-1),weights,scale=False)
             #print out
             #print out.shape
-            outputs[(k*100)+i,:] = out
+            outputs[(k*(nb_iterations//1000))+i,:] = out
             #print out
 
     #print outputs[:][0].shape

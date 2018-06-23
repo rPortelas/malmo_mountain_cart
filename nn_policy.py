@@ -9,10 +9,11 @@ class Simple_NN(object):
         self.in_bounds = np.array(in_bounds)
         self.out_size = out_size
         self.hidden_size = hidden_size
-        self.tmp_controller = 0.17 #0.25
-        if self.in_size == 21:
-            self.tmp_controller = 0.12
-            print 'input of 21, using corresponding tmp of .12'
+        if self.in_size == 9:
+            self.tmp_controller = 0.24 #0.25
+        else:
+            raise NotImplementedError
+
         self.nb_w1_weights = self.hidden_size*self.in_size
         self.nb_w2_weights = self.hidden_size*self.out_size
 
@@ -24,7 +25,6 @@ class Simple_NN(object):
             mins_maxs_diff =  np.diff(self.in_bounds).squeeze()
             mins = self.in_bounds[:, 0]
             x = (x - mins) * 2 / mins_maxs_diff - 1
-        #print x
 
         # create weight arrays
         w1 = weights[0:self.nb_w1_weights].reshape(self.in_size,self.hidden_size)
