@@ -29,6 +29,7 @@ else:
 def get_outcome(state):
     return state # observations ("states") are = to outcome in our case
 
+
 def save_gep(gep, iteration, book_keeping, savefile_name, book_keeping_name):
     with open(savefile_name, 'wb') as handle:
         pickle.dump([gep, iteration], handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -251,6 +252,7 @@ for i in range(starting_iteration,max_iterations):
     # boring book keeping
     b_k['final_agent_x_reached'].append(outcome[full_outcome.index('agent_x')])
     b_k['final_agent_z_reached'].append(outcome[full_outcome.index('agent_z')])
+<<<<<<< HEAD
     b_k['final_cart_x_reached'].append(outcome[full_outcome.index('cart_x')])
     b_k['final_bread_recovered'].append(int(sum(outcome[-5:])))
     for k in range(nb_breads):
