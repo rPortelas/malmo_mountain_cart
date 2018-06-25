@@ -135,15 +135,10 @@ def get_state(obs):
             pos = [e['x'],e['y'],e['z']]
             bread_idx = bread_positions.index(pos) # current bread must be one of the positioned bread
             breads[bread_idx] = 0 #if bread is in arena it's not in our agent's pocket, so 0
-
-    # ORDER MUST BE LIKE DEFINED INPUT_NAMES
     return np.array([agent_x, agent_y, agent_z, cart_x] + breads.tolist())
 
 def get_outcome(state):
-    s = state.tolist()
-    # in case state and outcome are not ordered the same way
-    # ORDER MUST BE LIKE DEFINED GET STATE TODO FIX
-    return  s
+    return state # observations ("states") are = to outcome in our case
 
 def save_gep(gep, iteration, book_keeping, savefile_name, book_keeping_name):
     with open(savefile_name, 'wb') as handle:
@@ -166,13 +161,6 @@ def run_episode(policy_params):
         # extract the world state that will be given to the agent's policy
         state = get_state(obs)
         actions = param_policy.forward(state.reshape(1,-1), policy_params)
-        # allowed to climb stairs only if at least 2 bread were recovered
-        #print(state)
-        #nb_bread_recovered = sum(state[-5:])
-        #print('recov_b: %s' % nb_bread_recovered)
-        #if state[1] >= 4.3 and nb_bread_recovered < 2:
-        #    print('access to stairs forbiddin, not enough dough pal')
-        #    #acions[0] = 0
         env_actions = ["move "+str(actions[0]), "strafe "+str(actions[1])]
         obs, done = malmo.step(env_actions)
 
@@ -260,11 +248,7 @@ b = Bounds()
 b.add('agent_x',[288.3,294.7])
 b.add('agent_y',[4,6])
 b.add('agent_z',[433.3,443.7])
-b.add('agent_vx',[-1,1])    
-b.add('agent_vy',[-1,1])
-b.add('agent_vz',[-1,1])
 b.add('cart_x',[285,297])
-b.add('cart_vx',[-1,1])
 for i in range(len(bread_positions)):
     b.add('bread_'+str(i),[0,1])
 # add meta variable
@@ -274,7 +258,7 @@ print("variable bounds :")
 print(b.bounds)
 
 ################# INIT LEARNING AGENT #####################
-# full outcome space is [agent_x, agent_y, agent_z, cart_x, nb_bread_recovered]
+# full outcome space is [agent_x, agent_y, agent_z, cart_x, bread_0, ..., bread 4]
 # possible models: ["random_modular", "random_flat", "active_modular",]
 
 experiment_name = args.experiment_name if args.experiment_name else "default"
@@ -287,38 +271,40 @@ plot_step = 100000
 # init neural network policy
 input_names = ['agent_x','agent_y','agent_z','cart_x'] + ['bread_'+str(i) for i in range(len(bread_positions))]
 input_bounds = b.get_bounds(input_names)
+input_size = len(input_bounds)
 print('input_bounds: %s' % input_bounds) 
 hidden_layer_size = 64
-input_size = len(input_bounds)
 action_set_size = 2
 param_policy = Simple_NN(input_size, input_bounds, action_set_size , hidden_layer_size)
+total_policy_params = hidden_layer_size*input_size + hidden_layer_size*action_set_size
 
 # init goal exploration process
-full_outcome = ['agent_x','agent_y','agent_z','cart_x'] + ['bread_'+str(i) for i in range(len(bread_positions))]
-full_outcome_bounds = b.get_bounds(full_outcome)
+full_outcome = input_names # IMGEP full goal space = observation space
+full_outcome_bounds = input_bounds
 
 exploration_noise = float(args.explo_noise) if args.explo_noise else 0.10
 nb_bootstrap = int(args.nb_bootstrap) if args.nb_bootstrap else 1000
-model_babbling_mode = "random"
-total_policy_params = hidden_layer_size*input_size + hidden_layer_size*action_set_size
+max_iterations = int(args.nb_iters) if args.nb_iters else 20000
+model_type = args.model_type if args.model_type else "random_modular"
 
-if args.model_type == "random_flat":
+
+if model_type == "random_flat":
     outcome1 = full_outcome
     config = {'policy_nb_dims': total_policy_params,
               'modules':{'mod1':{'outcome_range': np.array([full_outcome.index(var) for var in outcome1])}}}
-elif (args.model_type == "random_modular") or (args.model_type == "active_modular"):
-    outcome1 = ['agent_x','agent_y','agent_z']
-    outcome2 = ['cart_x']
-    outcome3 = ['bread_'+str(i) for i in range(len(bread_positions))]
+elif (model_type == "random_modular") or (args.model_type == "active_modular"):
+    outcome1 = full_outcome[:3]
+    outcome2 = [full_outcome[3]]
+    outcome3 = full_outcome[4:]
     config = {'policy_nb_dims': total_policy_params,
               'modules':{'agent_final_pos':{'outcome_range': np.array([full_outcome.index(var) for var in outcome1])},
                          'cart_final_pos':{'outcome_range': np.array([full_outcome.index(var) for var in outcome2])},
                          'bread_final_count':{'outcome_range':np.array([full_outcome.index(var) for var in outcome3])}}}
-    if args.model_type == "active_modular": model_babbling_mode ="active"
+    if model_type == "active_modular": model_babbling_mode ="active"
 else:
     raise NotImplementedError
 
-max_iterations = int(args.nb_iters) if args.nb_iters else 20000
+
 # if a gep save exist, load gep, init it otherwise
 if os.path.isfile(savefile_name):
     gep, starting_iteration, b_k = load_gep(savefile_name, book_keeping_file_name)
@@ -329,19 +315,25 @@ else:
     starting_iteration = 0
     seed = np.random.randint(1000)
     np.random.seed(seed)
-    if model_babbling_mode == "active":
+    if model_type == "active_modular": # AMB init
+        # active modules must perform an exploitation step periodically to compute interest for each modules
+        interest_step = int(args.interest_step) if args.interest_step else 5
+
         gep = GEP(config,
-                  model_babbling_mode=model_babbling_mode, 
+                  model_babbling_mode="active", 
                   explo_noise=exploration_noise, 
-                  update_interest_step=int(args.interest_step))
-    else:
-        gep = GEP(config,model_babbling_mode=model_babbling_mode, explo_noise=exploration_noise)
+                  update_interest_step= interest_step)
+    else: # F-RGB or RMB init
+        gep = GEP(config,model_babbling_mode="random", explo_noise=exploration_noise)
+
     # init boring book keeping
     b_k = dict()
-    b_k['parameters'] = {'model_type':args.model_type,
-                         'nb_bootstrap': int(args.nb_bootstrap),
+    b_k['parameters'] = {'model_type': model_type,
+                         'nb_bootstrap': nb_bootstrap,
                          'seed': seed,
-                         'explo_noise': exploration_noise}
+                         'explo_noise': exploration_noise,}
+    if model_type == 'active_modular':
+        b_k['parameters']['update_interest_step'] = interest_step
     b_k['final_agent_x_reached'] = []
     b_k['final_agent_z_reached'] = []
     b_k['final_cart_x_reached'] = []
@@ -378,47 +370,29 @@ for i in range(starting_iteration,max_iterations):
     # boring book keeping
     b_k['final_agent_x_reached'].append(outcome[full_outcome.index('agent_x')])
     b_k['final_agent_z_reached'].append(outcome[full_outcome.index('agent_z')])
-    cart_x = outcome[full_outcome.index('cart_x')]
-    b_k['final_cart_x_reached'].append(cart_x)
-    #if (cart_x >= 296.2) or (cart_x <= 286.8):
-    #  print("KART WAS SWINGED UP CHAMPAIN %s" % cart_x)
-    #  print(policy_params)
-    #  print("saving this AMAZING SET OF PARAMETERS, OMG THEY ARE SO GOOD")
-    #  with open('policy_that_swinged_up_cart_'+str(i)+'.pickle', 'wb') as handle:
-    #      pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    b_k['final_bread_recovered'].append(int(sum(last_state[-5:])))
-    print(b_k['final_bread_recovered'])
+    b_k['final_cart_x_reached'].append(outcome[full_outcome.index('cart_x')])
+    b_k['final_bread_recovered'].append(int(sum(outcome[-5:])))
     for k in range(len(bread_positions)):
-        b_k['bread_'+str(k)].append(last_state[input_names.index('bread_'+str(k))])
+        b_k['bread_'+str(k)].append(outcome[full_outcome.index('bread_'+str(k))])
     
-    '''
-    if ((i+1) % eval_step) == 0:
-        e_agent, e_cart, e_breads = eval(agent_pos_goals, cart_x_goals, breads_goals)
-        if b_k['eval_errors'] is None:
-            b_k['eval_errors'] = [e_agent, e_cart, e_breads]
-        else:
-            b_k['eval_errors'][0] = np.hstack((b_k['eval_errors'][0],e_agent))
-            b_k['eval_errors'][1] = np.hstack((b_k['eval_errors'][1],e_cart))
-            b_k['eval_errors'][2] = np.hstack((b_k['eval_errors'][2],e_breads))
-    '''
     if ((i+1) % save_step) == 0:
         print("saving gep")
         b_k['choosen_modules'] = gep.choosen_modules
-        if model_babbling_mode == "active":
+        if model_type == "active_modular":
             b_k['interests'] = gep.interests
-            b_k['parameters']['update_interest_step'] = gep.modules['agent_final_pos'].update_interest_step
         save_gep(gep, i+1, b_k, savefile_name, book_keeping_file_name)
     
+    '''
     if ((i+1) % plot_step) == 0:
         print("plotting")
         #plot_agent_pos_exploration(1, b_k['final_agent_x_reached'], b_k['final_agent_z_reached'])
         #plot_agent_cart_exploration(2, b_k['final_cart_x_reached'])
         #plot_agent_bread_exploration(3, b_k['final_bread_recovered'])
-        if model_babbling_mode == "active":
+        if model_type == "active_modular":
             plot_interests(5, gep.interests)
-        #plot_eval_errors(4, b_k['eval_errors'])
         plt.show(block=False)
-    
+    '''
+
 # offline, in depth competence error evaluation
 # load random dataset of goals
 '''
@@ -440,8 +414,7 @@ for g in agent_pos_goals:
         g[1] = snd_floor
     print('after: %s' % g)
 print("agent goals cleaned up")
-'''
-'''
+
 # final competence test on goals choosen by engineer
 print(np.array(full_outcome_bounds)[[0,1,2]])
 print(np.array(full_outcome_bounds)[[3]])
