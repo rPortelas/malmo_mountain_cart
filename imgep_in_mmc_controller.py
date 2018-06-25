@@ -243,7 +243,6 @@ for i in range(starting_iteration,max_iterations):
     # boring book keeping
     b_k['final_agent_x_reached'].append(outcome[full_outcome.index('agent_x')])
     b_k['final_agent_z_reached'].append(outcome[full_outcome.index('agent_z')])
-<<<<<<< HEAD
     b_k['final_cart_x_reached'].append(outcome[full_outcome.index('cart_x')])
     b_k['final_bread_recovered'].append(int(sum(outcome[-5:])))
     for k in range(nb_breads):
