@@ -8,6 +8,6 @@ for ((i = 0; i < $1; i++)); do
     port=$((10000 + $i))
     echo hello
     echo $port
-    python flowers_minecart.py test$i random_flat 10000 1000 0.1 $port &
+    python imgep_in_mmc_controller.py test$i random_flat 10000 1000 0.1 $port &
     #> run$i_output.txt 2>&1 &
 done

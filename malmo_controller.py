@@ -144,7 +144,6 @@ class MalmoController(object):
         world_state = self.get_world_state(first_state=True)
         obvsText = world_state.observations[-1].text
         observation = json.loads(obvsText) # observation comes in as a JSON string...
-        print 'first state'
         self.current_step = 0
         return self.get_state(observation)
 
