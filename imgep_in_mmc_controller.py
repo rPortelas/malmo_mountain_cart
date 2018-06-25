@@ -83,7 +83,7 @@ def eval(agent_pos_goals, cart_x_goals, breads_goals):
         else:
             raise NotImplementedError
         policy_params = gep.produce(normalized_goal=goal,goal_range=goal_range)
-        outcome, _ = run_episode(policy_params)
+        outcome = run_episode(policy_params)
         #print('result: %s' % outcome[goal_range])
         # normalize outcome
         outcome = scale_vector(outcome, np.array(full_outcome_bounds))
@@ -110,12 +110,6 @@ def eval(agent_pos_goals, cart_x_goals, breads_goals):
             raise NotImplementedError
     return np.mean(agent_errors), np.mean(cart_errors), np.mean(breads_errors), cart_touched
 
-
-
-
-
-################################ MAIN #####################
-
 # define and parse argument values
 # more info here: https://stackoverflow.com/questions/5423381/checking-if-sys-argvx-is-defined
 arg_names = ['command','experiment_name','model_type','nb_iters','nb_bootstrap','explo_noise','server_port','interest_step']
@@ -135,14 +129,11 @@ for i in range(nb_breads):
     b.add('bread_'+str(i),[0,1])
 # add meta variable
 b.add('breads',[0,nb_breads])
-
 print("variable bounds :")
 print(b.bounds)
 
-################# INIT LEARNING AGENT #####################
 # full outcome space is [agent_x, agent_y, agent_z, cart_x, bread_0, ..., bread 4]
 # possible models: ["random_modular", "random_flat", "active_modular",]
-
 experiment_name = args.experiment_name if args.experiment_name else "default"
 savefile_name = experiment_name+"_save.pickle"
 book_keeping_file_name = experiment_name+"_bk.pickle"
@@ -160,7 +151,7 @@ action_set_size = 2
 param_policy = Simple_NN(input_size, input_bounds, action_set_size , hidden_layer_size)
 total_policy_params = hidden_layer_size*input_size + hidden_layer_size*action_set_size
 
-# init goal exploration process
+# init IMGEP
 full_outcome = input_names # IMGEP full goal space = observation space
 full_outcome_bounds = input_bounds
 
