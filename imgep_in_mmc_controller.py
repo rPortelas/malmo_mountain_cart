@@ -11,12 +11,12 @@ import pickle
 import time
 import numpy as np
 from gep import GEP
-from nn_policy import Simple_NN
+from utils.nn_policy import Simple_NN
 import matplotlib.pyplot as plt
-from plot_utils import *
+from utils.plot_utils import *
 import collections
 from collections import OrderedDict
-from gep_utils import *
+from utils.gep_utils import *
 from malmo_controller import MalmoController
 
 
@@ -27,7 +27,16 @@ else:
     print = functools.partial(print, flush=True)
 
 def get_outcome(state):
-    return state # observations ("states") are = to outcome in our case
+    outcome = state.tolist()
+    if distractors:
+        #add 2 moving and 2 fixed distractors to the outcome space
+        fixed_distractor1 = [-0.7,0.3,0.5]
+        fixed_distractor2 = [0.1,0.2,-0.5]
+        moving_distractor1 = np.random.random(3) * 2 - 1
+        moving_distractor2 = np.random.random(3) * 2 - 1
+        distractors_final_state = fixed_distractor1 + moving_distractor1.tolist() + fixed_distractor2 + moving_distractor2.tolist()
+        outcome += distractors_final_state
+    return np.array(outcome)
 
 
 def save_gep(gep, iteration, book_keeping, savefile_name, book_keeping_name):
@@ -112,10 +121,28 @@ def eval(agent_pos_goals, cart_x_goals, breads_goals):
 
 # define and parse argument values
 # more info here: https://stackoverflow.com/questions/5423381/checking-if-sys-argvx-is-defined
-arg_names = ['command','experiment_name','model_type','nb_iters','nb_bootstrap','explo_noise','server_port','interest_step']
+arg_names = ['command','experiment_name','model_type','nb_iters','nb_bootstrap','explo_noise','server_port','distractors','interest_step']
 args = dict(zip(arg_names, sys.argv))
 Arg_list = collections.namedtuple('Arg_list', arg_names)
 args = Arg_list(*(args.get(arg, None) for arg in arg_names))
+
+exploration_noise = float(args.explo_noise) if args.explo_noise else 0.10
+nb_bootstrap = int(args.nb_bootstrap) if args.nb_bootstrap else 1000
+max_iterations = int(args.nb_iters) if args.nb_iters else 20000
+# possible models: ["random_modular", "random_flat", "active_modular"]
+model_type = args.model_type if args.model_type else "random_modular"
+if args.distractors:
+    if args.distractors == 'True':
+        distractors = True
+        distr_names = ['fixed_distr_x1', 'fixed_distr_y1', 'fixed_distr_z1', 'moving_distr_x1', 'moving_distr_y1', 'moving_distr_z1',
+                       'fixed_distr_x2', 'fixed_distr_y2', 'fixed_distr_z2', 'moving_distr_x2', 'moving_distr_y2', 'moving_distr_z2']
+    elif args.distractors == 'False':
+        distractors = False
+    else:
+        print('distractor option not recognized, choose True or False')
+        raise NameError
+else:
+    distractors = False
 
 # environment-related init
 nb_breads = 5
@@ -129,12 +156,11 @@ for i in range(nb_breads):
     b.add('bread_'+str(i),[0,1])
 # add meta variable
 b.add('breads',[0,nb_breads])
-print("variable bounds :")
-print(b.bounds)
+if distractors:
+    for d_name in distr_names:
+       b.add(d_name, [-1,1]) 
 
-# full outcome space is [agent_x, agent_y, agent_z, cart_x, bread_0, ..., bread 4]
-# possible models: ["random_modular", "random_flat", "active_modular",]
-experiment_name = args.experiment_name if args.experiment_name else "default"
+experiment_name = args.experiment_name if args.experiment_name else "experiment"
 savefile_name = experiment_name+"_save.pickle"
 book_keeping_file_name = experiment_name+"_bk.pickle"
 save_step = 200
@@ -147,19 +173,14 @@ input_bounds = b.get_bounds(input_names)
 input_size = len(input_bounds)
 print('input_bounds: %s' % input_bounds) 
 hidden_layer_size = 64
-action_set_size = 2
+action_set_size = 2 
 param_policy = Simple_NN(input_size, input_bounds, action_set_size , hidden_layer_size)
 total_policy_params = hidden_layer_size*input_size + hidden_layer_size*action_set_size
 
 # init IMGEP
-full_outcome = input_names # IMGEP full goal space = observation space
-full_outcome_bounds = input_bounds
-
-exploration_noise = float(args.explo_noise) if args.explo_noise else 0.10
-nb_bootstrap = int(args.nb_bootstrap) if args.nb_bootstrap else 1000
-max_iterations = int(args.nb_iters) if args.nb_iters else 20000
-model_type = args.model_type if args.model_type else "random_modular"
-
+full_outcome = input_names
+if distractors: full_outcome += distr_names
+full_outcome_bounds = b.get_bounds(full_outcome)
 
 if model_type == "random_flat":
     outcome1 = full_outcome
@@ -168,11 +189,19 @@ if model_type == "random_flat":
 elif (model_type == "random_modular") or (args.model_type == "active_modular"):
     outcome1 = full_outcome[:3]
     outcome2 = [full_outcome[3]]
-    outcome3 = full_outcome[4:]
+    outcome3 = full_outcome[4:9]
     config = {'policy_nb_dims': total_policy_params,
               'modules':{'agent_final_pos':{'outcome_range': np.array([full_outcome.index(var) for var in outcome1])},
                          'cart_final_pos':{'outcome_range': np.array([full_outcome.index(var) for var in outcome2])},
                          'bread_final_count':{'outcome_range':np.array([full_outcome.index(var) for var in outcome3])}}}
+    if distractors:
+        fixed_distr_outcomes = ['fixed_distr_x', 'fixed_distr_y', 'fixed_distr_z']
+        moving_distr_outcomes = ['moving_distr_x', 'moving_distr_y', 'moving_distr_z']
+        config['modules']['fixed_dist_final_pos1'] = {'outcome_range': np.array([full_outcome.index(var+'1') for var in fixed_distr_outcomes])}
+        config['modules']['moving_dist_final_pos1'] = {'outcome_range': np.array([full_outcome.index(var+'2') for var in moving_distr_outcomes])}
+        config['modules']['fixed_dist_final_pos2'] = {'outcome_range': np.array([full_outcome.index(var+'1') for var in fixed_distr_outcomes])}
+        config['modules']['moving_dist_final_pos2'] = {'outcome_range': np.array([full_outcome.index(var+'2') for var in moving_distr_outcomes])}
+
     if model_type == "active_modular": model_babbling_mode ="active"
 else:
     raise NotImplementedError
@@ -204,7 +233,8 @@ else:
     b_k['parameters'] = {'model_type': model_type,
                          'nb_bootstrap': nb_bootstrap,
                          'seed': seed,
-                         'explo_noise': exploration_noise,}
+                         'explo_noise': exploration_noise,
+                         'distractors': distractors}
     if model_type == 'active_modular':
         b_k['parameters']['update_interest_step'] = interest_step
     b_k['final_agent_x_reached'] = []
@@ -236,6 +266,7 @@ for i in range(starting_iteration,max_iterations):
     # generate policy using gep
     policy_params = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
     outcome = run_episode(policy_params)
+
     # scale outcome dimensions to [-1,1]
     scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
     gep.perceive(scaled_outcome)
@@ -244,7 +275,7 @@ for i in range(starting_iteration,max_iterations):
     b_k['final_agent_x_reached'].append(outcome[full_outcome.index('agent_x')])
     b_k['final_agent_z_reached'].append(outcome[full_outcome.index('agent_z')])
     b_k['final_cart_x_reached'].append(outcome[full_outcome.index('cart_x')])
-    b_k['final_bread_recovered'].append(int(sum(outcome[-5:])))
+    b_k['final_bread_recovered'].append(int(sum(outcome[4:9])))
     for k in range(nb_breads):
         b_k['bread_'+str(k)].append(outcome[full_outcome.index('bread_'+str(k))])
     

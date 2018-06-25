@@ -2,7 +2,7 @@ from __future__ import division
 from learning_module import LearningModule
 import numpy as np
 from sklearn.neighbors import KNeighborsRegressor
-from gep_utils import scale_vector, proportional_choice
+from utils.gep_utils import scale_vector, proportional_choice
 
 
 class GEP(object):
