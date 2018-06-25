@@ -26,117 +26,6 @@ else:
     import functools
     print = functools.partial(print, flush=True)
 
-
-
-
-############################# ENVIRONMENT INIT #####################################
-tick_lengths = 15
- #20 works
-skip_step = 1 #if = 0 then default 20 actions/sec
-desired_mission_time = 7
-total_allowed_actions = 10 * desired_mission_time #dependent of skip_step, works if =1
-# if overclocking set display refresh rate to 1
-mod_setting = '' if tick_lengths >= 25 else "<PrioritiseOffscreenRendering>true</PrioritiseOffscreenRendering>"
-
-bread_positions = [[293.5,4,436.5],[289.5,4,437.5],[289.5,4,440.5],[291.5,6,442.5],[294.5,6,443.5]]
-
-def draw_bread(): # place bread at given positions
-    xml_string = ""
-    for x,y,z in bread_positions:
-        xml_string += '<DrawItem x="%s" y="%s" z="%s" type="bread"/>' % (int(x),int(y),int(z))
-        xml_string += '\n'
-    return xml_string
-
-def clean_bread(): # erase previous items in defined bread positions
-    xml_string = ""
-    for x,y,z in bread_positions:
-        xml_string += '<DrawBlock x="%s" y="%s" z="%s" type="air"/>' % (int(x),int(y),int(z))
-    return xml_string
-
-missionXML='''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-            <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            
-              <About>
-                <Summary>Goal Exploration Process, in Malmo !</Summary>
-              </About>
-
-              <ModSettings>
-              <MsPerTick>''' + str(tick_lengths) + '''</MsPerTick>
-              ''' + mod_setting +'''
-              </ModSettings>
-              
-              <ServerSection>
-                <ServerInitialConditions>
-                  <Weather>clear</Weather>
-                  <Time>
-                  <StartTime>12000</StartTime>
-                  <AllowPassageOfTime>false</AllowPassageOfTime>
-                  </Time>
-                </ServerInitialConditions>
-                <ServerHandlers>
-                  <FileWorldGenerator src="/home/remy/Malmo-0.34.0-Linux-Ubuntu-16.04-64bit_withBoost_Python2.7/Minecraft/run/saves/flowers_v4"/>
-                  <DrawingDecorator>
-                    <DrawLine x1="288" y1="6" z1="443" x2="294" y2="6" z2="443" type="air"/>
-                    <DrawLine x1="287" y1="7" z1="443" x2="295" y2="7" z2="443" type="air"/>
-                    <DrawLine x1="286" y1="8" z1="443" x2="296" y2="8" z2="443" type="air"/>
-
-                    ''' + clean_bread() + '''
-
-                    <DrawBlock x="287" y="7" z="443" type="rail"/>
-                    <DrawBlock x="286" y="8" z="443" type="rail"/>
-                    <DrawBlock x="295" y="7" z="443" type="rail"/>
-                    <DrawBlock x="296" y="8" z="443" type="rail"/>
-                    <DrawLine x1="288" y1="6" z1="443" x2="294" y2="6" z2="443" type="rail"/>
-                    <DrawEntity x="291.5" y="6" z="443" type="MinecartRideable"/>
-
-                    ''' + draw_bread() + '''
-
-                  </DrawingDecorator>
-                  <ServerQuitWhenAnyAgentFinishes/>
-                </ServerHandlers>
-              </ServerSection>
-              
-              <AgentSection mode="Survival">
-                <Name>FlowersBot</Name>
-                <AgentStart>
-                  <Placement x="293.5" y="4" z="433.5" yaw="0"/>
-                  <Inventory></Inventory>
-                </AgentStart>
-                <AgentHandlers>
-                  <ObservationFromFullInventory flat="false"/>
-                  <AbsoluteMovementCommands/>
-                  <ObservationFromNearbyEntities>
-                    <Range name="entities" xrange="40" yrange="40" zrange="40"/>
-                  </ObservationFromNearbyEntities>
-                  <ObservationFromFullStats/>
-                  <ContinuousMovementCommands turnSpeedDegs="180"/>
-                  <AgentQuitFromReachingCommandQuota total="'''+ str((2*total_allowed_actions)+1) +'''"/>
-                    <VideoProducer>
-                      <Width>40</Width>
-                      <Height>30</Height>
-                    </VideoProducer>
-                </AgentHandlers>
-
-              </AgentSection>
-            </Mission>'''
-
-#####################################################
-
-def get_state(obs):
-    breads = np.ones(len(bread_positions))
-    for e in obs['entities']:
-        if e['name'] == 'MinecartRideable':
-            cart_x, cart_y, cart_z = e['x'], e['y'], e['z']
-            cart_vx, cart_vy, cart_vz = e['motionX'], e['motionY'], e['motionZ']
-        if e['name'] == 'FlowersBot':
-            agent_x, agent_y, agent_z, agent_yaw = e['x'], e['y'], e['z'], (e['yaw'] % 360)
-            agent_vx, agent_vy, agent_vz = e['motionX'], e['motionY'], e['motionZ']
-        if e['name'] == 'bread':
-            pos = [e['x'],e['y'],e['z']]
-            bread_idx = bread_positions.index(pos) # current bread must be one of the positioned bread
-            breads[bread_idx] = 0 #if bread is in arena it's not in our agent's pocket, so 0
-    return np.array([agent_x, agent_y, agent_z, cart_x] + breads.tolist())
-
 def get_outcome(state):
     return state # observations ("states") are = to outcome in our case
 
@@ -154,23 +43,14 @@ def load_gep(savefile_name, book_keeping_name):
     return gep, starting_iteration, b_k
 
 def run_episode(policy_params):
-    obs = malmo.start_mission()
+    state = malmo.start_mission()
     # Loop until mission/episode ends:
-    state = -1
-    for command_nb in range(total_allowed_actions):
+    done = False
+    while not done:
         # extract the world state that will be given to the agent's policy
-        state = get_state(obs)
         actions = param_policy.forward(state.reshape(1,-1), policy_params)
-        env_actions = ["move "+str(actions[0]), "strafe "+str(actions[1])]
-        obs, done = malmo.step(env_actions)
-
-        if command_nb == total_allowed_actions - 1: # end of episode
-            #last cmd, must teleport to avoid weird glitch with minecart environment
-            _, done = malmo.step(["tp 293 7 433.5"])
-             # send final outcome
-            outcome = get_outcome(state)
-            break
-    return outcome, state
+        state, done = malmo.step(actions)
+    return get_outcome(state)
 
 
 # evaluate model over given goals in [-1,1], returns errors for each sub space
@@ -242,17 +122,18 @@ args = dict(zip(arg_names, sys.argv))
 Arg_list = collections.namedtuple('Arg_list', arg_names)
 args = Arg_list(*(args.get(arg, None) for arg in arg_names))
 
-
+# environment-related init
+nb_breads = 5
 # define variable's bounds for policy input and outcome 
 b = Bounds()
 b.add('agent_x',[288.3,294.7])
 b.add('agent_y',[4,6])
 b.add('agent_z',[433.3,443.7])
 b.add('cart_x',[285,297])
-for i in range(len(bread_positions)):
+for i in range(nb_breads):
     b.add('bread_'+str(i),[0,1])
 # add meta variable
-b.add('breads',[0,len(bread_positions)])
+b.add('breads',[0,nb_breads])
 
 print("variable bounds :")
 print(b.bounds)
@@ -269,7 +150,7 @@ plot_step = 100000
 #eval_step = 200
 
 # init neural network policy
-input_names = ['agent_x','agent_y','agent_z','cart_x'] + ['bread_'+str(i) for i in range(len(bread_positions))]
+input_names = ['agent_x','agent_y','agent_z','cart_x'] + ['bread_'+str(i) for i in range(nb_breads)]
 input_bounds = b.get_bounds(input_names)
 input_size = len(input_bounds)
 print('input_bounds: %s' % input_bounds) 
@@ -340,7 +221,7 @@ else:
     b_k['final_bread_recovered'] = []
     b_k['choosen_modules'] = []
     b_k['interests'] = dict()
-    for i in range(len(bread_positions)):
+    for i in range(nb_breads):
             b_k['bread_'+str(i)] = []
     #b_k['eval_errors'] = None
 
@@ -356,13 +237,13 @@ else:
 
 port = int(args.server_port) if args.server_port else 10000
 # init malmo controller
-malmo = MalmoController(missionXML, port=port, tick_lengths=8, skip_step=1, desired_mission_time=7)
+malmo = MalmoController(port=port, tick_lengths=15)
 
 for i in range(starting_iteration,max_iterations):
     print("########### Iteration # %s ##########" % (i))
     # generate policy using gep
     policy_params = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
-    outcome, last_state = run_episode(policy_params)
+    outcome = run_episode(policy_params)
     # scale outcome dimensions to [-1,1]
     scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
     gep.perceive(scaled_outcome)
@@ -372,7 +253,7 @@ for i in range(starting_iteration,max_iterations):
     b_k['final_agent_z_reached'].append(outcome[full_outcome.index('agent_z')])
     b_k['final_cart_x_reached'].append(outcome[full_outcome.index('cart_x')])
     b_k['final_bread_recovered'].append(int(sum(outcome[-5:])))
-    for k in range(len(bread_positions)):
+    for k in range(nb_breads):
         b_k['bread_'+str(k)].append(outcome[full_outcome.index('bread_'+str(k))])
     
     if ((i+1) % save_step) == 0:
