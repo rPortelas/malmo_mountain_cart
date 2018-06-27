@@ -157,6 +157,26 @@ class MalmoMountainCart(gym2.Env):
         self.seed()
         #self.reset()
 
+    # call this method to change default parameters
+    def my_init(self, port=10000, tick_lengths=5, skip_step=1, desired_mission_time=7):
+        self.skip_step = skip_step
+        self.tick_lengths = tick_lengths
+        self.total_allowed_actions = 10 * desired_mission_time #dependent of skip_step, works if =1
+        self.mission_xml = get_MMC_environment(self.bread_positions, 
+                                               tick_lengths,
+                                               skip_step,
+                                               desired_mission_time,
+                                               mission_start_sleep=self.mission_start_sleep)
+        # Create default Malmo objects:
+        self.agent_host = MalmoPython.AgentHost()
+        self.my_mission = MalmoPython.MissionSpec(self.mission_xml, True)
+        self.my_mission_record = MalmoPython.MissionRecordSpec()
+
+        self.client_pool = MalmoPython.ClientPool()
+
+        print("Attempt to communicate with Minecraft through port %s" % port)
+        self.client_pool.add(MalmoPython.ClientInfo( "127.0.0.1", port))
+
 
     def seed(self, seed=None):
         random.seed(seed)

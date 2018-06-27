@@ -32,7 +32,7 @@ def mpi_average(value):
 def train(policy, rollout_worker, evaluator, env_name, num_cpu,
           n_epochs, n_test_rollouts, n_cycles, n_batches, policy_save_interval,
           save_policies, rank, gep_memory=None, buffer_location=None, study='HER', active_goal=False,  **kwargs):
-
+    pickle.dump([1,2,3], open( kwargs['logdir']+"/her_mmc.pickle", "wb" ))
     latest_policy_path = os.path.join(logger.get_dir(), 'policy_latest.pkl')
     best_policy_path = os.path.join(logger.get_dir(), 'policy_best.pkl')
     periodic_policy_path = os.path.join(logger.get_dir(), 'policy_{}.pkl')
@@ -109,6 +109,8 @@ def train(policy, rollout_worker, evaluator, env_name, num_cpu,
         MPI.COMM_WORLD.Bcast(root_uniform, root=0)
         if rank != 0:
             assert local_uniform[0] != root_uniform[0]
+    pickle.dump(episodes, open( kwargs['log_dir']+"her_mmc.pickle", "wb" ))
+    logger.info('Saving periodic policy to {} ...'.format(policy_path))
 
 
 def launch(env_name, logdir, n_epochs, num_cpu, seed, replay_strategy, policy_save_interval, clip_return,
@@ -165,12 +167,9 @@ def launch(env_name, logdir, n_epochs, num_cpu, seed, replay_strategy, policy_sa
         logger.warn('****************')
         logger.warn()
 
-    logger.warn('test 0 !!!!!!!!!!!!!!')
 
     dims = config.configure_dims(params)
-    logger.warn('test 0.3 !!!!!!!!!!!!!!')
     policy = config.configure_ddpg(dims=dims, params=params, clip_return=clip_return)
-    logger.warn('test 0.4 !!!!!!!!!!!!!!')
     rollout_params = {
         'exploit': False,
         'use_target_net': False,
@@ -191,17 +190,12 @@ def launch(env_name, logdir, n_epochs, num_cpu, seed, replay_strategy, policy_sa
         rollout_params[name] = params[name]
         eval_params[name] = params[name]
 
-    logger.warn('test 0.5 !!!!!!!!!!!!!!')
 
     rollout_worker = RolloutWorker(params['make_env'], policy, dims, logger, active_goal=active_goal, **rollout_params)
     rollout_worker.seed(rank_seed)
 
-    logger.warn('test 0.7 !!!!!!!!!!!!!!')
-
     evaluator = RolloutWorker(params['make_env'], policy, dims, logger, active_goal=False, **eval_params)
     evaluator.seed(rank_seed)
-
-    logger.warn('test 1 !!!!!!!!!!!!!!')
 
     train(logdir=logdir, policy=policy, rollout_worker=rollout_worker, evaluator=evaluator, n_epochs=n_epochs,
           n_test_rollouts=params['n_test_rollouts'], n_cycles=params['n_cycles'], n_batches=params['n_batches'],
