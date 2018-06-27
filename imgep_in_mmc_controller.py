@@ -18,6 +18,7 @@ import collections
 from collections import OrderedDict
 from utils.gep_utils import *
 from malmo_controller import MalmoController
+import gym2
 
 
 if sys.version_info[0] == 2:
@@ -53,13 +54,15 @@ def load_gep(savefile_name, book_keeping_name):
     return gep, starting_iteration, b_k
 
 def run_episode(policy_params):
-    state = malmo.start_mission()
+    out = malmo.reset()
+    state = out['observation']
     # Loop until mission/episode ends:
     done = False
     while not done:
         # extract the world state that will be given to the agent's policy
         actions = param_policy.forward(state.reshape(1,-1), policy_params)
-        state, done = malmo.step(actions)
+        out,_, done, _ = malmo.step(actions)
+        state = out['observation']
     return get_outcome(state)
 
 
@@ -259,7 +262,8 @@ else:
 
 port = int(args.server_port) if args.server_port else 10000
 # init malmo controller
-malmo = MalmoController(port=port, tick_lengths=15)
+#malmo = MalmoController(port=port, tick_lengths=15)
+malmo = gym2.make('MalmoMountainCart-v0')
 
 for i in range(starting_iteration,max_iterations):
     print("########### Iteration # %s ##########" % (i))

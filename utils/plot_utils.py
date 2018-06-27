@@ -1,8 +1,10 @@
+from __future__ import print_function
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 import scipy.stats as stats
 from gep_utils import *
+
 
 def plot_agent_pos_exploration(fig_id, Xs, Zs,cart_Xs):
     plt.close(fig_id)
@@ -54,7 +56,7 @@ def plot_agent_pos_exploration(fig_id, Xs, Zs,cart_Xs):
     #plt.plot([296.2],[443.5],'r*',markersize=4)
     #plt.plot([286.8],[443.5],'r*',markersize=4)
     # plot (x,z) positions
-    plt.plot(Xs,Zs,'r.',markersize=2)
+    plt.plot(Xs,Zs,'r.',markersize=1)
     plt.plot(cart_Xs,[443.5]*len(cart_Xs),'bs',markersize=1)
     
 
@@ -67,7 +69,7 @@ def plot_agent_cart_exploration(fig_id, Xs):
     plt.close(fig_id)
     plt.figure(fig_id)
     plt.hist(Xs)
-    print set(Xs)
+    print( set(Xs))
     plt.title("Distribution of cart final pos. Was moved %s/%s" % (Xs.count(not 291.5),len(Xs)))
 
 def plot_agent_bread_exploration(fig_id, final_bread_recovered,bread_vec):
@@ -75,16 +77,16 @@ def plot_agent_bread_exploration(fig_id, final_bread_recovered,bread_vec):
     plt.figure(fig_id)
     plt.hist(final_bread_recovered,bins=range(0,7))
     for i in range(6):
-        print "%s bread found: %s/%s" % (i,final_bread_recovered.count(float(i)),final_bread_recovered.count(not float(i)))
+        print( "%s bread found: %s/%s" % (i,final_bread_recovered.count(float(i)),final_bread_recovered.count(not float(i))))
     plt.title("Distribution of number of bread recovered by agent")
 
 def plot_eval_errors(fig_id, eval_errors, cart_touched):
     plt.close(fig_id)
     plt.figure(fig_id)
-    print eval_errors[0]
-    print eval_errors[1]
-    print eval_errors[2]
-    print "cart touched %s" % sum(cart_touched)
+    print( eval_errors[0])
+    print( eval_errors[1])
+    print( eval_errors[2])
+    print( "cart touched %s" % sum(cart_touched))
     plt.plot(eval_errors[0], color='red', label='final agent pos error')
     plt.plot(eval_errors[1], color='blue', label='final cart pos error')
     plt.plot(eval_errors[2], color='green', label='nb breads recovered error')
@@ -93,11 +95,11 @@ def plot_eval_errors(fig_id, eval_errors, cart_touched):
 def get_final_eval_error(final_errors, cart_touched, info=True):
     a_pos_err, c_pos_err, nb_bread_err = final_errors
     if info:
-        print "final evaluation errors:"
-        print "agent pos: %s" % a_pos_err
-        print "cart pos: %s" % c_pos_err
-        print "nb bread: %s" % nb_bread_err
-        print "cart touched %s" % sum(cart_touched)
+        print( "final evaluation errors:")
+        print( "agent pos: %s" % a_pos_err)
+        print( "cart pos: %s" % c_pos_err)
+        print( "nb bread: %s" % nb_bread_err)
+        print( "cart touched %s" % sum(cart_touched))
     return a_pos_err, c_pos_err, nb_bread_err, sum(cart_touched)
 
 
@@ -126,7 +128,7 @@ def get_grid_cell_exploration(a_Xs,a_Zs,c_Xs,nb_breads, bread_vec, c_bins=100, a
             first_found = 'never'
         nb_found = nb_breads.count(float(i))
         first_breads_found.append([first_found,nb_found])
-    #print first_breads_found
+    #print( first_breads_found
 
     final_bread_vec = np.zeros((len(bread_vec[0]),5))
     #reconstruct original bread vectors
@@ -152,14 +154,14 @@ def get_grid_cell_exploration(a_Xs,a_Zs,c_Xs,nb_breads, bread_vec, c_bins=100, a
 
 
     if info:
-        print 'agent_pos: final cells reached: %s/%s' % (a_explored_bins,(nb_a_bins))
-        print 'cart_pos: final cells reached: %s/%s' % (c_explored_bins,nb_c_bins)
-        print 'first time cart swinged up left: %s' % first_swing_left
-        print 'first time cart swinged up right: %s' % first_swing_right
-        print 'combination of recovered bread found: %s/32' % b_explored_bins
+        print( 'agent_pos: final cells reached: %s/%s' % (a_explored_bins,(nb_a_bins)))
+        print( 'cart_pos: final cells reached: %s/%s' % (c_explored_bins,nb_c_bins))
+        print( 'first time cart swinged up left: %s' % first_swing_left)
+        print( 'first time cart swinged up right: %s' % first_swing_right)
+        print( 'combination of recovered bread found: %s/32' % b_explored_bins)
         for i in range(6):
-            print "first time %s bread found: %s" % (i,first_breads_found[i][0])
-            print "%s bread found: %s/%s" % (i,first_breads_found[i][1][0],first_breads_found[i][1][1])
+            print( "first time %s bread found: %s" % (i,first_breads_found[i][0]))
+            print( "%s bread found: %s/%s" % (i,first_breads_found[i][1][0],first_breads_found[i][1][1]))
 
 
     return a_explored_bins, c_explored_bins, b_explored_bins,\
@@ -228,7 +230,7 @@ def plot_goal_set(filename):
 
     g_x = unscale_vector(a_g[:,0],np.array(b.get_bounds(['agent_x'])))
     g_z = unscale_vector(a_g[:,2],np.array(b.get_bounds(['agent_z'])))
-    print len(g_x)
+    print( len(g_x))
     plt.plot(g_x,g_z,'r.',markersize=1)
     plt.gca().invert_xaxis()
     plt.axis('equal')
@@ -242,7 +244,7 @@ def plot_goal_set(filename):
 def plot(filename, max_it=None, show=True):
     with open(filename, 'rb') as f:
         b_k = pickle.load(f)
-    print b_k['parameters']
+    print( b_k['parameters'])
     if max_it is not None:
         for k,v in b_k.items():
             if k == 'parameters':
@@ -252,13 +254,13 @@ def plot(filename, max_it=None, show=True):
             elif k == 'final_eval_errors':
                 pass
             else:
-                print(k)
+                print((k))
                 b_k[k] = b_k[k][:max_it]
-                print('done')
-                print(len(b_k[k]))
+                print(('done'))
+                print((len(b_k[k])))
     a = np.array(b_k['choosen_modules'])
     unique, counts = np.unique(a, return_counts=True)
-    print dict(zip(unique, counts))
+    print( dict(zip(unique, counts)))
 
     plot_agent_pos_exploration(1, b_k['final_agent_x_reached'], b_k['final_agent_z_reached'],b_k['final_cart_x_reached'])
     #plot_agent_cart_exploration(2, b_k['final_cart_x_reached'])
@@ -273,7 +275,7 @@ def plot(filename, max_it=None, show=True):
         get_final_eval_error(b_k['final_eval_errors'],b_k['final_eval_cart_touched'])
     if b_k['parameters']['model_type'] == "active_modular":
         plot_interests(2, b_k['interests'])
-        print b_k['parameters']['update_interest_step']
+        print( b_k['parameters']['update_interest_step'])
     if show: plt.show(block=False)
 
 
