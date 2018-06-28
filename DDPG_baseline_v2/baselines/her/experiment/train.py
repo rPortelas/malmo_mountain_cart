@@ -32,7 +32,6 @@ def mpi_average(value):
 def train(policy, rollout_worker, evaluator, env_name, num_cpu,
           n_epochs, n_test_rollouts, n_cycles, n_batches, policy_save_interval,
           save_policies, rank, gep_memory=None, buffer_location=None, study='HER', active_goal=False,  **kwargs):
-    pickle.dump([1,2,3], open( kwargs['logdir']+"/her_mmc.pickle", "wb" ))
     latest_policy_path = os.path.join(logger.get_dir(), 'policy_latest.pkl')
     best_policy_path = os.path.join(logger.get_dir(), 'policy_best.pkl')
     periodic_policy_path = os.path.join(logger.get_dir(), 'policy_{}.pkl')
@@ -109,7 +108,7 @@ def train(policy, rollout_worker, evaluator, env_name, num_cpu,
         MPI.COMM_WORLD.Bcast(root_uniform, root=0)
         if rank != 0:
             assert local_uniform[0] != root_uniform[0]
-    pickle.dump(episodes, open( kwargs['log_dir']+"her_mmc.pickle", "wb" ))
+    pickle.dump(episodes, open( kwargs['logdir']+"her_mmc.pickle", "wb" ))
     logger.info('Saving periodic policy to {} ...'.format(policy_path))
 
 
