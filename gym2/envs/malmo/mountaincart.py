@@ -108,7 +108,7 @@ class MalmoMountainCart(gym2.Env):
         'video.frames_per_second': 30
     }
                     #  <ServerQuitFromTimeUp timeLimitMs="''' + mission_time_limit + '''"/>     
-    def __init__(self, port=10000, tick_lengths=5, skip_step=1, desired_mission_time=7, sparse=False, reward_mixing=20):
+    def __init__(self, port=10000, tick_lengths=10, skip_step=1, desired_mission_time=7, sparse=False, reward_mixing=20):
         print('Making new MMC instance')
         self.skip_step = skip_step
         self.tick_lengths = tick_lengths
@@ -117,7 +117,7 @@ class MalmoMountainCart(gym2.Env):
         self._reward_mixing = reward_mixing
 
         # define bread positions in MMC arena
-        self.mission_start_sleep = 0.2
+        self.mission_start_sleep = 0.4
         self.bread_positions = [[293.5,4,436.5],[289.5,4,437.5],[289.5,4,440.5],[291.5,6,442.5],[294.5,6,443.5]]
         self.mission_xml = get_MMC_environment(self.bread_positions, 
                                                tick_lengths,
@@ -131,10 +131,10 @@ class MalmoMountainCart(gym2.Env):
 
         self.client_pool = MalmoPython.ClientPool()
 
-        print("Attempt to communicate with Minecraft through port %s" % port)
-        self.client_pool.add(MalmoPython.ClientInfo( "127.0.0.1", port))
-        #self.client_pool.add(MalmoPython.ClientInfo( "127.0.0.1", port+1))
-
+        #print("Attempt to communicate with Minecraft through port %s" % port)
+        # enable the use of up to 21 parallel malmo mountain carts
+        for i in range(20):
+            self.client_pool.add(MalmoPython.ClientInfo( "127.0.0.1", port+i))
 
         n_act = 2
         n_obs = 9
@@ -280,11 +280,11 @@ class MalmoMountainCart(gym2.Env):
 
 
     def step(self, actions):
-        #print('brudaah what ?')
         # format actions for environment
         #print(actions)
         actions = ["move " + str(actions[0]), "strafe " + str(actions[1])]
         self.current_step += 1
+        #print(self.current_step)
         done = False
         # print self.current_step
         # take the action only if mission is still running
