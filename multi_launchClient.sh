@@ -1,5 +1,5 @@
 #!/bin/bash
-malmo_folder="Malmo-0.34.0-Linux-Ubuntu-16.04-64bit_withBoost_Python2.7/"
+malmo_folder="malmo0.34_python3.5/"
 echo "Bash version ${BASH_VERSION}..."
 for ((i = 1; i <= $1; i++)); do
     echo $i
