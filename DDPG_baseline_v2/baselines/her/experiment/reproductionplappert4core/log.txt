@@ -1,0 +1,1976 @@
+Logging to reproductionplappert4core
+T: 100
+_Q_lr: 0.001
+_action_l2: 1.0
+_batch_size: 256
+_buffer_size: 1000000
+_clip_obs: 200.0
+_hidden: 256
+_layers: 3
+_max_u: 1.0
+_network_class: baselines.her.actor_critic:ActorCritic
+_norm_clip: 5
+_norm_eps: 0.01
+_pi_lr: 0.001
+_polyak: 0.95
+_relative_goals: False
+_scope: ddpg
+ddpg_params: {'network_class': 'baselines.her.actor_critic:ActorCritic', 'clip_obs': 200.0, 'action_l2': 1.0, 'layers': 3, 'scope': 'ddpg', 'pi_lr': 0.001, 'norm_eps': 0.01, 'batch_size': 256, 'norm_clip': 5, 'polyak': 0.95, 'relative_goals': False, 'max_u': 1.0, 'buffer_size': 1000000, 'hidden': 256, 'Q_lr': 0.001}
+env_name: HandManipulateBlockRotateXYZ-v0
+gamma: 0.99
+make_env: <function prepare_params.<locals>.make_env at 0x7f147fd24950>
+n_batches: 40
+n_cycles: 50
+n_test_rollouts: 10
+noise_eps: 0.2
+random_eps: 0.3
+replay_k: 4
+replay_strategy: future
+rollout_batch_size: 2
+test_with_polyak: False
+Creating a DDPG agent with action space 20 x 1.0...
+Training...
+-----------------------------------
+| epoch              | 0          |
+| stats_g/mean       | 0.38686648 |
+| stats_g/std        | 0.22036822 |
+| stats_o/mean       | 0.19495603 |
+| stats_o/std        | 0.7808704  |
+| test/episode       | 20.0       |
+| test/mean_Q        | -2.727551  |
+| test/success_rate  | 0.0125     |
+| train/episode      | 100.0      |
+| train/success_rate | 0.0        |
+-----------------------------------
+New best success rate: 0.0125. Saving policy to reproductionplappert4core/policy_best.pkl ...
+Saving periodic policy to reproductionplappert4core/policy_0.pkl ...
+-----------------------------------
+| epoch              | 1          |
+| stats_g/mean       | 0.38182423 |
+| stats_g/std        | 0.2237929  |
+| stats_o/mean       | 0.19672021 |
+| stats_o/std        | 0.7683737  |
+| test/episode       | 40.0       |
+| test/mean_Q        | -4.836956  |
+| test/success_rate  | 0.025      |
+| train/episode      | 200.0      |
+| train/success_rate | 0.0        |
+-----------------------------------
+New best success rate: 0.025. Saving policy to reproductionplappert4core/policy_best.pkl ...
+-----------------------------------
+| epoch              | 2          |
+| stats_g/mean       | 0.38173443 |
+| stats_g/std        | 0.22458258 |
+| stats_o/mean       | 0.19758478 |
+| stats_o/std        | 0.76220703 |
+| test/episode       | 60.0       |
+| test/mean_Q        | -7.0913277 |
+| test/success_rate  | 0.0        |
+| train/episode      | 300.0      |
+| train/success_rate | 0.0025     |
+-----------------------------------
+-----------------------------------
+| epoch              | 3          |
+| stats_g/mean       | 0.38242194 |
+| stats_g/std        | 0.22607689 |
+| stats_o/mean       | 0.19823518 |
+| stats_o/std        | 0.76055753 |
+| test/episode       | 80.0       |
+| test/mean_Q        | -8.611487  |
+| test/success_rate  | 0.025      |
+| train/episode      | 400.0      |
+| train/success_rate | 0.0025     |
+-----------------------------------
+New best success rate: 0.025. Saving policy to reproductionplappert4core/policy_best.pkl ...
+------------------------------------
+| epoch              | 4           |
+| stats_g/mean       | 0.38101885  |
+| stats_g/std        | 0.22752096  |
+| stats_o/mean       | 0.19807868  |
+| stats_o/std        | 0.7606033   |
+| test/episode       | 100.0       |
+| test/mean_Q        | -10.5545845 |
+| test/success_rate  | 0.0125      |
+| train/episode      | 500.0       |
+| train/success_rate | 0.005       |
+------------------------------------
+-----------------------------------
+| epoch              | 5          |
+| stats_g/mean       | 0.3821196  |
+| stats_g/std        | 0.22714709 |
+| stats_o/mean       | 0.19794454 |
+| stats_o/std        | 0.7619595  |
+| test/episode       | 120.0      |
+| test/mean_Q        | -12.329291 |
+| test/success_rate  | 0.05       |
+| train/episode      | 600.0      |
+| train/success_rate | 0.0075     |
+-----------------------------------
+New best success rate: 0.05. Saving policy to reproductionplappert4core/policy_best.pkl ...
+Saving periodic policy to reproductionplappert4core/policy_5.pkl ...
+-----------------------------------
+| epoch              | 6          |
+| stats_g/mean       | 0.38173547 |
+| stats_g/std        | 0.22680715 |
+| stats_o/mean       | 0.19788677 |
+| stats_o/std        | 0.76544577 |
+| test/episode       | 140.0      |
+| test/mean_Q        | -13.611622 |
+| test/success_rate  | 0.025      |
+| train/episode      | 700.0      |
+| train/success_rate | 0.02       |
+-----------------------------------
+-----------------------------------
+| epoch              | 7          |
+| stats_g/mean       | 0.38149586 |
+| stats_g/std        | 0.2275163  |
+| stats_o/mean       | 0.19761764 |
+| stats_o/std        | 0.7686381  |
+| test/episode       | 160.0      |
+| test/mean_Q        | -14.298081 |
+| test/success_rate  | 0.025      |
+| train/episode      | 800.0      |
+| train/success_rate | 0.01       |
+-----------------------------------
+-----------------------------------
+| epoch              | 8          |
+| stats_g/mean       | 0.3817367  |
+| stats_g/std        | 0.22764137 |
+| stats_o/mean       | 0.19790679 |
+| stats_o/std        | 0.7721107  |
+| test/episode       | 180.0      |
+| test/mean_Q        | -15.738071 |
+| test/success_rate  | 0.0625     |
+| train/episode      | 900.0      |
+| train/success_rate | 0.0175     |
+-----------------------------------
+New best success rate: 0.0625. Saving policy to reproductionplappert4core/policy_best.pkl ...
+-----------------------------------
+| epoch              | 9          |
+| stats_g/mean       | 0.3806593  |
+| stats_g/std        | 0.22846444 |
+| stats_o/mean       | 0.19785824 |
+| stats_o/std        | 0.7770784  |
+| test/episode       | 200.0      |
+| test/mean_Q        | -17.642225 |
+| test/success_rate  | 0.05       |
+| train/episode      | 1000.0     |
+| train/success_rate | 0.0175     |
+-----------------------------------
+---------------------------------------------
+| epoch              | 10                   |
+| stats_g/mean       | 0.38033313           |
+| stats_g/std        | 0.2293857            |
+| stats_o/mean       | 0.19765179           |
+| stats_o/std        | 0.78181946           |
+| test/episode       | 220.0                |
+| test/mean_Q        | -18.814121           |
+| test/success_rate  | 0.05                 |
+| train/episode      | 1100.0               |
+| train/success_rate | 0.027500000000000004 |
+---------------------------------------------
+Saving periodic policy to reproductionplappert4core/policy_10.pkl ...
+---------------------------------------------
+| epoch              | 11                   |
+| stats_g/mean       | 0.38094702           |
+| stats_g/std        | 0.22964181           |
+| stats_o/mean       | 0.19776312           |
+| stats_o/std        | 0.78663903           |
+| test/episode       | 240.0                |
+| test/mean_Q        | -18.658558           |
+| test/success_rate  | 0.05                 |
+| train/episode      | 1200.0               |
+| train/success_rate | 0.042499999999999996 |
+---------------------------------------------
+-----------------------------------
+| epoch              | 12         |
+| stats_g/mean       | 0.38089663 |
+| stats_g/std        | 0.23034848 |
+| stats_o/mean       | 0.19758822 |
+| stats_o/std        | 0.7917772  |
+| test/episode       | 260.0      |
+| test/mean_Q        | -20.355152 |
+| test/success_rate  | 0.0625     |
+| train/episode      | 1300.0     |
+| train/success_rate | 0.045      |
+-----------------------------------
+New best success rate: 0.0625. Saving policy to reproductionplappert4core/policy_best.pkl ...
+---------------------------------------------
+| epoch              | 13                   |
+| stats_g/mean       | 0.38082528           |
+| stats_g/std        | 0.23091973           |
+| stats_o/mean       | 0.19752492           |
+| stats_o/std        | 0.79707384           |
+| test/episode       | 280.0                |
+| test/mean_Q        | -20.252974           |
+| test/success_rate  | 0.0875               |
+| train/episode      | 1400.0               |
+| train/success_rate | 0.030000000000000002 |
+---------------------------------------------
+New best success rate: 0.0875. Saving policy to reproductionplappert4core/policy_best.pkl ...
+-----------------------------------
+| epoch              | 14         |
+| stats_g/mean       | 0.37965703 |
+| stats_g/std        | 0.23182414 |
+| stats_o/mean       | 0.19736746 |
+| stats_o/std        | 0.8013618  |
+| test/episode       | 300.0      |
+| test/mean_Q        | -24.114819 |
+| test/success_rate  | 0.0625     |
+| train/episode      | 1500.0     |
+| train/success_rate | 0.0425     |
+-----------------------------------
+--------------------------------------------
+| epoch              | 15                  |
+| stats_g/mean       | 0.3788003           |
+| stats_g/std        | 0.23295964          |
+| stats_o/mean       | 0.1972748           |
+| stats_o/std        | 0.8060753           |
+| test/episode       | 320.0               |
+| test/mean_Q        | -24.186232          |
+| test/success_rate  | 0.08750000000000001 |
+| train/episode      | 1600.0              |
+| train/success_rate | 0.05                |
+--------------------------------------------
+New best success rate: 0.08750000000000001. Saving policy to reproductionplappert4core/policy_best.pkl ...
+Saving periodic policy to reproductionplappert4core/policy_15.pkl ...
+-----------------------------------
+| epoch              | 16         |
+| stats_g/mean       | 0.3787391  |
+| stats_g/std        | 0.23350327 |
+| stats_o/mean       | 0.1970266  |
+| stats_o/std        | 0.8113302  |
+| test/episode       | 340.0      |
+| test/mean_Q        | -24.489666 |
+| test/success_rate  | 0.1        |
+| train/episode      | 1700.0     |
+| train/success_rate | 0.05       |
+-----------------------------------
+New best success rate: 0.1. Saving policy to reproductionplappert4core/policy_best.pkl ...
+--------------------------------------------
+| epoch              | 17                  |
+| stats_g/mean       | 0.37852147          |
+| stats_g/std        | 0.23407085          |
+| stats_o/mean       | 0.19686761          |
+| stats_o/std        | 0.8148302           |
+| test/episode       | 360.0               |
+| test/mean_Q        | -26.063957          |
+| test/success_rate  | 0.0625              |
+| train/episode      | 1800.0              |
+| train/success_rate | 0.05750000000000001 |
+--------------------------------------------
+--------------------------------------------
+| epoch              | 18                  |
+| stats_g/mean       | 0.37820402          |
+| stats_g/std        | 0.23429279          |
+| stats_o/mean       | 0.19681257          |
+| stats_o/std        | 0.8190683           |
+| test/episode       | 380.0               |
+| test/mean_Q        | -22.889957          |
+| test/success_rate  | 0.11249999999999999 |
+| train/episode      | 1900.0              |
+| train/success_rate | 0.0525              |
+--------------------------------------------
+New best success rate: 0.11249999999999999. Saving policy to reproductionplappert4core/policy_best.pkl ...
+--------------------------------------------
+| epoch              | 19                  |
+| stats_g/mean       | 0.37812647          |
+| stats_g/std        | 0.23431036          |
+| stats_o/mean       | 0.196635            |
+| stats_o/std        | 0.8236437           |
+| test/episode       | 400.0               |
+| test/mean_Q        | -23.683334          |
+| test/success_rate  | 0.11249999999999999 |
+| train/episode      | 2000.0              |
+| train/success_rate | 0.06                |
+--------------------------------------------
+New best success rate: 0.11249999999999999. Saving policy to reproductionplappert4core/policy_best.pkl ...
+-----------------------------------
+| epoch              | 20         |
+| stats_g/mean       | 0.37827495 |
+| stats_g/std        | 0.2342922  |
+| stats_o/mean       | 0.19636925 |
+| stats_o/std        | 0.82811236 |
+| test/episode       | 420.0      |
+| test/mean_Q        | -22.776802 |
+| test/success_rate  | 0.1375     |
+| train/episode      | 2100.0     |
+| train/success_rate | 0.055      |
+-----------------------------------
+New best success rate: 0.1375. Saving policy to reproductionplappert4core/policy_best.pkl ...
+Saving periodic policy to reproductionplappert4core/policy_20.pkl ...
+-----------------------------------
+| epoch              | 21         |
+| stats_g/mean       | 0.37838465 |
+| stats_g/std        | 0.23435192 |
+| stats_o/mean       | 0.19614132 |
+| stats_o/std        | 0.83257693 |
+| test/episode       | 440.0      |
+| test/mean_Q        | -23.409222 |
+| test/success_rate  | 0.125      |
+| train/episode      | 2200.0     |
+| train/success_rate | 0.045      |
+-----------------------------------
+--------------------------------------------
+| epoch              | 22                  |
+| stats_g/mean       | 0.37835816          |
+| stats_g/std        | 0.23416097          |
+| stats_o/mean       | 0.19597857          |
+| stats_o/std        | 0.8367762           |
+| test/episode       | 460.0               |
+| test/mean_Q        | -25.57878           |
+| test/success_rate  | 0.08750000000000001 |
+| train/episode      | 2300.0              |
+| train/success_rate | 0.05                |
+--------------------------------------------
+-----------------------------------
+| epoch              | 23         |
+| stats_g/mean       | 0.37801823 |
+| stats_g/std        | 0.23407343 |
+| stats_o/mean       | 0.19593705 |
+| stats_o/std        | 0.8407936  |
+| test/episode       | 480.0      |
+| test/mean_Q        | -25.670444 |
+| test/success_rate  | 0.1        |
+| train/episode      | 2400.0     |
+| train/success_rate | 0.055      |
+-----------------------------------
+-----------------------------------
+| epoch              | 24         |
+| stats_g/mean       | 0.3780221  |
+| stats_g/std        | 0.23397565 |
+| stats_o/mean       | 0.1959647  |
+| stats_o/std        | 0.8447353  |
+| test/episode       | 500.0      |
+| test/mean_Q        | -25.766548 |
+| test/success_rate  | 0.175      |
+| train/episode      | 2500.0     |
+| train/success_rate | 0.0675     |
+-----------------------------------
+New best success rate: 0.175. Saving policy to reproductionplappert4core/policy_best.pkl ...
+-----------------------------------
+| epoch              | 25         |
+| stats_g/mean       | 0.37804937 |
+| stats_g/std        | 0.23387064 |
+| stats_o/mean       | 0.19613583 |
+| stats_o/std        | 0.84928584 |
+| test/episode       | 520.0      |
+| test/mean_Q        | -25.553413 |
+| test/success_rate  | 0.175      |
+| train/episode      | 2600.0     |
+| train/success_rate | 0.06       |
+-----------------------------------
+New best success rate: 0.175. Saving policy to reproductionplappert4core/policy_best.pkl ...
+Saving periodic policy to reproductionplappert4core/policy_25.pkl ...
+--------------------------------------------
+| epoch              | 26                  |
+| stats_g/mean       | 0.37796482          |
+| stats_g/std        | 0.2339432           |
+| stats_o/mean       | 0.1959909           |
+| stats_o/std        | 0.85368097          |
+| test/episode       | 540.0               |
+| test/mean_Q        | -23.833984          |
+| test/success_rate  | 0.21250000000000002 |
+| train/episode      | 2700.0              |
+| train/success_rate | 0.05750000000000001 |
+--------------------------------------------
+New best success rate: 0.21250000000000002. Saving policy to reproductionplappert4core/policy_best.pkl ...
+-----------------------------------
+| epoch              | 27         |
+| stats_g/mean       | 0.37793213 |
+| stats_g/std        | 0.23409449 |
+| stats_o/mean       | 0.19604589 |
+| stats_o/std        | 0.8578631  |
+| test/episode       | 560.0      |
+| test/mean_Q        | -25.042984 |
+| test/success_rate  | 0.2375     |
+| train/episode      | 2800.0     |
+| train/success_rate | 0.065      |
+-----------------------------------
+New best success rate: 0.2375. Saving policy to reproductionplappert4core/policy_best.pkl ...
+-----------------------------------
+| epoch              | 28         |
+| stats_g/mean       | 0.37793908 |
+| stats_g/std        | 0.23388074 |
+| stats_o/mean       | 0.19593844 |
+| stats_o/std        | 0.86228925 |
+| test/episode       | 580.0      |
+| test/mean_Q        | -23.72341  |
+| test/success_rate  | 0.25       |
+| train/episode      | 2900.0     |
+| train/success_rate | 0.0975     |
+-----------------------------------
+New best success rate: 0.25. Saving policy to reproductionplappert4core/policy_best.pkl ...
+-----------------------------------
+| epoch              | 29         |
+| stats_g/mean       | 0.37805685 |
+| stats_g/std        | 0.23372257 |
+| stats_o/mean       | 0.19588812 |
+| stats_o/std        | 0.8667046  |
+| test/episode       | 600.0      |
+| test/mean_Q        | -25.077425 |
+| test/success_rate  | 0.15       |
+| train/episode      | 3000.0     |
+| train/success_rate | 0.08       |
+-----------------------------------
+-----------------------------------
+| epoch              | 30         |
+| stats_g/mean       | 0.37806708 |
+| stats_g/std        | 0.233586   |
+| stats_o/mean       | 0.19588226 |
+| stats_o/std        | 0.87059546 |
+| test/episode       | 620.0      |
+| test/mean_Q        | -25.621555 |
+| test/success_rate  | 0.2        |
+| train/episode      | 3100.0     |
+| train/success_rate | 0.0975     |
+-----------------------------------
+Saving periodic policy to reproductionplappert4core/policy_30.pkl ...
+--------------------------------------------
+| epoch              | 31                  |
+| stats_g/mean       | 0.37819868          |
+| stats_g/std        | 0.23348685          |
+| stats_o/mean       | 0.19580431          |
+| stats_o/std        | 0.87435186          |
+| test/episode       | 640.0               |
+| test/mean_Q        | -23.156279          |
+| test/success_rate  | 0.26249999999999996 |
+| train/episode      | 3200.0              |
+| train/success_rate | 0.08                |
+--------------------------------------------
+New best success rate: 0.26249999999999996. Saving policy to reproductionplappert4core/policy_best.pkl ...
+-----------------------------------
+| epoch              | 32         |
+| stats_g/mean       | 0.37775296 |
+| stats_g/std        | 0.2334054  |
+| stats_o/mean       | 0.19551155 |
+| stats_o/std        | 0.8783074  |
+| test/episode       | 660.0      |
+| test/mean_Q        | -22.638603 |
+| test/success_rate  | 0.1875     |
+| train/episode      | 3300.0     |
+| train/success_rate | 0.1075     |
+-----------------------------------
+-----------------------------------
+| epoch              | 33         |
+| stats_g/mean       | 0.3776533  |
+| stats_g/std        | 0.23338124 |
+| stats_o/mean       | 0.19525903 |
+| stats_o/std        | 0.88222927 |
+| test/episode       | 680.0      |
+| test/mean_Q        | -20.592949 |
+| test/success_rate  | 0.2        |
+| train/episode      | 3400.0     |
+| train/success_rate | 0.1225     |
+-----------------------------------
+-----------------------------------
+| epoch              | 34         |
+| stats_g/mean       | 0.37788925 |
+| stats_g/std        | 0.23322733 |
+| stats_o/mean       | 0.19518864 |
+| stats_o/std        | 0.8856181  |
+| test/episode       | 700.0      |
+| test/mean_Q        | -20.278471 |
+| test/success_rate  | 0.3        |
+| train/episode      | 3500.0     |
+| train/success_rate | 0.1125     |
+-----------------------------------
+New best success rate: 0.3. Saving policy to reproductionplappert4core/policy_best.pkl ...
+--------------------------------------------
+| epoch              | 35                  |
+| stats_g/mean       | 0.3779154           |
+| stats_g/std        | 0.23303476          |
+| stats_o/mean       | 0.1951237           |
+| stats_o/std        | 0.8886482           |
+| test/episode       | 720.0               |
+| test/mean_Q        | -22.698313          |
+| test/success_rate  | 0.27499999999999997 |
+| train/episode      | 3600.0              |
+| train/success_rate | 0.10250000000000001 |
+--------------------------------------------
+Saving periodic policy to reproductionplappert4core/policy_35.pkl ...
+--------------------------------------------
+| epoch              | 36                  |
+| stats_g/mean       | 0.37786177          |
+| stats_g/std        | 0.23275627          |
+| stats_o/mean       | 0.19501042          |
+| stats_o/std        | 0.89183             |
+| test/episode       | 740.0               |
+| test/mean_Q        | -22.387775          |
+| test/success_rate  | 0.25                |
+| train/episode      | 3700.0              |
+| train/success_rate | 0.10750000000000001 |
+--------------------------------------------
+-----------------------------------
+| epoch              | 37         |
+| stats_g/mean       | 0.37805676 |
+| stats_g/std        | 0.23245546 |
+| stats_o/mean       | 0.19485088 |
+| stats_o/std        | 0.8949415  |
+| test/episode       | 760.0      |
+| test/mean_Q        | -19.784771 |
+| test/success_rate  | 0.4        |
+| train/episode      | 3800.0     |
+| train/success_rate | 0.16       |
+-----------------------------------
+New best success rate: 0.4. Saving policy to reproductionplappert4core/policy_best.pkl ...
+-----------------------------------
+| epoch              | 38         |
+| stats_g/mean       | 0.37820575 |
+| stats_g/std        | 0.23224816 |
+| stats_o/mean       | 0.19466995 |
+| stats_o/std        | 0.89814323 |
+| test/episode       | 780.0      |
+| test/mean_Q        | -20.988129 |
+| test/success_rate  | 0.175      |
+| train/episode      | 3900.0     |
+| train/success_rate | 0.0975     |
+-----------------------------------
+-----------------------------------
+| epoch              | 39         |
+| stats_g/mean       | 0.37851876 |
+| stats_g/std        | 0.23191012 |
+| stats_o/mean       | 0.19446388 |
+| stats_o/std        | 0.9009087  |
+| test/episode       | 800.0      |
+| test/mean_Q        | -19.0595   |
+| test/success_rate  | 0.275      |
+| train/episode      | 4000.0     |
+| train/success_rate | 0.155      |
+-----------------------------------
+--------------------------------------------
+| epoch              | 40                  |
+| stats_g/mean       | 0.3786097           |
+| stats_g/std        | 0.2316298           |
+| stats_o/mean       | 0.1942977           |
+| stats_o/std        | 0.9037892           |
+| test/episode       | 820.0               |
+| test/mean_Q        | -18.877157          |
+| test/success_rate  | 0.25                |
+| train/episode      | 4100.0              |
+| train/success_rate | 0.11499999999999999 |
+--------------------------------------------
+Saving periodic policy to reproductionplappert4core/policy_40.pkl ...
+-----------------------------------
+| epoch              | 41         |
+| stats_g/mean       | 0.37910226 |
+| stats_g/std        | 0.23141238 |
+| stats_o/mean       | 0.19418433 |
+| stats_o/std        | 0.9068334  |
+| test/episode       | 840.0      |
+| test/mean_Q        | -18.298916 |
+| test/success_rate  | 0.375      |
+| train/episode      | 4200.0     |
+| train/success_rate | 0.13       |
+-----------------------------------
+-----------------------------------
+| epoch              | 42         |
+| stats_g/mean       | 0.37930518 |
+| stats_g/std        | 0.2310435  |
+| stats_o/mean       | 0.19401422 |
+| stats_o/std        | 0.9097011  |
+| test/episode       | 860.0      |
+| test/mean_Q        | -21.598455 |
+| test/success_rate  | 0.3625     |
+| train/episode      | 4300.0     |
+| train/success_rate | 0.13       |
+-----------------------------------
+--------------------------------------------
+| epoch              | 43                  |
+| stats_g/mean       | 0.3795052           |
+| stats_g/std        | 0.23078649          |
+| stats_o/mean       | 0.19399746          |
+| stats_o/std        | 0.9123395           |
+| test/episode       | 880.0               |
+| test/mean_Q        | -17.056755          |
+| test/success_rate  | 0.45                |
+| train/episode      | 4400.0              |
+| train/success_rate | 0.10500000000000001 |
+--------------------------------------------
+New best success rate: 0.45. Saving policy to reproductionplappert4core/policy_best.pkl ...
+--------------------------------------------
+| epoch              | 44                  |
+| stats_g/mean       | 0.3795974           |
+| stats_g/std        | 0.23040631          |
+| stats_o/mean       | 0.19385833          |
+| stats_o/std        | 0.91486704          |
+| test/episode       | 900.0               |
+| test/mean_Q        | -17.102203          |
+| test/success_rate  | 0.35                |
+| train/episode      | 4500.0              |
+| train/success_rate | 0.14250000000000002 |
+--------------------------------------------
+--------------------------------------------
+| epoch              | 45                  |
+| stats_g/mean       | 0.37980554          |
+| stats_g/std        | 0.2301161           |
+| stats_o/mean       | 0.19373521          |
+| stats_o/std        | 0.91737604          |
+| test/episode       | 920.0               |
+| test/mean_Q        | -19.1627            |
+| test/success_rate  | 0.36250000000000004 |
+| train/episode      | 4600.0              |
+| train/success_rate | 0.16999999999999998 |
+--------------------------------------------
+Saving periodic policy to reproductionplappert4core/policy_45.pkl ...
+-----------------------------------
+| epoch              | 46         |
+| stats_g/mean       | 0.38002244 |
+| stats_g/std        | 0.22986233 |
+| stats_o/mean       | 0.193662   |
+| stats_o/std        | 0.9196679  |
+| test/episode       | 940.0      |
+| test/mean_Q        | -20.073814 |
+| test/success_rate  | 0.3125     |
+| train/episode      | 4700.0     |
+| train/success_rate | 0.1775     |
+-----------------------------------
+--------------------------------------------
+| epoch              | 47                  |
+| stats_g/mean       | 0.3801189           |
+| stats_g/std        | 0.22958711          |
+| stats_o/mean       | 0.1934785           |
+| stats_o/std        | 0.9218383           |
+| test/episode       | 960.0               |
+| test/mean_Q        | -19.787125          |
+| test/success_rate  | 0.3125              |
+| train/episode      | 4800.0              |
+| train/success_rate | 0.16499999999999998 |
+--------------------------------------------
+-----------------------------------
+| epoch              | 48         |
+| stats_g/mean       | 0.38027117 |
+| stats_g/std        | 0.22947386 |
+| stats_o/mean       | 0.19334652 |
+| stats_o/std        | 0.92385745 |
+| test/episode       | 980.0      |
+| test/mean_Q        | -17.386219 |
+| test/success_rate  | 0.425      |
+| train/episode      | 4900.0     |
+| train/success_rate | 0.14       |
+-----------------------------------
+-----------------------------------
+| epoch              | 49         |
+| stats_g/mean       | 0.38034487 |
+| stats_g/std        | 0.22915399 |
+| stats_o/mean       | 0.19321433 |
+| stats_o/std        | 0.9259335  |
+| test/episode       | 1000.0     |
+| test/mean_Q        | -15.842138 |
+| test/success_rate  | 0.4375     |
+| train/episode      | 5000.0     |
+| train/success_rate | 0.1975     |
+-----------------------------------
+--------------------------------------------
+| epoch              | 50                  |
+| stats_g/mean       | 0.3806353           |
+| stats_g/std        | 0.2288768           |
+| stats_o/mean       | 0.19306454          |
+| stats_o/std        | 0.9278796           |
+| test/episode       | 1020.0              |
+| test/mean_Q        | -18.265894          |
+| test/success_rate  | 0.38749999999999996 |
+| train/episode      | 5100.0              |
+| train/success_rate | 0.1775              |
+--------------------------------------------
+Saving periodic policy to reproductionplappert4core/policy_50.pkl ...
+-----------------------------------
+| epoch              | 51         |
+| stats_g/mean       | 0.38096744 |
+| stats_g/std        | 0.22866784 |
+| stats_o/mean       | 0.19288749 |
+| stats_o/std        | 0.92967874 |
+| test/episode       | 1040.0     |
+| test/mean_Q        | -12.053199 |
+| test/success_rate  | 0.55       |
+| train/episode      | 5200.0     |
+| train/success_rate | 0.1775     |
+-----------------------------------
+New best success rate: 0.55. Saving policy to reproductionplappert4core/policy_best.pkl ...
+-----------------------------------
+| epoch              | 52         |
+| stats_g/mean       | 0.38122827 |
+| stats_g/std        | 0.22845162 |
+| stats_o/mean       | 0.19275492 |
+| stats_o/std        | 0.931584   |
+| test/episode       | 1060.0     |
+| test/mean_Q        | -14.617432 |
+| test/success_rate  | 0.5        |
+| train/episode      | 5300.0     |
+| train/success_rate | 0.18       |
+-----------------------------------
+--------------------------------------------
+| epoch              | 53                  |
+| stats_g/mean       | 0.38132796          |
+| stats_g/std        | 0.2281027           |
+| stats_o/mean       | 0.19262104          |
+| stats_o/std        | 0.93343556          |
+| test/episode       | 1080.0              |
+| test/mean_Q        | -15.632383          |
+| test/success_rate  | 0.45                |
+| train/episode      | 5400.0              |
+| train/success_rate | 0.15999999999999998 |
+--------------------------------------------
+-----------------------------------
+| epoch              | 54         |
+| stats_g/mean       | 0.38122353 |
+| stats_g/std        | 0.22793522 |
+| stats_o/mean       | 0.19250825 |
+| stats_o/std        | 0.9350266  |
+| test/episode       | 1100.0     |
+| test/mean_Q        | -14.58006  |
+| test/success_rate  | 0.525      |
+| train/episode      | 5500.0     |
+| train/success_rate | 0.1875     |
+-----------------------------------
+-----------------------------------
+| epoch              | 55         |
+| stats_g/mean       | 0.38131675 |
+| stats_g/std        | 0.22770664 |
+| stats_o/mean       | 0.19233327 |
+| stats_o/std        | 0.93650043 |
+| test/episode       | 1120.0     |
+| test/mean_Q        | -12.665937 |
+| test/success_rate  | 0.4625     |
+| train/episode      | 5600.0     |
+| train/success_rate | 0.18       |
+-----------------------------------
+Saving periodic policy to reproductionplappert4core/policy_55.pkl ...
+--------------------------------------------
+| epoch              | 56                  |
+| stats_g/mean       | 0.38145202          |
+| stats_g/std        | 0.22745977          |
+| stats_o/mean       | 0.19217382          |
+| stats_o/std        | 0.9380986           |
+| test/episode       | 1140.0              |
+| test/mean_Q        | -11.676839          |
+| test/success_rate  | 0.5875              |
+| train/episode      | 5700.0              |
+| train/success_rate | 0.21750000000000003 |
+--------------------------------------------
+New best success rate: 0.5875. Saving policy to reproductionplappert4core/policy_best.pkl ...
+--------------------------------------------
+| epoch              | 57                  |
+| stats_g/mean       | 0.38146263          |
+| stats_g/std        | 0.2273315           |
+| stats_o/mean       | 0.19199716          |
+| stats_o/std        | 0.93962336          |
+| test/episode       | 1160.0              |
+| test/mean_Q        | -11.958494          |
+| test/success_rate  | 0.5625              |
+| train/episode      | 5800.0              |
+| train/success_rate | 0.20500000000000002 |
+--------------------------------------------
+-----------------------------------
+| epoch              | 58         |
+| stats_g/mean       | 0.3816776  |
+| stats_g/std        | 0.22720215 |
+| stats_o/mean       | 0.19184399 |
+| stats_o/std        | 0.941099   |
+| test/episode       | 1180.0     |
+| test/mean_Q        | -12.492937 |
+| test/success_rate  | 0.55       |
+| train/episode      | 5900.0     |
+| train/success_rate | 0.2275     |
+-----------------------------------
+--------------------------------------------
+| epoch              | 59                  |
+| stats_g/mean       | 0.38188872          |
+| stats_g/std        | 0.22713253          |
+| stats_o/mean       | 0.1916716           |
+| stats_o/std        | 0.94260824          |
+| test/episode       | 1200.0              |
+| test/mean_Q        | -15.242853          |
+| test/success_rate  | 0.4875              |
+| train/episode      | 6000.0              |
+| train/success_rate | 0.17500000000000002 |
+--------------------------------------------
+-----------------------------------
+| epoch              | 60         |
+| stats_g/mean       | 0.38197932 |
+| stats_g/std        | 0.22697254 |
+| stats_o/mean       | 0.19149226 |
+| stats_o/std        | 0.9438631  |
+| test/episode       | 1220.0     |
+| test/mean_Q        | -12.620394 |
+| test/success_rate  | 0.575      |
+| train/episode      | 6100.0     |
+| train/success_rate | 0.2025     |
+-----------------------------------
+Saving periodic policy to reproductionplappert4core/policy_60.pkl ...
+-----------------------------------
+| epoch              | 61         |
+| stats_g/mean       | 0.38222474 |
+| stats_g/std        | 0.22679271 |
+| stats_o/mean       | 0.19132812 |
+| stats_o/std        | 0.94524264 |
+| test/episode       | 1240.0     |
+| test/mean_Q        | -12.495675 |
+| test/success_rate  | 0.575      |
+| train/episode      | 6200.0     |
+| train/success_rate | 0.185      |
+-----------------------------------
+--------------------------------------------
+| epoch              | 62                  |
+| stats_g/mean       | 0.38236213          |
+| stats_g/std        | 0.22670388          |
+| stats_o/mean       | 0.1912259           |
+| stats_o/std        | 0.9464144           |
+| test/episode       | 1260.0              |
+| test/mean_Q        | -14.003204          |
+| test/success_rate  | 0.47500000000000003 |
+| train/episode      | 6300.0              |
+| train/success_rate | 0.2175              |
+--------------------------------------------
+-----------------------------------
+| epoch              | 63         |
+| stats_g/mean       | 0.38249803 |
+| stats_g/std        | 0.22654776 |
+| stats_o/mean       | 0.19110146 |
+| stats_o/std        | 0.94769555 |
+| test/episode       | 1280.0     |
+| test/mean_Q        | -14.715241 |
+| test/success_rate  | 0.5375     |
+| train/episode      | 6400.0     |
+| train/success_rate | 0.2125     |
+-----------------------------------
+-----------------------------------
+| epoch              | 64         |
+| stats_g/mean       | 0.38267642 |
+| stats_g/std        | 0.2263782  |
+| stats_o/mean       | 0.19091693 |
+| stats_o/std        | 0.9488509  |
+| test/episode       | 1300.0     |
+| test/mean_Q        | -13.864542 |
+| test/success_rate  | 0.5        |
+| train/episode      | 6500.0     |
+| train/success_rate | 0.185      |
+-----------------------------------
+-----------------------------------
+| epoch              | 65         |
+| stats_g/mean       | 0.38276857 |
+| stats_g/std        | 0.22626574 |
+| stats_o/mean       | 0.19077669 |
+| stats_o/std        | 0.95002913 |
+| test/episode       | 1320.0     |
+| test/mean_Q        | -14.215217 |
+| test/success_rate  | 0.5125     |
+| train/episode      | 6600.0     |
+| train/success_rate | 0.18       |
+-----------------------------------
+Saving periodic policy to reproductionplappert4core/policy_65.pkl ...
+-----------------------------------
+| epoch              | 66         |
+| stats_g/mean       | 0.38283548 |
+| stats_g/std        | 0.22613011 |
+| stats_o/mean       | 0.1906429  |
+| stats_o/std        | 0.9512227  |
+| test/episode       | 1340.0     |
+| test/mean_Q        | -10.834293 |
+| test/success_rate  | 0.575      |
+| train/episode      | 6700.0     |
+| train/success_rate | 0.1825     |
+-----------------------------------
+--------------------------------------------
+| epoch              | 67                  |
+| stats_g/mean       | 0.3829131           |
+| stats_g/std        | 0.22601452          |
+| stats_o/mean       | 0.19048566          |
+| stats_o/std        | 0.9523788           |
+| test/episode       | 1360.0              |
+| test/mean_Q        | -11.26663           |
+| test/success_rate  | 0.5625              |
+| train/episode      | 6800.0              |
+| train/success_rate | 0.20750000000000002 |
+--------------------------------------------
+--------------------------------------------
+| epoch              | 68                  |
+| stats_g/mean       | 0.3830859           |
+| stats_g/std        | 0.225963            |
+| stats_o/mean       | 0.19039556          |
+| stats_o/std        | 0.9534286           |
+| test/episode       | 1380.0              |
+| test/mean_Q        | -14.703254          |
+| test/success_rate  | 0.5375000000000001  |
+| train/episode      | 6900.0              |
+| train/success_rate | 0.17500000000000002 |
+--------------------------------------------
+-----------------------------------
+| epoch              | 69         |
+| stats_g/mean       | 0.3832241  |
+| stats_g/std        | 0.22587097 |
+| stats_o/mean       | 0.19033563 |
+| stats_o/std        | 0.954369   |
+| test/episode       | 1400.0     |
+| test/mean_Q        | -13.86338  |
+| test/success_rate  | 0.5375     |
+| train/episode      | 7000.0     |
+| train/success_rate | 0.195      |
+-----------------------------------
+------------------------------------
+| epoch              | 70          |
+| stats_g/mean       | 0.3833198   |
+| stats_g/std        | 0.2257181   |
+| stats_o/mean       | 0.19028386  |
+| stats_o/std        | 0.95527446  |
+| test/episode       | 1420.0      |
+| test/mean_Q        | -11.3475065 |
+| test/success_rate  | 0.5375      |
+| train/episode      | 7100.0      |
+| train/success_rate | 0.2         |
+------------------------------------
+Saving periodic policy to reproductionplappert4core/policy_70.pkl ...
+-----------------------------------
+| epoch              | 71         |
+| stats_g/mean       | 0.38332754 |
+| stats_g/std        | 0.22560216 |
+| stats_o/mean       | 0.19018905 |
+| stats_o/std        | 0.9560952  |
+| test/episode       | 1440.0     |
+| test/mean_Q        | -13.284578 |
+| test/success_rate  | 0.5        |
+| train/episode      | 7200.0     |
+| train/success_rate | 0.2425     |
+-----------------------------------
+-------------------------------------------
+| epoch              | 72                 |
+| stats_g/mean       | 0.38332003         |
+| stats_g/std        | 0.2255195          |
+| stats_o/mean       | 0.19010547         |
+| stats_o/std        | 0.95700514         |
+| test/episode       | 1460.0             |
+| test/mean_Q        | -12.663774         |
+| test/success_rate  | 0.5874999999999999 |
+| train/episode      | 7300.0             |
+| train/success_rate | 0.18               |
+-------------------------------------------
+-----------------------------------
+| epoch              | 73         |
+| stats_g/mean       | 0.38332948 |
+| stats_g/std        | 0.22536395 |
+| stats_o/mean       | 0.18999654 |
+| stats_o/std        | 0.95777714 |
+| test/episode       | 1480.0     |
+| test/mean_Q        | -12.914758 |
+| test/success_rate  | 0.5625     |
+| train/episode      | 7400.0     |
+| train/success_rate | 0.225      |
+-----------------------------------
+-----------------------------------
+| epoch              | 74         |
+| stats_g/mean       | 0.38334948 |
+| stats_g/std        | 0.22527042 |
+| stats_o/mean       | 0.18993373 |
+| stats_o/std        | 0.95857126 |
+| test/episode       | 1500.0     |
+| test/mean_Q        | -10.566217 |
+| test/success_rate  | 0.6875     |
+| train/episode      | 7500.0     |
+| train/success_rate | 0.2275     |
+-----------------------------------
+New best success rate: 0.6875. Saving policy to reproductionplappert4core/policy_best.pkl ...
+--------------------------------------------
+| epoch              | 75                  |
+| stats_g/mean       | 0.3833426           |
+| stats_g/std        | 0.22515868          |
+| stats_o/mean       | 0.18986095          |
+| stats_o/std        | 0.95932066          |
+| test/episode       | 1520.0              |
+| test/mean_Q        | -12.264651          |
+| test/success_rate  | 0.6                 |
+| train/episode      | 7600.0              |
+| train/success_rate | 0.23249999999999998 |
+--------------------------------------------
+Saving periodic policy to reproductionplappert4core/policy_75.pkl ...
+--------------------------------------------
+| epoch              | 76                  |
+| stats_g/mean       | 0.38340753          |
+| stats_g/std        | 0.22505358          |
+| stats_o/mean       | 0.18975076          |
+| stats_o/std        | 0.96009094          |
+| test/episode       | 1540.0              |
+| test/mean_Q        | -15.223726          |
+| test/success_rate  | 0.5125              |
+| train/episode      | 7700.0              |
+| train/success_rate | 0.20500000000000002 |
+--------------------------------------------
+--------------------------------------------
+| epoch              | 77                  |
+| stats_g/mean       | 0.3833795           |
+| stats_g/std        | 0.22499315          |
+| stats_o/mean       | 0.1896304           |
+| stats_o/std        | 0.9608705           |
+| test/episode       | 1560.0              |
+| test/mean_Q        | -14.381762          |
+| test/success_rate  | 0.4                 |
+| train/episode      | 7800.0              |
+| train/success_rate | 0.20750000000000002 |
+--------------------------------------------
+--------------------------------------------
+| epoch              | 78                  |
+| stats_g/mean       | 0.3833983           |
+| stats_g/std        | 0.22488801          |
+| stats_o/mean       | 0.18953906          |
+| stats_o/std        | 0.96156013          |
+| test/episode       | 1580.0              |
+| test/mean_Q        | -15.959198          |
+| test/success_rate  | 0.525               |
+| train/episode      | 7900.0              |
+| train/success_rate | 0.24500000000000002 |
+--------------------------------------------
+--------------------------------------------
+| epoch              | 79                  |
+| stats_g/mean       | 0.38350177          |
+| stats_g/std        | 0.22484219          |
+| stats_o/mean       | 0.1894296           |
+| stats_o/std        | 0.96239275          |
+| test/episode       | 1600.0              |
+| test/mean_Q        | -11.045555          |
+| test/success_rate  | 0.6625              |
+| train/episode      | 8000.0              |
+| train/success_rate | 0.22999999999999998 |
+--------------------------------------------
+--------------------------------------------
+| epoch              | 80                  |
+| stats_g/mean       | 0.38350654          |
+| stats_g/std        | 0.22478189          |
+| stats_o/mean       | 0.18936858          |
+| stats_o/std        | 0.9632091           |
+| test/episode       | 1620.0              |
+| test/mean_Q        | -12.820555          |
+| test/success_rate  | 0.6125              |
+| train/episode      | 8100.0              |
+| train/success_rate | 0.20750000000000002 |
+--------------------------------------------
+Saving periodic policy to reproductionplappert4core/policy_80.pkl ...
+-----------------------------------
+| epoch              | 81         |
+| stats_g/mean       | 0.38354775 |
+| stats_g/std        | 0.22471999 |
+| stats_o/mean       | 0.18928006 |
+| stats_o/std        | 0.9639487  |
+| test/episode       | 1640.0     |
+| test/mean_Q        | -11.374123 |
+| test/success_rate  | 0.6125     |
+| train/episode      | 8200.0     |
+| train/success_rate | 0.245      |
+-----------------------------------
+-------------------------------------------
+| epoch              | 82                 |
+| stats_g/mean       | 0.3836467          |
+| stats_g/std        | 0.2246537          |
+| stats_o/mean       | 0.18923107         |
+| stats_o/std        | 0.9645744          |
+| test/episode       | 1660.0             |
+| test/mean_Q        | -11.59382          |
+| test/success_rate  | 0.6375000000000001 |
+| train/episode      | 8300.0             |
+| train/success_rate | 0.215              |
+-------------------------------------------
+-----------------------------------
+| epoch              | 83         |
+| stats_g/mean       | 0.38371462 |
+| stats_g/std        | 0.22452381 |
+| stats_o/mean       | 0.189228   |
+| stats_o/std        | 0.96522635 |
+| test/episode       | 1680.0     |
+| test/mean_Q        | -12.70228  |
+| test/success_rate  | 0.625      |
+| train/episode      | 8400.0     |
+| train/success_rate | 0.25       |
+-----------------------------------
+-----------------------------------
+| epoch              | 84         |
+| stats_g/mean       | 0.38373175 |
+| stats_g/std        | 0.22437052 |
+| stats_o/mean       | 0.18918326 |
+| stats_o/std        | 0.9657061  |
+| test/episode       | 1700.0     |
+| test/mean_Q        | -12.155859 |
+| test/success_rate  | 0.6125     |
+| train/episode      | 8500.0     |
+| train/success_rate | 0.2525     |
+-----------------------------------
+------------------------------------
+| epoch              | 85          |
+| stats_g/mean       | 0.38375324  |
+| stats_g/std        | 0.22429681  |
+| stats_o/mean       | 0.18914957  |
+| stats_o/std        | 0.9662931   |
+| test/episode       | 1720.0      |
+| test/mean_Q        | -12.7975235 |
+| test/success_rate  | 0.5125      |
+| train/episode      | 8600.0      |
+| train/success_rate | 0.255       |
+------------------------------------
+Saving periodic policy to reproductionplappert4core/policy_85.pkl ...
+-----------------------------------
+| epoch              | 86         |
+| stats_g/mean       | 0.38387087 |
+| stats_g/std        | 0.2242274  |
+| stats_o/mean       | 0.18910122 |
+| stats_o/std        | 0.96685773 |
+| test/episode       | 1740.0     |
+| test/mean_Q        | -12.769592 |
+| test/success_rate  | 0.6875     |
+| train/episode      | 8700.0     |
+| train/success_rate | 0.265      |
+-----------------------------------
+New best success rate: 0.6875. Saving policy to reproductionplappert4core/policy_best.pkl ...
+-----------------------------------
+| epoch              | 87         |
+| stats_g/mean       | 0.38389763 |
+| stats_g/std        | 0.22418872 |
+| stats_o/mean       | 0.18908885 |
+| stats_o/std        | 0.9674029  |
+| test/episode       | 1760.0     |
+| test/mean_Q        | -11.71945  |
+| test/success_rate  | 0.5625     |
+| train/episode      | 8800.0     |
+| train/success_rate | 0.245      |
+-----------------------------------
+-------------------------------------------
+| epoch              | 88                 |
+| stats_g/mean       | 0.38390684         |
+| stats_g/std        | 0.22416253         |
+| stats_o/mean       | 0.18902233         |
+| stats_o/std        | 0.967932           |
+| test/episode       | 1780.0             |
+| test/mean_Q        | -11.480665         |
+| test/success_rate  | 0.6625000000000001 |
+| train/episode      | 8900.0             |
+| train/success_rate | 0.2625             |
+-------------------------------------------
+--------------------------------------------
+| epoch              | 89                  |
+| stats_g/mean       | 0.38395068          |
+| stats_g/std        | 0.22409996          |
+| stats_o/mean       | 0.1889644           |
+| stats_o/std        | 0.9683936           |
+| test/episode       | 1800.0              |
+| test/mean_Q        | -10.48204           |
+| test/success_rate  | 0.7875              |
+| train/episode      | 9000.0              |
+| train/success_rate | 0.24000000000000002 |
+--------------------------------------------
+New best success rate: 0.7875. Saving policy to reproductionplappert4core/policy_best.pkl ...
+--------------------------------------------
+| epoch              | 90                  |
+| stats_g/mean       | 0.3840023           |
+| stats_g/std        | 0.22399959          |
+| stats_o/mean       | 0.18890351          |
+| stats_o/std        | 0.96891487          |
+| test/episode       | 1820.0              |
+| test/mean_Q        | -12.939782          |
+| test/success_rate  | 0.5625              |
+| train/episode      | 9100.0              |
+| train/success_rate | 0.24500000000000002 |
+--------------------------------------------
+Saving periodic policy to reproductionplappert4core/policy_90.pkl ...
+-------------------------------------------
+| epoch              | 91                 |
+| stats_g/mean       | 0.38407698         |
+| stats_g/std        | 0.2239062          |
+| stats_o/mean       | 0.18886414         |
+| stats_o/std        | 0.96940315         |
+| test/episode       | 1840.0             |
+| test/mean_Q        | -12.360167         |
+| test/success_rate  | 0.5874999999999999 |
+| train/episode      | 9200.0             |
+| train/success_rate | 0.275              |
+-------------------------------------------
+-------------------------------------------
+| epoch              | 92                 |
+| stats_g/mean       | 0.3841426          |
+| stats_g/std        | 0.22387607         |
+| stats_o/mean       | 0.18882355         |
+| stats_o/std        | 0.9699136          |
+| test/episode       | 1860.0             |
+| test/mean_Q        | -12.576385         |
+| test/success_rate  | 0.6000000000000001 |
+| train/episode      | 9300.0             |
+| train/success_rate | 0.28               |
+-------------------------------------------
+-----------------------------------
+| epoch              | 93         |
+| stats_g/mean       | 0.38414192 |
+| stats_g/std        | 0.22382788 |
+| stats_o/mean       | 0.1887777  |
+| stats_o/std        | 0.97036374 |
+| test/episode       | 1880.0     |
+| test/mean_Q        | -12.628254 |
+| test/success_rate  | 0.6        |
+| train/episode      | 9400.0     |
+| train/success_rate | 0.2275     |
+-----------------------------------
+-----------------------------------
+| epoch              | 94         |
+| stats_g/mean       | 0.3841333  |
+| stats_g/std        | 0.22369899 |
+| stats_o/mean       | 0.18872164 |
+| stats_o/std        | 0.9707739  |
+| test/episode       | 1900.0     |
+| test/mean_Q        | -12.187103 |
+| test/success_rate  | 0.625      |
+| train/episode      | 9500.0     |
+| train/success_rate | 0.2775     |
+-----------------------------------
+-----------------------------------
+| epoch              | 95         |
+| stats_g/mean       | 0.3841825  |
+| stats_g/std        | 0.22363757 |
+| stats_o/mean       | 0.18870331 |
+| stats_o/std        | 0.97121    |
+| test/episode       | 1920.0     |
+| test/mean_Q        | -14.197731 |
+| test/success_rate  | 0.575      |
+| train/episode      | 9600.0     |
+| train/success_rate | 0.2575     |
+-----------------------------------
+Saving periodic policy to reproductionplappert4core/policy_95.pkl ...
+------------------------------------
+| epoch              | 96          |
+| stats_g/mean       | 0.38422492  |
+| stats_g/std        | 0.22355422  |
+| stats_o/mean       | 0.18864673  |
+| stats_o/std        | 0.971636    |
+| test/episode       | 1940.0      |
+| test/mean_Q        | -15.2172985 |
+| test/success_rate  | 0.45        |
+| train/episode      | 9700.0      |
+| train/success_rate | 0.24        |
+------------------------------------
+-----------------------------------
+| epoch              | 97         |
+| stats_g/mean       | 0.3842366  |
+| stats_g/std        | 0.22350633 |
+| stats_o/mean       | 0.18860278 |
+| stats_o/std        | 0.9720874  |
+| test/episode       | 1960.0     |
+| test/mean_Q        | -12.845026 |
+| test/success_rate  | 0.625      |
+| train/episode      | 9800.0     |
+| train/success_rate | 0.2425     |
+-----------------------------------
+-------------------------------------------
+| epoch              | 98                 |
+| stats_g/mean       | 0.38431257         |
+| stats_g/std        | 0.22343175         |
+| stats_o/mean       | 0.18856908         |
+| stats_o/std        | 0.9725205          |
+| test/episode       | 1980.0             |
+| test/mean_Q        | -11.777281         |
+| test/success_rate  | 0.6625000000000001 |
+| train/episode      | 9900.0             |
+| train/success_rate | 0.245              |
+-------------------------------------------
+-------------------------------------------
+| epoch              | 99                 |
+| stats_g/mean       | 0.38443086         |
+| stats_g/std        | 0.2232959          |
+| stats_o/mean       | 0.18855669         |
+| stats_o/std        | 0.97291774         |
+| test/episode       | 2000.0             |
+| test/mean_Q        | -11.6778145        |
+| test/success_rate  | 0.7374999999999999 |
+| train/episode      | 10000.0            |
+| train/success_rate | 0.215              |
+-------------------------------------------
+-----------------------------------
+| epoch              | 100        |
+| stats_g/mean       | 0.3845358  |
+| stats_g/std        | 0.22323528 |
+| stats_o/mean       | 0.18857214 |
+| stats_o/std        | 0.9733495  |
+| test/episode       | 2020.0     |
+| test/mean_Q        | -11.924046 |
+| test/success_rate  | 0.6625     |
+| train/episode      | 10100.0    |
+| train/success_rate | 0.27       |
+-----------------------------------
+Saving periodic policy to reproductionplappert4core/policy_100.pkl ...
+-----------------------------------
+| epoch              | 101        |
+| stats_g/mean       | 0.38457742 |
+| stats_g/std        | 0.22318366 |
+| stats_o/mean       | 0.18856326 |
+| stats_o/std        | 0.9737842  |
+| test/episode       | 2040.0     |
+| test/mean_Q        | -15.033474 |
+| test/success_rate  | 0.575      |
+| train/episode      | 10200.0    |
+| train/success_rate | 0.245      |
+-----------------------------------
+-----------------------------------
+| epoch              | 102        |
+| stats_g/mean       | 0.38460636 |
+| stats_g/std        | 0.22314419 |
+| stats_o/mean       | 0.18852545 |
+| stats_o/std        | 0.9741999  |
+| test/episode       | 2060.0     |
+| test/mean_Q        | -12.375194 |
+| test/success_rate  | 0.625      |
+| train/episode      | 10300.0    |
+| train/success_rate | 0.2775     |
+-----------------------------------
+-----------------------------------
+| epoch              | 103        |
+| stats_g/mean       | 0.3845613  |
+| stats_g/std        | 0.2230951  |
+| stats_o/mean       | 0.18845144 |
+| stats_o/std        | 0.9745866  |
+| test/episode       | 2080.0     |
+| test/mean_Q        | -11.56831  |
+| test/success_rate  | 0.675      |
+| train/episode      | 10400.0    |
+| train/success_rate | 0.265      |
+-----------------------------------
+-----------------------------------
+| epoch              | 104        |
+| stats_g/mean       | 0.38458624 |
+| stats_g/std        | 0.22304602 |
+| stats_o/mean       | 0.18842205 |
+| stats_o/std        | 0.9748945  |
+| test/episode       | 2100.0     |
+| test/mean_Q        | -13.94203  |
+| test/success_rate  | 0.6125     |
+| train/episode      | 10500.0    |
+| train/success_rate | 0.2525     |
+-----------------------------------
+-----------------------------------
+| epoch              | 105        |
+| stats_g/mean       | 0.384589   |
+| stats_g/std        | 0.222973   |
+| stats_o/mean       | 0.18839404 |
+| stats_o/std        | 0.97525316 |
+| test/episode       | 2120.0     |
+| test/mean_Q        | -12.327583 |
+| test/success_rate  | 0.625      |
+| train/episode      | 10600.0    |
+| train/success_rate | 0.25       |
+-----------------------------------
+Saving periodic policy to reproductionplappert4core/policy_105.pkl ...
+-----------------------------------
+| epoch              | 106        |
+| stats_g/mean       | 0.38464016 |
+| stats_g/std        | 0.22290823 |
+| stats_o/mean       | 0.18837732 |
+| stats_o/std        | 0.97560894 |
+| test/episode       | 2140.0     |
+| test/mean_Q        | -12.677557 |
+| test/success_rate  | 0.7125     |
+| train/episode      | 10700.0    |
+| train/success_rate | 0.275      |
+-----------------------------------
+-----------------------------------
+| epoch              | 107        |
+| stats_g/mean       | 0.38472348 |
+| stats_g/std        | 0.22290668 |
+| stats_o/mean       | 0.18837994 |
+| stats_o/std        | 0.9759762  |
+| test/episode       | 2160.0     |
+| test/mean_Q        | -12.718989 |
+| test/success_rate  | 0.5875     |
+| train/episode      | 10800.0    |
+| train/success_rate | 0.24       |
+-----------------------------------
+--------------------------------------------
+| epoch              | 108                 |
+| stats_g/mean       | 0.38477245          |
+| stats_g/std        | 0.22285451          |
+| stats_o/mean       | 0.18835811          |
+| stats_o/std        | 0.9762794           |
+| test/episode       | 2180.0              |
+| test/mean_Q        | -12.859554          |
+| test/success_rate  | 0.5375              |
+| train/episode      | 10900.0             |
+| train/success_rate | 0.28500000000000003 |
+--------------------------------------------
+-----------------------------------
+| epoch              | 109        |
+| stats_g/mean       | 0.38481826 |
+| stats_g/std        | 0.22282997 |
+| stats_o/mean       | 0.18838115 |
+| stats_o/std        | 0.97657454 |
+| test/episode       | 2200.0     |
+| test/mean_Q        | -14.397662 |
+| test/success_rate  | 0.625      |
+| train/episode      | 11000.0    |
+| train/success_rate | 0.2475     |
+-----------------------------------
+-----------------------------------
+| epoch              | 110        |
+| stats_g/mean       | 0.3848377  |
+| stats_g/std        | 0.22280133 |
+| stats_o/mean       | 0.188332   |
+| stats_o/std        | 0.9768822  |
+| test/episode       | 2220.0     |
+| test/mean_Q        | -12.123899 |
+| test/success_rate  | 0.6125     |
+| train/episode      | 11100.0    |
+| train/success_rate | 0.2475     |
+-----------------------------------
+Saving periodic policy to reproductionplappert4core/policy_110.pkl ...
+--------------------------------------------
+| epoch              | 111                 |
+| stats_g/mean       | 0.38491932          |
+| stats_g/std        | 0.2227227           |
+| stats_o/mean       | 0.18830138          |
+| stats_o/std        | 0.97718585          |
+| test/episode       | 2240.0              |
+| test/mean_Q        | -12.302378          |
+| test/success_rate  | 0.7125              |
+| train/episode      | 11200.0             |
+| train/success_rate | 0.28250000000000003 |
+--------------------------------------------
+-----------------------------------
+| epoch              | 112        |
+| stats_g/mean       | 0.3849519  |
+| stats_g/std        | 0.22269347 |
+| stats_o/mean       | 0.18828501 |
+| stats_o/std        | 0.9775199  |
+| test/episode       | 2260.0     |
+| test/mean_Q        | -12.013468 |
+| test/success_rate  | 0.575      |
+| train/episode      | 11300.0    |
+| train/success_rate | 0.26       |
+-----------------------------------
+-----------------------------------
+| epoch              | 113        |
+| stats_g/mean       | 0.38495728 |
+| stats_g/std        | 0.22265084 |
+| stats_o/mean       | 0.18824476 |
+| stats_o/std        | 0.97782665 |
+| test/episode       | 2280.0     |
+| test/mean_Q        | -13.350136 |
+| test/success_rate  | 0.675      |
+| train/episode      | 11400.0    |
+| train/success_rate | 0.3025     |
+-----------------------------------
+-----------------------------------
+| epoch              | 114        |
+| stats_g/mean       | 0.38499326 |
+| stats_g/std        | 0.22259445 |
+| stats_o/mean       | 0.18818413 |
+| stats_o/std        | 0.97809815 |
+| test/episode       | 2300.0     |
+| test/mean_Q        | -11.177249 |
+| test/success_rate  | 0.6125     |
+| train/episode      | 11500.0    |
+| train/success_rate | 0.2475     |
+-----------------------------------
+--------------------------------------------
+| epoch              | 115                 |
+| stats_g/mean       | 0.3850059           |
+| stats_g/std        | 0.22256899          |
+| stats_o/mean       | 0.18816303          |
+| stats_o/std        | 0.97835946          |
+| test/episode       | 2320.0              |
+| test/mean_Q        | -12.068848          |
+| test/success_rate  | 0.6625000000000001  |
+| train/episode      | 11600.0             |
+| train/success_rate | 0.28500000000000003 |
+--------------------------------------------
+Saving periodic policy to reproductionplappert4core/policy_115.pkl ...
+-------------------------------------------
+| epoch              | 116                |
+| stats_g/mean       | 0.3850467          |
+| stats_g/std        | 0.22255567         |
+| stats_o/mean       | 0.18814203         |
+| stats_o/std        | 0.9786675          |
+| test/episode       | 2340.0             |
+| test/mean_Q        | -11.59862          |
+| test/success_rate  | 0.7124999999999999 |
+| train/episode      | 11700.0            |
+| train/success_rate | 0.255              |
+-------------------------------------------
+-----------------------------------
+| epoch              | 117        |
+| stats_g/mean       | 0.38513377 |
+| stats_g/std        | 0.22252114 |
+| stats_o/mean       | 0.18812041 |
+| stats_o/std        | 0.9789994  |
+| test/episode       | 2360.0     |
+| test/mean_Q        | -11.813641 |
+| test/success_rate  | 0.6875     |
+| train/episode      | 11800.0    |
+| train/success_rate | 0.255      |
+-----------------------------------
+-----------------------------------
+| epoch              | 118        |
+| stats_g/mean       | 0.38511243 |
+| stats_g/std        | 0.22252786 |
+| stats_o/mean       | 0.18810295 |
+| stats_o/std        | 0.9792635  |
+| test/episode       | 2380.0     |
+| test/mean_Q        | -12.439555 |
+| test/success_rate  | 0.5625     |
+| train/episode      | 11900.0    |
+| train/success_rate | 0.255      |
+-----------------------------------
+-----------------------------------
+| epoch              | 119        |
+| stats_g/mean       | 0.38509205 |
+| stats_g/std        | 0.2225866  |
+| stats_o/mean       | 0.18806459 |
+| stats_o/std        | 0.979571   |
+| test/episode       | 2400.0     |
+| test/mean_Q        | -11.593437 |
+| test/success_rate  | 0.675      |
+| train/episode      | 12000.0    |
+| train/success_rate | 0.255      |
+-----------------------------------
+-----------------------------------
+| epoch              | 120        |
+| stats_g/mean       | 0.38512227 |
+| stats_g/std        | 0.22261977 |
+| stats_o/mean       | 0.18804003 |
+| stats_o/std        | 0.9798757  |
+| test/episode       | 2420.0     |
+| test/mean_Q        | -12.280695 |
+| test/success_rate  | 0.6625     |
+| train/episode      | 12100.0    |
+| train/success_rate | 0.26       |
+-----------------------------------
+Saving periodic policy to reproductionplappert4core/policy_120.pkl ...
+-----------------------------------
+| epoch              | 121        |
+| stats_g/mean       | 0.3851413  |
+| stats_g/std        | 0.22265112 |
+| stats_o/mean       | 0.1880077  |
+| stats_o/std        | 0.98012966 |
+| test/episode       | 2440.0     |
+| test/mean_Q        | -14.136715 |
+| test/success_rate  | 0.65       |
+| train/episode      | 12200.0    |
+| train/success_rate | 0.2625     |
+-----------------------------------
+-----------------------------------
+| epoch              | 122        |
+| stats_g/mean       | 0.3851428  |
+| stats_g/std        | 0.22272338 |
+| stats_o/mean       | 0.18796596 |
+| stats_o/std        | 0.98039705 |
+| test/episode       | 2460.0     |
+| test/mean_Q        | -15.026312 |
+| test/success_rate  | 0.5125     |
+| train/episode      | 12300.0    |
+| train/success_rate | 0.2625     |
+-----------------------------------
+-----------------------------------
+| epoch              | 123        |
+| stats_g/mean       | 0.38518497 |
+| stats_g/std        | 0.22279707 |
+| stats_o/mean       | 0.18793021 |
+| stats_o/std        | 0.9806686  |
+| test/episode       | 2480.0     |
+| test/mean_Q        | -13.11803  |
+| test/success_rate  | 0.625      |
+| train/episode      | 12400.0    |
+| train/success_rate | 0.28       |
+-----------------------------------
+-------------------------------------------
+| epoch              | 124                |
+| stats_g/mean       | 0.38514975         |
+| stats_g/std        | 0.22294141         |
+| stats_o/mean       | 0.18787597         |
+| stats_o/std        | 0.98087955         |
+| test/episode       | 2500.0             |
+| test/mean_Q        | -13.736195         |
+| test/success_rate  | 0.6499999999999999 |
+| train/episode      | 12500.0            |
+| train/success_rate | 0.235              |
+-------------------------------------------
+--------------------------------------------
+| epoch              | 125                 |
+| stats_g/mean       | 0.38514495          |
+| stats_g/std        | 0.22301939          |
+| stats_o/mean       | 0.18782225          |
+| stats_o/std        | 0.98111564          |
+| test/episode       | 2520.0              |
+| test/mean_Q        | -12.703444          |
+| test/success_rate  | 0.65                |
+| train/episode      | 12600.0             |
+| train/success_rate | 0.24750000000000003 |
+--------------------------------------------
+Saving periodic policy to reproductionplappert4core/policy_125.pkl ...
+--------------------------------------------
+| epoch              | 126                 |
+| stats_g/mean       | 0.38509014          |
+| stats_g/std        | 0.22314036          |
+| stats_o/mean       | 0.1877707           |
+| stats_o/std        | 0.98131704          |
+| test/episode       | 2540.0              |
+| test/mean_Q        | -14.377336          |
+| test/success_rate  | 0.48750000000000004 |
+| train/episode      | 12700.0             |
+| train/success_rate | 0.2425              |
+--------------------------------------------
+-----------------------------------
+| epoch              | 127        |
+| stats_g/mean       | 0.3851058  |
+| stats_g/std        | 0.22320895 |
+| stats_o/mean       | 0.1877416  |
+| stats_o/std        | 0.9815252  |
+| test/episode       | 2560.0     |
+| test/mean_Q        | -15.261018 |
+| test/success_rate  | 0.5375     |
+| train/episode      | 12800.0    |
+| train/success_rate | 0.235      |
+-----------------------------------
+-------------------------------------------
+| epoch              | 128                |
+| stats_g/mean       | 0.3850184          |
+| stats_g/std        | 0.22331958         |
+| stats_o/mean       | 0.18770076         |
+| stats_o/std        | 0.9818085          |
+| test/episode       | 2580.0             |
+| test/mean_Q        | -11.900887         |
+| test/success_rate  | 0.6375000000000001 |
+| train/episode      | 12900.0            |
+| train/success_rate | 0.205              |
+-------------------------------------------
+--------------------------------------------
+| epoch              | 129                 |
+| stats_g/mean       | 0.3849255           |
+| stats_g/std        | 0.22340755          |
+| stats_o/mean       | 0.18766923          |
+| stats_o/std        | 0.9819769           |
+| test/episode       | 2600.0              |
+| test/mean_Q        | -13.18775           |
+| test/success_rate  | 0.475               |
+| train/episode      | 13000.0             |
+| train/success_rate | 0.21250000000000002 |
+--------------------------------------------
+-----------------------------------
+| epoch              | 130        |
+| stats_g/mean       | 0.3848586  |
+| stats_g/std        | 0.22349514 |
+| stats_o/mean       | 0.18766013 |
+| stats_o/std        | 0.98211926 |
+| test/episode       | 2620.0     |
+| test/mean_Q        | -14.275446 |
+| test/success_rate  | 0.55       |
+| train/episode      | 13100.0    |
+| train/success_rate | 0.22       |
+-----------------------------------
+Saving periodic policy to reproductionplappert4core/policy_130.pkl ...
+--------------------------------------------
+| epoch              | 131                 |
+| stats_g/mean       | 0.3847546           |
+| stats_g/std        | 0.22356547          |
+| stats_o/mean       | 0.18763441          |
+| stats_o/std        | 0.9822259           |
+| test/episode       | 2640.0              |
+| test/mean_Q        | -11.593481          |
+| test/success_rate  | 0.55                |
+| train/episode      | 13200.0             |
+| train/success_rate | 0.20750000000000002 |
+--------------------------------------------
+-----------------------------------
+| epoch              | 132        |
+| stats_g/mean       | 0.3846819  |
+| stats_g/std        | 0.22361948 |
+| stats_o/mean       | 0.18760595 |
+| stats_o/std        | 0.9822957  |
+| test/episode       | 2660.0     |
+| test/mean_Q        | -13.381044 |
+| test/success_rate  | 0.5625     |
+| train/episode      | 13300.0    |
+| train/success_rate | 0.2375     |
+-----------------------------------
+-----------------------------------
+| epoch              | 133        |
+| stats_g/mean       | 0.38466284 |
+| stats_g/std        | 0.22365215 |
+| stats_o/mean       | 0.18761395 |
+| stats_o/std        | 0.982361   |
+| test/episode       | 2680.0     |
+| test/mean_Q        | -13.498459 |
+| test/success_rate  | 0.5625     |
+| train/episode      | 13400.0    |
+| train/success_rate | 0.245      |
+-----------------------------------
+-----------------------------------
+| epoch              | 134        |
+| stats_g/mean       | 0.38471547 |
+| stats_g/std        | 0.22366475 |
+| stats_o/mean       | 0.1876264  |
+| stats_o/std        | 0.9823852  |
+| test/episode       | 2700.0     |
+| test/mean_Q        | -13.707789 |
+| test/success_rate  | 0.5625     |
+| train/episode      | 13500.0    |
+| train/success_rate | 0.1975     |
+-----------------------------------
+-----------------------------------
+| epoch              | 135        |
+| stats_g/mean       | 0.38467947 |
+| stats_g/std        | 0.22367665 |
+| stats_o/mean       | 0.18761915 |
+| stats_o/std        | 0.98243845 |
+| test/episode       | 2720.0     |
+| test/mean_Q        | -12.372551 |
+| test/success_rate  | 0.65       |
+| train/episode      | 13600.0    |
+| train/success_rate | 0.275      |
+-----------------------------------
+Saving periodic policy to reproductionplappert4core/policy_135.pkl ...
+--------------------------------------------
+| epoch              | 136                 |
+| stats_g/mean       | 0.38463476          |
+| stats_g/std        | 0.22376002          |
+| stats_o/mean       | 0.18758556          |
+| stats_o/std        | 0.98250824          |
+| test/episode       | 2740.0              |
+| test/mean_Q        | -13.326139          |
+| test/success_rate  | 0.6375              |
+| train/episode      | 13700.0             |
+| train/success_rate | 0.23249999999999998 |
+--------------------------------------------
+-----------------------------------
+| epoch              | 137        |
+| stats_g/mean       | 0.38457885 |
+| stats_g/std        | 0.22377625 |
+| stats_o/mean       | 0.18755747 |
+| stats_o/std        | 0.98261875 |
+| test/episode       | 2760.0     |
+| test/mean_Q        | -14.517186 |
+| test/success_rate  | 0.5        |
+| train/episode      | 13800.0    |
+| train/success_rate | 0.27       |
+-----------------------------------
+-----------------------------------
+| epoch              | 138        |
+| stats_g/mean       | 0.38458732 |
+| stats_g/std        | 0.22381426 |
+| stats_o/mean       | 0.1875392  |
+| stats_o/std        | 0.9826625  |
+| test/episode       | 2780.0     |
+| test/mean_Q        | -15.34807  |
+| test/success_rate  | 0.5        |
+| train/episode      | 13900.0    |
+| train/success_rate | 0.26       |
+-----------------------------------
+-----------------------------------
+| epoch              | 139        |
+| stats_g/mean       | 0.38452896 |
+| stats_g/std        | 0.22382696 |
+| stats_o/mean       | 0.18751672 |
+| stats_o/std        | 0.9827349  |
+| test/episode       | 2800.0     |
+| test/mean_Q        | -13.718227 |
+| test/success_rate  | 0.625      |
+| train/episode      | 14000.0    |
+| train/success_rate | 0.265      |
+-----------------------------------
+-------------------------------------------
+| epoch              | 140                |
+| stats_g/mean       | 0.38451195         |
+| stats_g/std        | 0.2238523          |
+| stats_o/mean       | 0.187519           |
+| stats_o/std        | 0.9828462          |
+| test/episode       | 2820.0             |
+| test/mean_Q        | -12.827338         |
+| test/success_rate  | 0.5375000000000001 |
+| train/episode      | 14100.0            |
+| train/success_rate | 0.2625             |
+-------------------------------------------
+Saving periodic policy to reproductionplappert4core/policy_140.pkl ...
+------------------------------------
+| epoch              | 141         |
+| stats_g/mean       | 0.38446242  |
+| stats_g/std        | 0.22383611  |
+| stats_o/mean       | 0.18749307  |
+| stats_o/std        | 0.9829763   |
+| test/episode       | 2840.0      |
+| test/mean_Q        | -11.8106365 |
+| test/success_rate  | 0.675       |
+| train/episode      | 14200.0     |
+| train/success_rate | 0.2725      |
+------------------------------------
+-----------------------------------
+| epoch              | 142        |
+| stats_g/mean       | 0.38441443 |
+| stats_g/std        | 0.22384699 |
+| stats_o/mean       | 0.18747073 |
+| stats_o/std        | 0.98313594 |
+| test/episode       | 2860.0     |
+| test/mean_Q        | -13.61673  |
+| test/success_rate  | 0.6125     |
+| train/episode      | 14300.0    |
+| train/success_rate | 0.3125     |
+-----------------------------------
+-------------------------------------------
+| epoch              | 143                |
+| stats_g/mean       | 0.38439605         |
+| stats_g/std        | 0.22388819         |
+| stats_o/mean       | 0.18743885         |
+| stats_o/std        | 0.98327124         |
+| test/episode       | 2880.0             |
+| test/mean_Q        | -11.907683         |
+| test/success_rate  | 0.6625000000000001 |
+| train/episode      | 14400.0            |
+| train/success_rate | 0.2925             |
+-------------------------------------------
+-----------------------------------
+| epoch              | 144        |
+| stats_g/mean       | 0.3844114  |
+| stats_g/std        | 0.22389261 |
+| stats_o/mean       | 0.18744266 |
+| stats_o/std        | 0.9833691  |
+| test/episode       | 2900.0     |
+| test/mean_Q        | -10.524839 |
+| test/success_rate  | 0.8        |
+| train/episode      | 14500.0    |
+| train/success_rate | 0.27       |
+-----------------------------------
+New best success rate: 0.8. Saving policy to reproductionplappert4core/policy_best.pkl ...
+--------------------------------------------
+| epoch              | 145                 |
+| stats_g/mean       | 0.38443017          |
+| stats_g/std        | 0.2238396           |
+| stats_o/mean       | 0.1874296           |
+| stats_o/std        | 0.9834786           |
+| test/episode       | 2920.0              |
+| test/mean_Q        | -12.6803465         |
+| test/success_rate  | 0.75                |
+| train/episode      | 14600.0             |
+| train/success_rate | 0.28500000000000003 |
+--------------------------------------------
+Saving periodic policy to reproductionplappert4core/policy_145.pkl ...
+-----------------------------------
+| epoch              | 146        |
+| stats_g/mean       | 0.38444754 |
+| stats_g/std        | 0.22383305 |
+| stats_o/mean       | 0.18742408 |
+| stats_o/std        | 0.9836201  |
+| test/episode       | 2940.0     |
+| test/mean_Q        | -9.811871  |
+| test/success_rate  | 0.8        |
+| train/episode      | 14700.0    |
+| train/success_rate | 0.2875     |
+-----------------------------------
+New best success rate: 0.8. Saving policy to reproductionplappert4core/policy_best.pkl ...
+-----------------------------------
+| epoch              | 147        |
+| stats_g/mean       | 0.38449696 |
+| stats_g/std        | 0.22379196 |
+| stats_o/mean       | 0.1874279  |
+| stats_o/std        | 0.9837146  |
+| test/episode       | 2960.0     |
+| test/mean_Q        | -14.686302 |
+| test/success_rate  | 0.6125     |
+| train/episode      | 14800.0    |
+| train/success_rate | 0.3075     |
+-----------------------------------
+-----------------------------------
+| epoch              | 148        |
+| stats_g/mean       | 0.38456735 |
+| stats_g/std        | 0.22375952 |
+| stats_o/mean       | 0.18745573 |
+| stats_o/std        | 0.9838114  |
+| test/episode       | 2980.0     |
+| test/mean_Q        | -13.652294 |
+| test/success_rate  | 0.65       |
+| train/episode      | 14900.0    |
+| train/success_rate | 0.31       |
+-----------------------------------
+--------------------------------------------
+| epoch              | 149                 |
+| stats_g/mean       | 0.38460392          |
+| stats_g/std        | 0.22372928          |
+| stats_o/mean       | 0.18746051          |
+| stats_o/std        | 0.9839228           |
+| test/episode       | 3000.0              |
+| test/mean_Q        | -11.7107525         |
+| test/success_rate  | 0.7625              |
+| train/episode      | 15000.0             |
+| train/success_rate | 0.27749999999999997 |
+--------------------------------------------
+-----------------------------------
+| epoch              | 150        |
+| stats_g/mean       | 0.38463497 |
+| stats_g/std        | 0.22370353 |
+| stats_o/mean       | 0.18746546 |
+| stats_o/std        | 0.98411214 |
+| test/episode       | 3020.0     |
+| test/mean_Q        | -11.653561 |
+| test/success_rate  | 0.625      |
+| train/episode      | 15100.0    |
+| train/success_rate | 0.2575     |
+-----------------------------------
+Saving periodic policy to reproductionplappert4core/policy_150.pkl ...
+-----------------------------------
+| epoch              | 151        |
+| stats_g/mean       | 0.38461688 |
+| stats_g/std        | 0.22373891 |
+| stats_o/mean       | 0.18747327 |
+| stats_o/std        | 0.9843182  |
+| test/episode       | 3040.0     |
+| test/mean_Q        | -11.968931 |
+| test/success_rate  | 0.6125     |
+| train/episode      | 15200.0    |
+| train/success_rate | 0.265      |
+-----------------------------------
+-----------------------------------
+| epoch              | 152        |
+| stats_g/mean       | 0.38464355 |
+| stats_g/std        | 0.22373907 |
+| stats_o/mean       | 0.18749693 |
+| stats_o/std        | 0.98448384 |
+| test/episode       | 3060.0     |
+| test/mean_Q        | -11.171488 |
+| test/success_rate  | 0.65       |
+| train/episode      | 15300.0    |
+| train/success_rate | 0.29       |
+-----------------------------------
+--------------------------------------------
+| epoch              | 153                 |
+| stats_g/mean       | 0.3846133           |
+| stats_g/std        | 0.22372982          |
+| stats_o/mean       | 0.1874664           |
+| stats_o/std        | 0.9846539           |
+| test/episode       | 3080.0              |
+| test/mean_Q        | -12.816252          |
+| test/success_rate  | 0.675               |
+| train/episode      | 15400.0             |
+| train/success_rate | 0.31000000000000005 |
+--------------------------------------------
+--------------------------------------------
+| epoch              | 154                 |
+| stats_g/mean       | 0.38460454          |
+| stats_g/std        | 0.223735            |
+| stats_o/mean       | 0.18744281          |
+| stats_o/std        | 0.9847766           |
+| test/episode       | 3100.0              |
+| test/mean_Q        | -13.009474          |
+| test/success_rate  | 0.675               |
+| train/episode      | 15500.0             |
+| train/success_rate | 0.28500000000000003 |
+--------------------------------------------
+-----------------------------------
+| epoch              | 155        |
+| stats_g/mean       | 0.3846414  |
+| stats_g/std        | 0.22367263 |
+| stats_o/mean       | 0.18740714 |
+| stats_o/std        | 0.98490983 |
+| test/episode       | 3120.0     |
+| test/mean_Q        | -12.161945 |
+| test/success_rate  | 0.75       |
+| train/episode      | 15600.0    |
+| train/success_rate | 0.315      |
+-----------------------------------
+Saving periodic policy to reproductionplappert4core/policy_155.pkl ...
+-----------------------------------
+| epoch              | 156        |
+| stats_g/mean       | 0.38470477 |
+| stats_g/std        | 0.2236446  |
+| stats_o/mean       | 0.18740699 |
+| stats_o/std        | 0.9850985  |
+| test/episode       | 3140.0     |
+| test/mean_Q        | -14.752282 |
+| test/success_rate  | 0.65       |
+| train/episode      | 15700.0    |
+| train/success_rate | 0.27       |
+-----------------------------------

@@ -1,5 +1,3 @@
-import pickle
-
 import numpy as np
 
 
@@ -40,54 +38,6 @@ def array_min2d(x):
         return x
     return x.reshape(-1, 1)
 
-def load_from_cedric(filename):
-    """
-    used to load a replay buffer saved under Cédric Colas' format into a replay buffer of Pierre Fournier's format
-    """
-    with open(filename, 'rb') as file:
-        buffer = pickle.load(file)
-        buffer_baseline = [[],[],[],[],[]]
-        for i in range(len(buffer)):
-            for idx in range(len(buffer[i])):
-                buffer_baseline[0].append(buffer[i][idx]['state0'])
-                buffer_baseline[1].append(buffer[i][idx]['action'])
-                buffer_baseline[2].append(buffer[i][idx]['reward'])
-                buffer_baseline[3].append(buffer[i][idx]['state1'])
-                buffer_baseline[4].append(buffer[i][idx]['terminal1'])
-
-    return buffer_baseline
-
-def load_from_geppg(memory):
-    """
-    Used to bootstrap a replay buffer from a memory object filled by GEP.
-    """
-    buffer = [[],[],[],[],[]]
-    action_seq = np.copy(memory['actions'])
-    obs_seq = np.copy(memory['observations'])
-    rew_seq = np.copy(memory['rewards'])
-    n_eps = action_seq.shape[0]
-    n_obs = obs_seq.shape[2]
-    assert obs_seq.shape[0] == n_eps
-    assert rew_seq.shape[0] == n_eps
-    for i in range(n_eps):
-        for j in range(action_seq[i, :, :].shape[0]):
-            buffer[0].append(obs_seq[i, j, :])
-            buffer[1].append(action_seq[i, j, :])
-            buffer[2].append(rew_seq[i, j+1, :])
-            buffer[3].append(obs_seq[i, j+1, :])
-            try:
-                if np.isnan(obs_seq[i,j+2,0]):
-                    buffer[4].append(True)
-                    break
-                elif np.all(obs_seq[i,j+2,:]==np.zeros([n_obs])):
-                    buffer[4].append(True)
-                    break
-                else:
-                    buffer[4].append(False)
-            except:
-                buffer[4].append(True)
-                break
-    return buffer
 
 class Memory(object):
     def __init__(self, limit, action_shape, observation_shape):

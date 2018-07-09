@@ -1,15 +1,13 @@
 import numpy as np
-import sys
-sys.path.append('../../../../')
 import gym2
-import numpy as np
 
 from baselines import logger
 from baselines.her.ddpg import DDPG
 from baselines.her.her import make_sample_her_transitions
 
+
 DEFAULT_ENV_PARAMS = {
-    'FetchReach-v0': {
+    'FetchReach-v1': {
         'n_cycles': 10,
     },
 }
@@ -32,9 +30,9 @@ DEFAULT_PARAMS = {
     'relative_goals': False,
     # training
     'n_cycles': 50,  # per epoch
-    'rollout_batch_size': 1,  # per mpi thread
+    'rollout_batch_size': 40,  # per mpi thread
     'n_batches': 40,  # training batches per cycle
-    'batch_size': 256,  # per mpi thread, measured in transitions and reduced to even multiple of chunk_length.
+    'batch_size': 4096,  # per mpi thread, measured in transitions and reduced to even multiple of chunk_length.
     'n_test_rollouts': 10,  # number of test rollouts per epoch, each consists of rollout_batch_size rollouts
     'test_with_polyak': False,  # run test episodes with the target network
     # exploration
@@ -50,6 +48,8 @@ DEFAULT_PARAMS = {
 
 
 CACHED_ENVS = {}
+
+
 def cached_make_env(make_env):
     """
     Only creates a new environment from the provided function if one has not yet already been
@@ -67,6 +67,7 @@ def prepare_params(kwargs):
     ddpg_params = dict()
 
     env_name = kwargs['env_name']
+
     def make_env():
         return gym2.make(env_name)
     kwargs['make_env'] = make_env
@@ -74,7 +75,7 @@ def prepare_params(kwargs):
     assert hasattr(tmp_env, '_max_episode_steps')
     kwargs['T'] = tmp_env._max_episode_steps
     tmp_env.reset()
-    kwargs['max_u'] = np.array(kwargs['max_u']) if type(kwargs['max_u']) == list else kwargs['max_u']
+    kwargs['max_u'] = np.array(kwargs['max_u']) if isinstance(kwargs['max_u'], list) else kwargs['max_u']
     kwargs['gamma'] = 1. - 1. / kwargs['T']
     if 'lr' in kwargs:
         kwargs['pi_lr'] = kwargs['lr']
@@ -82,7 +83,7 @@ def prepare_params(kwargs):
         del kwargs['lr']
     for name in ['buffer_size', 'hidden', 'layers',
                  'network_class',
-                 'polyak', 
+                 'polyak',
                  'batch_size', 'Q_lr', 'pi_lr',
                  'norm_eps', 'norm_clip', 'max_u',
                  'action_l2', 'clip_obs', 'scope', 'relative_goals']:
@@ -102,7 +103,8 @@ def log_params(params, logger=logger):
 def configure_her(params):
     env = cached_make_env(params['make_env'])
     env.reset()
-    def reward_fun(ag_2, g, info, epsilon=0.05):  # vectorized
+
+    def reward_fun(ag_2, g, info):  # vectorized
         return env.compute_reward(achieved_goal=ag_2, desired_goal=g, info=info)
 
     # Prepare configuration for HER.
@@ -113,7 +115,6 @@ def configure_her(params):
         her_params[name] = params[name]
         params['_' + name] = her_params[name]
         del params[name]
-    her_params['active_goal'] = params['active_goal']
     sample_her_transitions = make_sample_her_transitions(**her_params)
 
     return sample_her_transitions

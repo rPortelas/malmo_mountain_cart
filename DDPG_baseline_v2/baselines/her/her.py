@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def make_sample_her_transitions(replay_strategy, replay_k, reward_fun, active_goal=False):
+def make_sample_her_transitions(replay_strategy, replay_k, reward_fun):
     """Creates a sample function that can be used for HER experience replay.
 
     Args:
