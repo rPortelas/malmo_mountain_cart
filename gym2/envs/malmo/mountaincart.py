@@ -109,7 +109,7 @@ class MalmoMountainCart(gym2.Env):
         'video.frames_per_second': 30
     }
                     #  <ServerQuitFromTimeUp timeLimitMs="''' + mission_time_limit + '''"/>     
-    def __init__(self, port=10000, tick_lengths=15, skip_step=1, desired_mission_time=7, sparse=False, reward_mixing=20):
+    def __init__(self, port=10000, tick_lengths=15, skip_step=1, desired_mission_time=7, sparse=True, reward_mixing=20):
         print('Making new MMC instance')
         self.skip_step = skip_step
         self.tick_lengths = tick_lengths
@@ -329,13 +329,14 @@ class MalmoMountainCart(gym2.Env):
             # print not world_state.is_mission_running
 
         reward = self.compute_reward(state, self.desired_goal)
+        info = {'is_success': bool(reward == 1)}
 
         obs = dict(observation=state,
                    achieved_goal=state,
                    desired_goal=self.desired_goal)
         #print(obs)
         #print('reward: {}'.format(reward))
-        return obs, reward, done, {}
+        return obs, reward, done, info
         # for ddpg
         # return state, reward, done, {}
 
