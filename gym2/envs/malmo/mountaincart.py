@@ -93,8 +93,8 @@ def get_MMC_environment(bread_positions, tick_lengths, skip_step, desired_missio
                   <AgentQuitFromReachingCommandQuota total="''' + str((2 * total_allowed_actions)) + '''"/>
                   <AgentQuitFromTimeUp timeLimitMs="''' + mission_time_limit + '''"/>
                   <VideoProducer>
-                    <Width>40</Width>
-                    <Height>30</Height>
+                    <Width>400</Width>
+                    <Height>300</Height>
                   </VideoProducer>
                 </AgentHandlers>
 
@@ -108,7 +108,7 @@ class MalmoMountainCart(gym2.Env):
         'video.frames_per_second': 30
     }
                     #  <ServerQuitFromTimeUp timeLimitMs="''' + mission_time_limit + '''"/>     
-    def __init__(self, port=10000, tick_lengths=10, skip_step=1, desired_mission_time=7, sparse=False, reward_mixing=20):
+    def __init__(self, port=10000, tick_lengths=5, skip_step=1, desired_mission_time=7, sparse=False, reward_mixing=20):
         print('Making new MMC instance')
         self.skip_step = skip_step
         self.tick_lengths = tick_lengths
@@ -117,7 +117,7 @@ class MalmoMountainCart(gym2.Env):
         self._reward_mixing = reward_mixing
 
         # define bread positions in MMC arena
-        self.mission_start_sleep = 0.4
+        self.mission_start_sleep = 0.3
         self.bread_positions = [[293.5,4,436.5],[289.5,4,437.5],[289.5,4,440.5],[291.5,6,442.5],[294.5,6,443.5]]
         self.mission_xml = get_MMC_environment(self.bread_positions, 
                                                tick_lengths,

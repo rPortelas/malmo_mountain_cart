@@ -9,7 +9,7 @@ def scale_vector(values, bounds):
     mins = bounds[:, 0]
     return (((values - mins) * 2) / mins_maxs_diff) - 1
 
-def unscale_vector(scaled_values, bounds=[-1,1]):
+def unscale_vector(scaled_values, bounds=[[-1,1]]):
     mins_maxs_diff =  np.diff(bounds).squeeze()
     mins = bounds[:, 0]
     return (((scaled_values + 1) * mins_maxs_diff) / 2) + mins
