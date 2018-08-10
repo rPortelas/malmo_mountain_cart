@@ -1,9 +1,5 @@
-import numpy as np
-import tensorflow as tf
 from mpi4py import MPI
-
-import DDPG_baseline_v2.baselines.common.tf_util as U
-
+import tensorflow as tf, baselines.common.tf_util as U, numpy as np
 
 class RunningMeanStd(object):
     # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
@@ -61,7 +57,7 @@ def test_runningmeanstd():
         rms.update(x1)
         rms.update(x2)
         rms.update(x3)
-        ms2 = U.eval([rms.mean, rms.std])
+        ms2 = [rms.mean.eval(), rms.std.eval()]
 
         assert np.allclose(ms1, ms2)
 
@@ -98,11 +94,11 @@ def test_dist():
 
     assert checkallclose(
         bigvec.mean(axis=0),
-        U.eval(rms.mean)
+        rms.mean.eval(),
     )
     assert checkallclose(
         bigvec.std(axis=0),
-        U.eval(rms.std)
+        rms.std.eval(),
     )
 
 

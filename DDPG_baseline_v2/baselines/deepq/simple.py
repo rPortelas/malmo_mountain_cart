@@ -1,16 +1,20 @@
-import numpy as np
 import os
-import dill
 import tempfile
+
 import tensorflow as tf
 import zipfile
+import cloudpickle
+import numpy as np
 
 import baselines.common.tf_util as U
-
+from baselines.common.tf_util import load_state, save_state
 from baselines import logger
 from baselines.common.schedules import LinearSchedule
+from baselines.common.input import observation_input
+
 from baselines import deepq
 from baselines.deepq.replay_buffer import ReplayBuffer, PrioritizedReplayBuffer
+from baselines.deepq.utils import ObservationInput
 
 
 class ActWrapper(object):
@@ -19,11 +23,11 @@ class ActWrapper(object):
         self._act_params = act_params
 
     @staticmethod
-    def load(path, num_cpu=16):
+    def load(path):
         with open(path, "rb") as f:
-            model_data, act_params = dill.load(f)
+            model_data, act_params = cloudpickle.load(f)
         act = deepq.build_act(**act_params)
-        sess = U.make_session(num_cpu=num_cpu)
+        sess = tf.Session()
         sess.__enter__()
         with tempfile.TemporaryDirectory() as td:
             arc_path = os.path.join(td, "packed.zip")
@@ -31,17 +35,20 @@ class ActWrapper(object):
                 f.write(model_data)
 
             zipfile.ZipFile(arc_path, 'r', zipfile.ZIP_DEFLATED).extractall(td)
-            U.load_state(os.path.join(td, "model"))
+            load_state(os.path.join(td, "model"))
 
         return ActWrapper(act, act_params)
 
     def __call__(self, *args, **kwargs):
         return self._act(*args, **kwargs)
 
-    def save(self, path):
+    def save(self, path=None):
         """Save model to a pickle located at `path`"""
+        if path is None:
+            path = os.path.join(logger.get_dir(), "model.pkl")
+
         with tempfile.TemporaryDirectory() as td:
-            U.save_state(os.path.join(td, "model"))
+            save_state(os.path.join(td, "model"))
             arc_name = os.path.join(td, "packed.zip")
             with zipfile.ZipFile(arc_name, 'w') as zipf:
                 for root, dirs, files in os.walk(td):
@@ -52,18 +59,16 @@ class ActWrapper(object):
             with open(arc_name, "rb") as f:
                 model_data = f.read()
         with open(path, "wb") as f:
-            dill.dump((model_data, self._act_params), f)
+            cloudpickle.dump((model_data, self._act_params), f)
 
 
-def load(path, num_cpu=16):
+def load(path):
     """Load act function that was returned by learn function.
 
     Parameters
     ----------
     path: str
         path to the act function pickle
-    num_cpu: int
-        number of cpus to use for executing the policy
 
     Returns
     -------
@@ -71,7 +76,7 @@ def load(path, num_cpu=16):
         function that takes a batch of observations
         and returns actions.
     """
-    return ActWrapper.load(path, num_cpu=num_cpu)
+    return ActWrapper.load(path)
 
 
 def learn(env,
@@ -83,8 +88,9 @@ def learn(env,
           exploration_final_eps=0.02,
           train_freq=1,
           batch_size=32,
-          print_freq=1,
+          print_freq=100,
           checkpoint_freq=10000,
+          checkpoint_path=None,
           learning_starts=1000,
           gamma=1.0,
           target_network_update_freq=500,
@@ -93,7 +99,6 @@ def learn(env,
           prioritized_replay_beta0=0.4,
           prioritized_replay_beta_iters=None,
           prioritized_replay_eps=1e-6,
-          num_cpu=16,
           param_noise=False,
           callback=None):
     """Train a deepq model.
@@ -151,8 +156,6 @@ def learn(env,
         to 1.0. If set to None equals to max_timesteps.
     prioritized_replay_eps: float
         epsilon to add to the TD errors when updating priorities.
-    num_cpu: int
-        number of cpus to use for training
     callback: (locals, globals) -> None
         function called at every steps with state of the algorithm.
         If callback returns true training stops.
@@ -165,11 +168,14 @@ def learn(env,
     """
     # Create all the functions necessary to train the model
 
-    sess = U.make_session(num_cpu=num_cpu)
+    sess = tf.Session()
     sess.__enter__()
 
+    # capture the shape outside the closure so that the env object is not serialized
+    # by cloudpickle when serializing make_obs_ph
+
     def make_obs_ph(name):
-        return U.BatchInput(env.observation_space.shape, name=name)
+        return ObservationInput(env.observation_space, name=name)
 
     act, train, update_target, debug = deepq.build_train(
         make_obs_ph=make_obs_ph,
@@ -180,11 +186,14 @@ def learn(env,
         grad_norm_clipping=10,
         param_noise=param_noise
     )
+
     act_params = {
         'make_obs_ph': make_obs_ph,
         'q_func': q_func,
         'num_actions': env.action_space.n,
     }
+
+    act = ActWrapper(act, act_params)
 
     # Create the replay buffer
     if prioritized_replay:
@@ -210,9 +219,17 @@ def learn(env,
     saved_mean_reward = None
     obs = env.reset()
     reset = True
+
     with tempfile.TemporaryDirectory() as td:
-        model_saved = False
+        td = checkpoint_path or td
+
         model_file = os.path.join(td, "model")
+        model_saved = False
+        if tf.train.latest_checkpoint(td) is not None:
+            load_state(model_file)
+            logger.log('Loaded model from {}'.format(model_file))
+            model_saved = True
+
         for t in range(max_timesteps):
             if callback is not None:
                 if callback(locals(), globals()):
@@ -233,8 +250,9 @@ def learn(env,
                 kwargs['update_param_noise_threshold'] = update_param_noise_threshold
                 kwargs['update_param_noise_scale'] = True
             action = act(np.array(obs)[None], update_eps=update_eps, **kwargs)[0]
+            env_action = action
             reset = False
-            new_obs, rew, done, _ = env.step(action)
+            new_obs, rew, done, _ = env.step(env_action)
             # Store transition in the replay buffer.
             replay_buffer.add(obs, action, rew, new_obs, float(done))
             obs = new_obs
@@ -277,12 +295,12 @@ def learn(env,
                     if print_freq is not None:
                         logger.log("Saving model due to mean reward increase: {} -> {}".format(
                                    saved_mean_reward, mean_100ep_reward))
-                    U.save_state(model_file)
+                    save_state(model_file)
                     model_saved = True
                     saved_mean_reward = mean_100ep_reward
         if model_saved:
             if print_freq is not None:
                 logger.log("Restored model with mean reward: {}".format(saved_mean_reward))
-            U.load_state(model_file)
+            load_state(model_file)
 
-    return ActWrapper(act, act_params)
+    return act

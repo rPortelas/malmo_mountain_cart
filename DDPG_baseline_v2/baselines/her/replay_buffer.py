@@ -3,41 +3,6 @@ import threading
 import numpy as np
 
 
-def load_from_tulip(env_id, gep_memory):
-    buffer = []
-    if env_id=='FetchPush-v0':
-        ag_id = [3,4,5]
-        dg = gep_memory['goal_representations']
-        u = gep_memory['actions']
-        o = gep_memory['observations']
-        ag = o[:, :, ag_id]
-        n_eps = ag.shape[0]
-        n_t = ag.shape[1]-1
-        info_is_success = np.zeros([n_eps, n_t, 1])
-        g =  np.zeros([n_eps, n_t, 3])
-        for i in range(n_eps):
-            for j in range(n_t):
-                if np.linalg.norm(dg[i, :] - ag[i, j, :], axis=-1) < 0.05:
-                    info_is_success[i, j, 0] = 1
-                g[i, j, :] = dg[i, :]
-        # ag = ag.reshape([n_eps, 1, n_t+1, ag.shape[2]])
-        # g = g.reshape([n_eps, 1, n_t, g.shape[2]])
-        # info_is_success = info_is_success.reshape([n_eps, 1, n_t, info_is_success.shape[2]])
-        # u = u.reshape([n_eps, 1, n_t, u.shape[2]])
-        # o = o.reshape([n_eps, 1, n_t+1, o.shape[2]])
-        # ag = np.repeat(ag, 2, axis=1)
-        # u = np.repeat(u, 2, axis=1)
-        # o = np.repeat(o, 2, axis=1)
-        # g = np.repeat(g, 2, axis=1)
-        # info_is_success = np.repeat(info_is_success, 2, axis=1)
-        # max_buff=300
-        # ind = np.random.randint(g.shape[0]-1900, g.shape[0]-1, 300)
-        # buffer = dict(ag=ag[ind], u=u[ind], o=o[ind], info_is_success=info_is_success[ind], g=g[ind])
-        buffer = dict(ag=ag, u=u, o=o, info_is_success=info_is_success, g=g)
-
-
-    return buffer
-
 class ReplayBuffer:
     def __init__(self, buffer_shapes, size_in_transitions, T, sample_transitions):
         """Creates a replay buffer.
@@ -61,9 +26,6 @@ class ReplayBuffer:
         # memory management
         self.current_size = 0
         self.n_transitions_stored = 0
-
-        # #addition
-        # self.nb_eps=0
 
         self.lock = threading.Lock()
 
@@ -140,8 +102,6 @@ class ReplayBuffer:
 
         # update replay size
         self.current_size = min(self.size, self.current_size+inc)
-        # #addition
-        # self.nb_eps = self.nb_eps+inc
 
         if inc == 1:
             idx = idx[0]

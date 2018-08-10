@@ -8,7 +8,8 @@ import json
 import time
 import random
 import sys
-sys.path.append('/home/remy/malmo_mountain_cart/')
+import getpass
+sys.path.append('/home/rportelas/malmo_mountain_cart/')
 from utils.gep_utils import Bounds, unscale_vector
 # place bread at given positions
 def draw_bread(bread_positions):
@@ -53,7 +54,7 @@ def get_MMC_environment(bread_positions, tick_lengths, skip_step, desired_missio
                   </Time>
                 </ServerInitialConditions>
                 <ServerHandlers>
-                  <FileWorldGenerator src="/home/remy/Malmo-0.34.0-Linux-Ubuntu-16.04-64bit_withBoost_Python2.7/Minecraft/run/saves/flowers_v4"/>
+                  <FileWorldGenerator src="/home/'''+getpass.getuser()+'''/Malmo-0.34.0-Linux-Ubuntu-16.04-64bit_withBoost_Python2.7/Minecraft/run/saves/flowers_v4"/>
                   <DrawingDecorator>
                     <DrawLine x1="288" y1="6" z1="443" x2="294" y2="6" z2="443" type="air"/>
                     <DrawLine x1="287" y1="7" z1="443" x2="295" y2="7" z2="443" type="air"/>
@@ -107,7 +108,7 @@ class MalmoMountainCart(gym2.Env):
         'render.modes': ['human', 'rgb_array'],
         'video.frames_per_second': 30
     }
-                    #  <ServerQuitFromTimeUp timeLimitMs="''' + mission_time_limit + '''"/>     
+                    #  <ServerQuitFromTimeUp timeLimitMs="''' + mission_time_limit + '''"/>
     def __init__(self, port=10000, tick_lengths=5, skip_step=1, desired_mission_time=7, sparse=False, reward_mixing=20):
         print('Making new MMC instance')
         self.skip_step = skip_step
@@ -328,13 +329,14 @@ class MalmoMountainCart(gym2.Env):
             # print not world_state.is_mission_running
 
         reward = self.compute_reward(state, self.desired_goal)
+        info = {'is_success': bool(reward == 1)}
 
         obs = dict(observation=state,
                    achieved_goal=state,
                    desired_goal=self.desired_goal)
         #print(obs)
         #print('reward: {}'.format(reward))
-        return obs, reward, done, {}
+        return obs, reward, done, info
         # for ddpg
         # return state, reward, done, {}
 
