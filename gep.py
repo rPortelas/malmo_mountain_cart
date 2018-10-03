@@ -18,11 +18,11 @@ class GEP(object):
 
         self.policy_nb_dims = config['policy_nb_dims']
         self.modules_config = config['modules']
-        print explo_noise
+        print(explo_noise)
         # init learning modules
         self.modules = {}
-        print'MODULES:'
-        print config['modules']
+        print('MODULES:')
+        print(config['modules'])
         self.total_outcome_range = 0
         for m_name,m in self.modules_config.items():
             outcome_size = len(m['outcome_range'])
@@ -34,7 +34,7 @@ class GEP(object):
             self.modules_config[m_name]['outcome_size'] = outcome_size
             self.total_outcome_range += outcome_size
             self.interests[m_name] = []
-        print self.total_outcome_range
+        print(self.total_outcome_range)
         #self.current_module = None
         self.current_policy = None
 

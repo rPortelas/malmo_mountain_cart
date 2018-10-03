@@ -109,7 +109,7 @@ class MalmoMountainCart(gym2.Env):
         'video.frames_per_second': 30
     }
                     #  <ServerQuitFromTimeUp timeLimitMs="''' + mission_time_limit + '''"/>
-    def __init__(self, port=10000, tick_lengths=5, skip_step=1, desired_mission_time=7, sparse=False, reward_mixing=20):
+    def __init__(self, port=10000, tick_lengths=10, skip_step=1, desired_mission_time=7, sparse=False, reward_mixing=20):
         print('Making new MMC instance')
         self.skip_step = skip_step
         self.tick_lengths = tick_lengths
@@ -159,7 +159,7 @@ class MalmoMountainCart(gym2.Env):
         #self.reset()
 
     # call this method to change default parameters
-    def my_init(self, port=10000, tick_lengths=5, skip_step=1, desired_mission_time=7):
+    def my_init(self, port=10000, tick_lengths=15, skip_step=1, desired_mission_time=7):
         self.skip_step = skip_step
         self.tick_lengths = tick_lengths
         self.total_allowed_actions = 10 * desired_mission_time #dependent of skip_step, works if =1

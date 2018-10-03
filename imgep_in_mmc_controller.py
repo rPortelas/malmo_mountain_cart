@@ -1,5 +1,5 @@
-from __future__ import print_function
-from __future__ import division
+#from __future__ import print_function
+#from __future__ import division
 from builtins import range
 import MalmoPython
 import os
@@ -17,15 +17,8 @@ from utils.plot_utils import *
 import collections
 from collections import OrderedDict
 from utils.gep_utils import *
-from malmo_controller import MalmoController
+#from malmo_controller import MalmoController
 import gym2
-
-
-if sys.version_info[0] == 2:
-    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)  # flush print output immediately
-else:
-    import functools
-    print = functools.partial(print, flush=True)
 
 def get_outcome(state):
     outcome = state.tolist()

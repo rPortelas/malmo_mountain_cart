@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 import scipy.stats as stats
-from gep_utils import *
+from utils.gep_utils import *
 
 
 def plot_agent_pos_exploration(fig_id, Xs, Zs,cart_Xs):
