@@ -1,4 +1,3 @@
-from __future__ import division
 from learning_module import LearningModule
 import numpy as np
 from sklearn.neighbors import KNeighborsRegressor
@@ -65,7 +64,7 @@ class GEP(object):
 
         if self.model_babbling_mode == "random":
             # random model babbling step
-            module_name = np.random.choice(self.modules.keys())
+            module_name = np.random.choice(list(self.modules))
         elif self.model_babbling_mode == "active":
             # collect interests
             mod_name_list = self.modules.keys()
