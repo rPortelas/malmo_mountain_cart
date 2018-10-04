@@ -124,7 +124,7 @@ args = Arg_list(*(args.get(arg, None) for arg in arg_names))
 
 exploration_noise = float(args.explo_noise) if args.explo_noise else 0.10
 nb_bootstrap = int(args.nb_bootstrap) if args.nb_bootstrap else 1000
-max_iterations = int(args.nb_iters) if args.nb_iters else 20000
+max_iterations = int(args.nb_iters) if args.nb_iters else 10000
 # possible models: ["random_modular", "random_flat", "active_modular"]
 model_type = args.model_type if args.model_type else "random_modular"
 if args.distractors:
