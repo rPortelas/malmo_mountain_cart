@@ -2,3 +2,4 @@
 *.pkl
 *.pyc
 *.ipynb_checkpoints/
+*.txt

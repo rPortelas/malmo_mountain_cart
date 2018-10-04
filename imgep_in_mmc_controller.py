@@ -257,7 +257,7 @@ port = int(args.server_port) if args.server_port else 10000
 # init malmo controller
 #malmo = MalmoController(port=port, tick_lengths=15)
 malmo = gym2.make('MalmoMountainCart-v0')
-#malmo.env.my_init(port=port)
+malmo.env.my_init(skip_step=4, tick_lengths=10)
 
 for i in range(starting_iteration,max_iterations):
     print("########### Iteration # %s ##########" % (i))

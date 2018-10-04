@@ -9,6 +9,7 @@ import time
 import random
 import sys
 import getpass
+import os
 sys.path.append('/home/rportelas/malmo_mountain_cart/')
 from utils.gep_utils import Bounds, unscale_vector
 # place bread at given positions
@@ -26,8 +27,8 @@ def clean_bread(bread_positions):
         xml_string += '<DrawBlock x="%s" y="%s" z="%s" type="air"/>' % (int(x),int(y),int(z))
     return xml_string
 
-def get_MMC_environment(bread_positions, tick_lengths, skip_step, desired_mission_time, mission_start_sleep=0.5):
-    total_allowed_actions = 10 * desired_mission_time  # dependent of skip_step, works if =1
+def get_MMC_environment(bread_positions, tick_lengths, skip_step, desired_mission_time, minecraft_dir, mission_start_sleep=0.5):
+    total_allowed_actions = int((20/(skip_step+1)) * desired_mission_time) # dependent of skip_step, works if =1
     # if big overclocking, set display refresh rate to 1
     mod_setting = '' if tick_lengths >= 25 else "<PrioritiseOffscreenRendering>true</PrioritiseOffscreenRendering>"
     #print("tick: {}, desiredmtime: {}".format(tick_lengths, desired_mission_time))
@@ -54,7 +55,7 @@ def get_MMC_environment(bread_positions, tick_lengths, skip_step, desired_missio
                   </Time>
                 </ServerInitialConditions>
                 <ServerHandlers>
-                  <FileWorldGenerator src="/home/'''+getpass.getuser()+'''/Malmo-0.34.0-Linux-Ubuntu-16.04-64bit_withBoost_Python2.7/Minecraft/run/saves/flowers_v4"/>
+                  <FileWorldGenerator src="/home/'''+getpass.getuser()+minecraft_dir+'''Minecraft/run/saves/flowers_v4"/>
                   <DrawingDecorator>
                     <DrawLine x1="288" y1="6" z1="443" x2="294" y2="6" z2="443" type="air"/>
                     <DrawLine x1="287" y1="7" z1="443" x2="295" y2="7" z2="443" type="air"/>
@@ -118,12 +119,17 @@ class MalmoMountainCart(gym2.Env):
         self._reward_mixing = reward_mixing
 
         # define bread positions in MMC arena
-        self.mission_start_sleep = 0.3
+        self.mission_start_sleep = 0.1
         self.bread_positions = [[293.5,4,436.5],[289.5,4,437.5],[289.5,4,440.5],[291.5,6,442.5],[294.5,6,443.5]]
+
+        #load Minecraft version name
+        self.minecraft_dir = '/' + os.environ['MALMO_DIR'] + '/'
+        print(self.minecraft_dir)
         self.mission_xml = get_MMC_environment(self.bread_positions, 
                                                tick_lengths,
                                                skip_step,
                                                desired_mission_time,
+                                               self.minecraft_dir,
                                                mission_start_sleep=self.mission_start_sleep)
         # Create default Malmo objects:
         self.agent_host = MalmoPython.AgentHost()
@@ -159,14 +165,15 @@ class MalmoMountainCart(gym2.Env):
         #self.reset()
 
     # call this method to change default parameters
-    def my_init(self, port=10000, tick_lengths=15, skip_step=1, desired_mission_time=7):
+    def my_init(self, port=10000, tick_lengths=10, skip_step=1, desired_mission_time=7):
         self.skip_step = skip_step
         self.tick_lengths = tick_lengths
-        self.total_allowed_actions = 10 * desired_mission_time #dependent of skip_step, works if =1
+        self.total_allowed_actions = int((20/(skip_step+1)) * desired_mission_time)
         self.mission_xml = get_MMC_environment(self.bread_positions, 
                                                tick_lengths,
                                                skip_step,
                                                desired_mission_time,
+                                               self.minecraft_dir,
                                                mission_start_sleep=self.mission_start_sleep)
         # Create default Malmo objects:
         self.agent_host = MalmoPython.AgentHost()
@@ -201,6 +208,7 @@ class MalmoMountainCart(gym2.Env):
             if world_state.number_of_observations_since_last_state > (self.skip_step+1):
                 if not first_state:
                     print("DAMMIT, WE LOST %s OBSERVATION" % (world_state.number_of_observations_since_last_state - self.skip_step))
+                    print(self.current_step)
             if world_state.number_of_observations_since_last_state > self.skip_step or not world_state.is_mission_running:
                 break
         return self.agent_host.getWorldState()
@@ -282,7 +290,6 @@ class MalmoMountainCart(gym2.Env):
 
     def step(self, actions):
         # format actions for environment
-        #print(actions)
         actions = ["move " + str(actions[0]), "strafe " + str(actions[1])]
         self.current_step += 1
         #print(self.current_step)
