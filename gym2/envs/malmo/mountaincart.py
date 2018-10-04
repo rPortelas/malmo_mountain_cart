@@ -180,10 +180,9 @@ class MalmoMountainCart(gym2.Env):
         self.my_mission = MalmoPython.MissionSpec(self.mission_xml, True)
         self.my_mission_record = MalmoPython.MissionRecordSpec()
 
-        self.client_pool = MalmoPython.ClientPool()
-
-        print("Attempt to communicate with Minecraft through port %s" % port)
-        self.client_pool.add(MalmoPython.ClientInfo( "127.0.0.1", port))
+        #self.client_pool = MalmoPython.ClientPool()
+        #print("Attempt to communicate with Minecraft through port %s" % port)
+        #self.client_pool.add(MalmoPython.ClientInfo( "127.0.0.1", port))
 
 
     def seed(self, seed=None):
