@@ -22,4 +22,7 @@ echo $malmo_folder > minecraft_version_config.txt
 #Copy Malmo lib
 cp -R ~/$malmo_folder/Python_Examples/MalmoPython.so gym2/envs/malmo/
 cp -R ~/$malmo_folder/Python_Examples/MalmoPython.so .
-source ~/.bashrc
+
+#Copy Minecraft optimized configuration
+cp options.txt ~/$malmo_folder/Minecraft/run/
+echo "You can now source your bashrc"
