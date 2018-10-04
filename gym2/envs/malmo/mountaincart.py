@@ -1,4 +1,3 @@
-from __future__ import division
 import gym2
 from gym2 import spaces
 from gym2.utils import seeding
