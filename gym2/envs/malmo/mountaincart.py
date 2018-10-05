@@ -76,7 +76,7 @@ def get_MMC_environment(bread_positions, tick_lengths, skip_step, desired_missio
                 </ServerHandlers>
               </ServerSection>
 
-              <AgentSection mode="Survival">
+              <AgentSection mode="Creative">
                 <Name>FlowersBot</Name>
                 <AgentStart>
                   <Placement x="293.5" y="4" z="433.5" yaw="0"/>
@@ -91,8 +91,7 @@ def get_MMC_environment(bread_positions, tick_lengths, skip_step, desired_missio
                   <ObservationFromFullStats/>
                   <ContinuousMovementCommands turnSpeedDegs="180"/>
                   <MissionQuitCommands/>
-                  <AgentQuitFromReachingCommandQuota total="''' + str((2 * total_allowed_actions)) + '''"/>
-                  <AgentQuitFromTimeUp timeLimitMs="''' + mission_time_limit + '''"/>
+                  <AgentQuitFromReachingCommandQuota total="''' + str((2 * total_allowed_actions)+1) + '''"/>
                   <VideoProducer>
                     <Width>400</Width>
                     <Height>300</Height>
@@ -103,6 +102,7 @@ def get_MMC_environment(bread_positions, tick_lengths, skip_step, desired_missio
             </Mission>'''
     return missionXML
 
+#                  <AgentQuitFromTimeUp timeLimitMs="''' + mission_time_limit + '''"/>
 class MalmoMountainCart(gym2.Env):
     metadata = {
         'render.modes': ['human', 'rgb_array'],
@@ -118,7 +118,7 @@ class MalmoMountainCart(gym2.Env):
         self._reward_mixing = reward_mixing
 
         # define bread positions in MMC arena
-        self.mission_start_sleep = 0.1
+        self.mission_start_sleep = 0.2
         self.bread_positions = [[293.5,4,436.5],[289.5,4,437.5],[289.5,4,440.5],[291.5,6,442.5],[294.5,6,443.5]]
 
         #load Minecraft version name
@@ -229,11 +229,15 @@ class MalmoMountainCart(gym2.Env):
                 world_state = self.agent_host.peekWorldState()
             print('aborted')
 
+        # dirty solution to wait for client to be stable
+        time.sleep(0.08)
+
         # Attempt to start a mission:
         max_retries = 5
-        sleep_time = [0.01, 0.1, 2., 2., 5.]
+        sleep_time = [0.01, 0.1, 2., 5., 5.]
         for retry in range(max_retries):
             try:
+                #print('trying to start misison')
                 self.agent_host.startMission(self.my_mission,
                                              self.client_pool,
                                              self.my_mission_record,
@@ -251,8 +255,7 @@ class MalmoMountainCart(gym2.Env):
         while not world_state.has_mission_begun:
             time.sleep(0.001)
             world_state = self.agent_host.peekWorldState()
-        # dirty solution to wait for client to be stable
-        time.sleep(self.mission_start_sleep)
+
         world_state = self.get_world_state(first_state=True)
         obvsText = world_state.observations[-1].text
         observation = json.loads(obvsText)  # observation comes in as a JSON string...
@@ -268,6 +271,7 @@ class MalmoMountainCart(gym2.Env):
         done = False
         #return obs, reward, done, {}
         #print(obs)
+        time.sleep(self.mission_start_sleep +0.02)
         return obs
 
     def get_state(self, obs):
@@ -287,6 +291,9 @@ class MalmoMountainCart(gym2.Env):
 
 
     def step(self, actions):
+        if self.current_step == self.total_allowed_actions:
+            print('Trying to take action in finished episode')
+            return 0
         # format actions for environment
         actions = ["move " + str(actions[0]), "strafe " + str(actions[1])]
         self.current_step += 1
@@ -298,40 +305,43 @@ class MalmoMountainCart(gym2.Env):
         #print(self.current_step)
         if world_state.is_mission_running:
             # take action
+            for a in actions:
+                self.agent_host.sendCommand(a)
+
+            # wait for the new state
+            if self.current_step == 1: #first time we acted, discard missed observation warning
+                world_state = self.get_world_state(first_state=True)
+            else:
+                world_state = self.get_world_state()
+
+            # log errors and control messages
+            for error in world_state.errors:
+                print(error.text)
+
+            obvsText = world_state.observations[-1].text
+            observation = json.loads(obvsText)  # observation comes in as a JSON string...
+            state = self.get_state(observation)
+            self.previous_state = state
+
             if self.current_step == self.total_allowed_actions:  # end of episode
                 # last cmd, must teleport to avoid weird glitch with minecart environment
                 self.agent_host.sendCommand("tp 293 7 433.5")
                 # send final dummy action
-                self.agent_host.sendCommand("move 0")
-                done = False
+                #self.agent_host.sendCommand("move 0")
                 world_state = self.agent_host.peekWorldState()
                 while world_state.is_mission_running:
                     #print('waiting for end of mission')
                     time.sleep(0.01)
                     world_state = self.agent_host.peekWorldState()
                 done = True
-            else:
-                for a in actions:
-                    self.agent_host.sendCommand(a)
-
-                # wait for the new state
-                if self.current_step == 1: #first time we acted, discard missed observation warning
-                    world_state = self.get_world_state(first_state=True)
-                else:
-                    world_state = self.get_world_state()
-
-                # log errors and control messages
-                for error in world_state.errors:
-                    print('error.text')
-        if not done:
-            obvsText = world_state.observations[-1].text
-            observation = json.loads(obvsText)  # observation comes in as a JSON string...
-            state = self.get_state(observation)
-            self.previous_state = state
         else:
-            state = self.previous_state  # last state is state n-1
-            # detect terminal state
-            # print not world_state.is_mission_running
+            print('MISSION ABORTED BEFORE END OF EP, step:{}'.format(self.current_step))
+            done = True
+
+        # else:
+        #     state = self.previous_state  # last state is state n-1
+        #     # detect terminal state
+        #     # print not world_state.is_mission_running
 
         reward = self.compute_reward(state, self.desired_goal)
         info = {'is_success': bool(reward == 1)}
@@ -341,6 +351,7 @@ class MalmoMountainCart(gym2.Env):
                    desired_goal=self.desired_goal)
         #print(obs)
         #print('reward: {}'.format(reward))
+        #print(done)
         return obs, reward, done, info
         # for ddpg
         # return state, reward, done, {}
