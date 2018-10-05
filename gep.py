@@ -67,7 +67,7 @@ class GEP(object):
             module_name = np.random.choice(list(self.modules))
         elif self.model_babbling_mode == "active":
             # collect interests
-            mod_name_list = self.modules.keys()
+            mod_name_list = list(self.modules)
             interests = np.zeros(len(mod_name_list))
             for i,(k,m) in enumerate(self.modules.items()):
                 interests[i] = m.interest
