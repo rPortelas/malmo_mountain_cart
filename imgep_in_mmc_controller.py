@@ -333,5 +333,3 @@ b_k['final_eval_cart_touched'] = cart_touched
 '''
 print("saving gep")
 save_gep(gep, max_iterations, b_k, savefile_name, book_keeping_file_name)
-
-plt.show()
