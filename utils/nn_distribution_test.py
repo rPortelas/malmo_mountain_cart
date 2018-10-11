@@ -1,4 +1,3 @@
-from __future__ import division
 import os
 import os.path
 import sys
@@ -28,9 +27,9 @@ outputs = np.zeros((nb_iterations, action_set_size))
 
 temperature_param = [0.24,0.28] # 0.17 (or 0.12 when input=21) works great !
 for tmp in temperature_param:
-    print "using tanh temperature of %s" % temperature_param
+    print("using tanh temperature of %s" % temperature_param)
     model.tmp_controller = tmp
-    print model.tmp_controller
+    print(model.tmp_controller)
     # random weights
     for k in range(nb_iterations//100):
         weights = np.random.random(policy_nb_dims) * 2 - 1

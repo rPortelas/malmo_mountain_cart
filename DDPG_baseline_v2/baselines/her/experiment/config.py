@@ -1,5 +1,5 @@
 import numpy as np
-import gym2
+import gym
 
 from baselines import logger
 from baselines.her.ddpg import DDPG
@@ -31,8 +31,8 @@ DEFAULT_PARAMS = {
     # training
     'n_cycles': 50,  # per epoch
     'rollout_batch_size': 40,  # per mpi thread
-    'n_batches': 40,  # training batches per cycle
-    'batch_size': 4096,  # per mpi thread, measured in transitions and reduced to even multiple of chunk_length.
+    'n_batches': 20,  # training batches per cycle
+    'batch_size': 2048,  # per mpi thread, measured in transitions and reduced to even multiple of chunk_length.
     'n_test_rollouts': 10,  # number of test rollouts per epoch, each consists of rollout_batch_size rollouts
     'test_with_polyak': False,  # run test episodes with the target network
     # exploration
@@ -69,7 +69,7 @@ def prepare_params(kwargs):
     env_name = kwargs['env_name']
 
     def make_env():
-        return gym2.make(env_name)
+        return gym.make(env_name)
     kwargs['make_env'] = make_env
     tmp_env = cached_make_env(kwargs['make_env'])
     assert hasattr(tmp_env, '_max_episode_steps')

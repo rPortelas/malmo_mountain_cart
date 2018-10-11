@@ -1,4 +1,3 @@
-from __future__ import division
 import numpy as np
 
 class Simple_NN(object):
