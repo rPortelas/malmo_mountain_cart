@@ -13,7 +13,7 @@ register(
 register(
     id='MalmoMountainCart-v0',
     entry_point='gym2.envs.malmo:MalmoMountainCart',
-    max_episode_steps=70,
+    max_episode_steps=28,
     reward_threshold=100.0,
 )
 

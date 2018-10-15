@@ -140,10 +140,8 @@ def launch(
             'https://github.com/openai/baselines/issues/314 for further details.')
         logger.warn('****************')
         logger.warn()
-
     dims = config.configure_dims(params)
     policy = config.configure_ddpg(dims=dims, params=params, clip_return=clip_return)
-
     rollout_params = {
         'exploit': False,
         'use_target_net': False,
@@ -151,7 +149,6 @@ def launch(
         'compute_Q': False,
         'T': params['T'],
     }
-
     eval_params = {
         'exploit': True,
         'use_target_net': params['test_with_polyak'],
@@ -160,16 +157,20 @@ def launch(
         'T': params['T'],
     }
 
+    # CLOSING PREVIOUS ENVIRONMENT
+    config.close_env(params)
+
     for name in ['T', 'rollout_batch_size', 'gamma', 'noise_eps', 'random_eps']:
         rollout_params[name] = params[name]
         eval_params[name] = params[name]
-
     rollout_worker = RolloutWorker(params['make_env'], policy, dims, logger, **rollout_params)
     rollout_worker.seed(rank_seed)
 
+    #EVALUATION DOES NOT NEED ITS OWN ENVIRONMENTS
+    eval_params['rollout_envs'] = rollout_worker.envs
+
     evaluator = RolloutWorker(params['make_env'], policy, dims, logger, **eval_params)
     evaluator.seed(rank_seed)
-
     train(
         logdir=logdir, policy=policy, rollout_worker=rollout_worker,
         evaluator=evaluator, n_epochs=n_epochs, n_test_rollouts=params['n_test_rollouts'],
@@ -181,7 +182,7 @@ def launch(
 @click.option('--env', type=str, default='MalmoMountainCart-v0', help='the name of the OpenAI Gym environment that you want to train on')
 @click.option('--logdir', type=str, default=None, help='the path to where logs and policy pickles should go. If not specified, creates a folder in /tmp/')
 @click.option('--n_epochs', type=int, default=50, help='the number of training epochs to run')
-@click.option('--num_cpu', type=int, default=1, help='the number of CPU cores to use (using MPI)')
+@click.option('--num_cpu', type=int, default=2, help='the number of CPU cores to use (using MPI)')
 @click.option('--seed', type=int, default=0, help='the random seed used to seed both the environment and the training code')
 @click.option('--policy_save_interval', type=int, default=5, help='the interval with which policy pickles are saved. If set to 0, only the best and latest policy will be pickled.')
 @click.option('--replay_strategy', type=click.Choice(['future', 'none']), default='future', help='the HER replay strategy to be used. "future" uses HER, "none" disables HER.')

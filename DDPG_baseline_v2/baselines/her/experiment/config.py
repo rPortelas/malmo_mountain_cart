@@ -1,5 +1,5 @@
 import numpy as np
-import gym
+import gym2 as gym
 
 from baselines import logger
 from baselines.her.ddpg import DDPG
@@ -30,7 +30,7 @@ DEFAULT_PARAMS = {
     'relative_goals': False,
     # training
     'n_cycles': 50,  # per epoch
-    'rollout_batch_size': 40,  # per mpi thread
+    'rollout_batch_size': 1,  # per mpi thread
     'n_batches': 20,  # training batches per cycle
     'batch_size': 2048,  # per mpi thread, measured in transitions and reduced to even multiple of chunk_length.
     'n_test_rollouts': 10,  # number of test rollouts per epoch, each consists of rollout_batch_size rollouts
@@ -74,6 +74,7 @@ def prepare_params(kwargs):
     tmp_env = cached_make_env(kwargs['make_env'])
     assert hasattr(tmp_env, '_max_episode_steps')
     kwargs['T'] = tmp_env._max_episode_steps
+    #print('attempt to reset env for ddpg config')
     tmp_env.reset()
     kwargs['max_u'] = np.array(kwargs['max_u']) if isinstance(kwargs['max_u'], list) else kwargs['max_u']
     kwargs['gamma'] = 1. - 1. / kwargs['T']
@@ -169,3 +170,7 @@ def configure_dims(params):
             value = value.reshape(1)
         dims['info_{}'.format(key)] = value.shape[0]
     return dims
+
+def close_env(params):
+    env = cached_make_env(params['make_env'])
+    env.close()

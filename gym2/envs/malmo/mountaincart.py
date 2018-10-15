@@ -102,18 +102,17 @@ def get_MMC_environment(bread_positions, tick_lengths, skip_step, desired_missio
             </Mission>'''
     return missionXML
 
-#                  <AgentQuitFromTimeUp timeLimitMs="''' + mission_time_limit + '''"/>
 class MalmoMountainCart(gym2.Env):
     metadata = {
         'render.modes': ['human', 'rgb_array'],
-        'video.frames_per_second': 30
+        'video.frames_per_second': 30,
     }
-                    #  <ServerQuitFromTimeUp timeLimitMs="''' + mission_time_limit + '''"/>
-    def __init__(self, port=10000, tick_lengths=10, skip_step=1, desired_mission_time=7, sparse=False, reward_mixing=20):
+
+    def __init__(self, port=10000, tick_lengths=15, skip_step=4, desired_mission_time=7, sparse=False, reward_mixing=20):
         print('Making new MMC instance')
         self.skip_step = skip_step
         self.tick_lengths = tick_lengths
-        self.total_allowed_actions = 10 * desired_mission_time #dependent of skip_step, works if =1
+        self.total_allowed_actions = int((20 / (skip_step + 1)) * desired_mission_time)
         self._sparse = sparse
         self._reward_mixing = reward_mixing
 
@@ -137,7 +136,7 @@ class MalmoMountainCart(gym2.Env):
 
         self.client_pool = MalmoPython.ClientPool()
 
-        #print("Attempt to communicate with Minecraft through port %s" % port)
+        print("Attempt to communicate with Minecraft")
         # enable the use of up to 21 parallel malmo mountain carts
         for i in range(20):
             self.client_pool.add(MalmoPython.ClientInfo( "127.0.0.1", port+i))
@@ -159,12 +158,12 @@ class MalmoMountainCart(gym2.Env):
             self.b.add('bread_'+str(i),[0,1])
 
         self.current_step = 0
-
+        self.reset_nb = 0
         self.seed()
         #self.reset()
 
     # call this method to change default parameters
-    def my_init(self, port=10000, tick_lengths=10, skip_step=1, desired_mission_time=7):
+    def my_init(self, port=10000, tick_lengths=10, skip_step=4, desired_mission_time=7):
         self.skip_step = skip_step
         self.tick_lengths = tick_lengths
         self.total_allowed_actions = int((20/(skip_step+1)) * desired_mission_time)
@@ -212,6 +211,8 @@ class MalmoMountainCart(gym2.Env):
         return self.agent_host.getWorldState()
 
     def reset(self, goal=None):
+        self.reset_nb += 1
+        #print('RESET NUMBER {}'.format(self.reset_nb))
         #print('Resetting mission')
         # world_state = self.get_world_state()
         # print(world_state.has_mission_begun)
@@ -233,17 +234,21 @@ class MalmoMountainCart(gym2.Env):
         time.sleep(0.08)
 
         # Attempt to start a mission:
-        max_retries = 5
-        sleep_time = [0.01, 0.1, 2., 5., 5.]
+        max_retries = 7
+        sleep_time = [0.01, 0.1, 0.2, 0.4, 2., 5., 5.]
         for retry in range(max_retries):
             try:
                 #print('trying to start misison')
+                #world_state = self.agent_host.peekWorldState()
+                #print("SHOULD BE FALSE: {}".format(world_state.is_mission_running))
                 self.agent_host.startMission(self.my_mission,
                                              self.client_pool,
                                              self.my_mission_record,
                                              0, "answer is 42")
+
                 break
             except RuntimeError as e:
+                #print('failed')
                 if retry == max_retries - 1:
                     print("Error starting mission:", e)
                     exit(1)
@@ -271,6 +276,7 @@ class MalmoMountainCart(gym2.Env):
         done = False
         #return obs, reward, done, {}
         #print(obs)
+        #print("mission started")
         time.sleep(self.mission_start_sleep +0.02)
         return obs
 
@@ -407,4 +413,13 @@ class MalmoMountainCart(gym2.Env):
      pass
 
     def close(self):
-        pass
+        print('closing instance')
+        world_state = self.agent_host.peekWorldState()
+        print("IS RUNNING ?: {}".format(world_state.is_mission_running))
+        if world_state.is_mission_running:
+            self.agent_host.sendCommand("quit")
+            while world_state.is_mission_running:
+                print('waiting mission abortion...')
+                time.sleep(0.01)
+                world_state = self.agent_host.peekWorldState()
+            print('aborted')
