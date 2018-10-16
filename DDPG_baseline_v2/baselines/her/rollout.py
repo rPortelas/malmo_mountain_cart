@@ -32,10 +32,11 @@ class RolloutWorker:
             render (boolean): whether or not to render the rollouts
         """
         if exploit == True:
-            self.envs = kwargs['rollout_envs']
+            self.env = kwargs['rollout_envs']
         else:
-            self.envs = [make_env() for _ in range(rollout_batch_size)]
+            self.env = make_env()
         assert self.T > 0
+
 
         self.info_keys = [key.replace('info_', '') for key in dims.keys() if key.startswith('info_')]
 
@@ -43,109 +44,122 @@ class RolloutWorker:
         self.Q_history = deque(maxlen=history_len)
 
         self.n_episodes = 0
-        self.g = np.empty((self.rollout_batch_size, self.dims['g']), np.float32)  # goals
-        self.initial_o = np.empty((self.rollout_batch_size, self.dims['o']), np.float32)  # observations
-        self.initial_ag = np.empty((self.rollout_batch_size, self.dims['g']), np.float32)  # achieved goals
-        self.reset_all_rollouts()
+        self.g = np.empty((1, self.dims['g']), np.float32)  # goals
+        self.initial_o = np.empty((1, self.dims['o']), np.float32)  # observations
+        self.initial_ag = np.empty((1, self.dims['g']), np.float32)  # achieved goals
+        self.reset_rollout()
         self.clear_history()
+        self.seed_idx = 0
 
-    def reset_rollout(self, i):
+    def reset_rollout(self):
         """Resets the `i`-th rollout environment, re-samples a new goal, and updates the `initial_o`
         and `g` arrays accordingly.
         """
-        obs = self.envs[i].reset()
-        self.initial_o[i] = obs['observation']
-        self.initial_ag[i] = obs['achieved_goal']
-        self.g[i] = obs['desired_goal']
+        obs = self.env.reset()
+        self.initial_o = obs['observation']
+        self.initial_ag = obs['achieved_goal']
+        self.g = obs['desired_goal']
 
     def reset_all_rollouts(self):
         """Resets all `rollout_batch_size` rollout workers.
         """
         for i in range(self.rollout_batch_size):
-            self.reset_rollout(i)
+            self.reset_rollout()
 
     def generate_rollouts(self):
         """Performs `rollout_batch_size` rollouts in parallel for time horizon `T` with the current
-        policy acting on it accordingly.
-        """
-        self.reset_all_rollouts()
+                policy acting on it accordingly.
+                """
 
-        # compute observations
-        o = np.empty((self.rollout_batch_size, self.dims['o']), np.float32)  # observations
-        ag = np.empty((self.rollout_batch_size, self.dims['g']), np.float32)  # achieved goals
-        o[:] = self.initial_o
-        ag[:] = self.initial_ag
-
+        #print('dims: {}'.format(list(self.dims)))
         # generate episodes
-        obs, achieved_goals, acts, goals, successes = [], [], [], [], []
-        info_values = [np.empty((self.T, self.rollout_batch_size, self.dims['info_' + key]), np.float32) for key in self.info_keys]
+        #obs, achieved_goals, acts, goals, successes = [], [], [], [], []
+        obs = np.empty((self.T + 1, self.rollout_batch_size, self.dims['o']), np.float32)
+        achieved_goals = np.empty((self.T + 1, self.rollout_batch_size, self.dims['g']), np.float32)
+        acts = np.empty((self.T, self.rollout_batch_size, self.dims['u']), np.float32)
+        goals = np.empty((self.T, self.rollout_batch_size, self.dims['g']), np.float32)
+        successes = np.empty((self.T, self.rollout_batch_size, 1), np.bool)
+        info_values = [np.empty((self.T, self.rollout_batch_size, self.dims['info_' + key]), np.float32) for key in
+                       self.info_keys]
         Qs = []
-        for t in range(self.T):
-            policy_output = self.policy.get_actions(
-                o, ag, self.g,
-                compute_Q=self.compute_Q,
-                noise_eps=self.noise_eps if not self.exploit else 0.,
-                random_eps=self.random_eps if not self.exploit else 0.,
-                use_target_net=self.use_target_net)
 
-            if self.compute_Q:
-                u, Q = policy_output
-                Qs.append(Q)
-            else:
-                u = policy_output
+        for i in range(self.rollout_batch_size):
+            self.reset_rollout()
+            # compute observations
+            o = np.empty((1, self.dims['o']), np.float32)  # observations
+            ag = np.empty((1, self.dims['g']), np.float32)  # achieved goals
+            o[:] = self.initial_o
+            ag[:] = self.initial_ag
+            for t in range(self.T):
+                policy_output = self.policy.get_actions(
+                    o[:], ag[:], self.g[:],
+                    compute_Q=self.compute_Q,
+                    noise_eps=self.noise_eps if not self.exploit else 0.,
+                    random_eps=self.random_eps if not self.exploit else 0.,
+                    use_target_net=self.use_target_net)
+                #print('ACTION SHAPE:')
+                #print(policy_output.shape)
+                #print(policy_output)
 
-            if u.ndim == 1:
-                # The non-batched case should still have a reasonable shape.
-                u = u.reshape(1, -1)
+                if self.compute_Q:
+                    u, Q = policy_output
+                    Qs.append(Q)
+                else:
+                    u = policy_output
 
-            o_new = np.empty((self.rollout_batch_size, self.dims['o']))
-            ag_new = np.empty((self.rollout_batch_size, self.dims['g']))
-            success = np.zeros(self.rollout_batch_size)
-            # compute new states and observations
-            for i in range(self.rollout_batch_size):
-  #              try:
+                if u.ndim == 1:
+                    # The non-batched case should still have a reasonable shape.
+                    u = u.reshape(1, -1)
+
+                o_new = np.empty((1, self.dims['o']))
+                #print('O_new before {}'.format(o_new.shape))
+                ag_new = np.empty((1, self.dims['g']))
+                # compute new states and observations
+                #              try:
                 # We fully ignore the reward here because it will have to be re-computed
                 # for HER.
-                curr_o_new, _, _, info = self.envs[i].step(u[i])
+                curr_o_new, _, _, info = self.env.step(u[0])
                 if 'is_success' in info:
-                    success[i] = info['is_success']
-                o_new[i] = curr_o_new['observation']
-                ag_new[i] = curr_o_new['achieved_goal']
+                    success = info['is_success']
+                o_new[:] = curr_o_new['observation']
+                ag_new[:] = curr_o_new['achieved_goal']
+                #print('O_new after {}'.format(o_new.shape))
                 for idx, key in enumerate(self.info_keys):
                     info_values[idx][t, i] = info[key]
                 if self.render:
-                    self.envs[i].render()
-                #except:
-                #    print('SHOULD NOT REACH THIS LINE')
-                #    pass
-                #except MujocoException as e:
-                #    return self.generate_rollouts()
+                    self.env.render()
 
-            if np.isnan(o_new).any():
-                self.logger.warning('NaN caught during rollout generation. Trying again...')
-                self.reset_all_rollouts()
-                return self.generate_rollouts()
+                if np.isnan(o_new).any():
+                    self.logger.warning('NaN caught during rollout generation. Trying again...')
+                    self.reset_rollout()
+                    return self.generate_rollouts()
 
-            obs.append(o.copy())
-            achieved_goals.append(ag.copy())
-            successes.append(success.copy())
-            acts.append(u.copy())
-            goals.append(self.g.copy())
-            o[...] = o_new
-            ag[...] = ag_new
-        obs.append(o.copy())
-        achieved_goals.append(ag.copy())
-        self.initial_o[:] = o
+                obs[t, i, :] = o.copy()
+                achieved_goals[t, i, :] = ag.copy()
+                successes[t, i, :] = success
+                acts[t, i, :] = u.copy()
+                goals[t, i, :] = self.g.copy()
 
-        episode = dict(o=obs,
-                       u=acts,
-                       g=goals,
-                       ag=achieved_goals)
+                #print('O before {}'.format(o.shape))
+                o[...] = o_new
+                #print('O after {}'.format(o.shape))
+                ag[...] = ag_new
+                #print(t)
+            #print('final t: {}'.format(t))
+            obs[t+1, i, :] = o.copy()
+            achieved_goals[t+1, i, :] = ag.copy()
+            #self.initial_o[:] = o
+
+        episode = dict(o=list(obs),
+                       u=list(acts),
+                       g=list(goals),
+                       ag=list(achieved_goals))
         for key, value in zip(self.info_keys, info_values):
             episode['info_{}'.format(key)] = value
 
         # stats
-        successful = np.array(successes)[-1, :]
+        successful = successes[-1, :, 0]
+        #print('succful shp: {}'.format(successful.shape))
         assert successful.shape == (self.rollout_batch_size,)
         success_rate = np.mean(successful)
         self.success_history.append(success_rate)
@@ -154,6 +168,7 @@ class RolloutWorker:
         self.n_episodes += self.rollout_batch_size
 
         return convert_episode_to_batch_major(episode)
+
 
     def clear_history(self):
         """Clears all histories that are used for statistics
@@ -190,5 +205,5 @@ class RolloutWorker:
     def seed(self, seed):
         """Seeds each environment with a distinct seed derived from the passed in global seed.
         """
-        for idx, env in enumerate(self.envs):
-            env.seed(seed + 1000 * idx)
+        self.env.seed(seed + self.seed_idx * 1000 )
+        self.seed_idx += 1
