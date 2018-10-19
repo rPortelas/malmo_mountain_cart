@@ -179,7 +179,7 @@ def launch(
 
 
 @click.command()
-@click.option('--env', type=str, default='HandManipulateBlockRotateXYZ-v0', help='the name of the OpenAI Gym environment that you want to train on')
+@click.option('--env', type=str, default='MalmoMountainCart-v0', help='the name of the OpenAI Gym environment that you want to train on')
 @click.option('--logdir', type=str, default='test_her_2_cpu_2096_16', help='the path to where logs and policy pickles should go. If not specified, creates a folder in /tmp/')
 @click.option('--n_epochs', type=int, default=100, help='the number of training epochs to run')
 @click.option('--num_cpu', type=int, default=2, help='the number of CPU cores to use (using MPI)')

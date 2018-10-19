@@ -11,28 +11,12 @@ import getpass
 import os
 sys.path.append('/home/rportelas/malmo_mountain_cart/')
 from utils.gep_utils import Bounds, unscale_vector
-# place bread at given positions
-def draw_bread(bread_positions):
-    xml_string = ""
-    for x,y,z in bread_positions:
-        xml_string += '<DrawItem x="%s" y="%s" z="%s" type="bread"/>' % (int(x),int(y),int(z))
-        xml_string += '\n'
-    return xml_string
 
-# erase previous items in defined bread positions
-def clean_bread(bread_positions):
-    xml_string = ""
-    for x,y,z in bread_positions:
-        xml_string += '<DrawBlock x="%s" y="%s" z="%s" type="air"/>' % (int(x),int(y),int(z))
-    return xml_string
-
-def get_MMC_environment(bread_positions, tick_lengths, skip_step, desired_mission_time, minecraft_dir, mission_start_sleep=0.5):
+PICKAXE_POS = []
+def get_MMC_environment(tick_lengths, skip_step, desired_mission_time):
     total_allowed_actions = int((20/(skip_step+1)) * desired_mission_time) # dependent of skip_step, works if =1
     # if big overclocking, set display refresh rate to 1
     mod_setting = '' if tick_lengths >= 25 else "<PrioritiseOffscreenRendering>true</PrioritiseOffscreenRendering>"
-    #print("tick: {}, desiredmtime: {}".format(tick_lengths, desired_mission_time))
-    mission_time_limit = str((50 * 20 * desired_mission_time + (50/tick_lengths)*2*(1000*mission_start_sleep)))
-    #print(mission_time_limit)
     missionXML = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
             <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
@@ -56,52 +40,54 @@ def get_MMC_environment(bread_positions, tick_lengths, skip_step, desired_missio
                 <ServerHandlers>
                   <FlatWorldGenerator forceReset="false" />
                   <DrawingDecorator>
-
+                  
                     <!-- Draw floor -->
                     <DrawCuboid x1="285" y1="3" z1="431" x2="302" y2="3" z2="446" type="air"/>
                     <DrawCuboid x1="285" y1="3" z1="431" x2="302" y2="3" z2="446" type="bedrock" />
-
+                    
                     <!-- Draw arena long side -->
                     <DrawCuboid x1="288" y1="4" z1="432" x2="294" y2="6" z2="445" type="air"/>
                     <DrawCuboid x1="288" y1="4" z1="432" x2="294" y2="6" z2="445" type="bedrock"/>
                     <DrawCuboid x1="289" y1="4" z1="433" x2="293" y2="6" z2="444" type="air"/>
-
+                    
                     <!-- Draw arena width side -->
                     <DrawCuboid x1="285" y1="4" z1="441" x2="297" y2="6" z2="444" type="air"/>
                     <DrawCuboid x1="285" y1="4" z1="441" x2="297" y2="6" z2="444" type="bedrock"/>
                     <DrawCuboid x1="289" y1="6" z1="441" x2="293" y2="6" z2="443" type="air"/>
                     <DrawCuboid x1="297" y1="6" z1="444" x2="285" y2="9" z2="444" type="bedrock"/>
                     
-                    <!-- Draw starting cage -->
-                    <DrawCuboid x1="292" y1="4" z1="435" x2="296" y2="4" z2="435" type="bedrock"/>
-                    <DrawLine x1="291" y1="4" z1="434" x2="291" y2="4" z2="434" type="bedrock" />
-
                     <!-- Draw stairs -->
-                    <DrawLine x1="291" y1="4" z1="439" x2="291" y2="4" z2="439" type="stone_brick_stairs" face="SOUTH" />
-                    <DrawLine x1="291" y1="4" z1="440" x2="291" y2="4" z2="440" type="bedrock"/>
-                    <DrawLine x1="291" y1="5" z1="440" x2="291" y2="5" z2="440" type="stone_brick_stairs" face="SOUTH" />
+                    <DrawLine x1="290" y1="4" z1="439" x2="292" y2="4" z2="439" type="stone_brick_stairs" face="SOUTH" />
+                    <DrawLine x1="290" y1="4" z1="440" x2="292" y2="4" z2="440" type="bedrock"/>
+                    <DrawLine x1="290" y1="5" z1="440" x2="292" y2="5" z2="440" type="stone_brick_stairs" face="SOUTH" />
+                    
+                    <!-- Draw dirt blocks -->
+                    <DrawCuboid x1="290" y1="6" z1="441" x2="292" y2="7" z2="441" type="diamond_ore"/>
 
+                  
                     <!-- Draw rail tracks -->
                     <DrawLine x1="288" y1="6" z1="443" x2="294" y2="6" z2="443" type="air"/>
-
+                    
                     <DrawLine x1="286" y1="7" z1="443" x2="296" y2="7" z2="443" type="bedrock"/>
                     <DrawLine x1="287" y1="7" z1="443" x2="295" y2="7" z2="443" type="air"/>
-
+                    
                     <DrawLine x1="285" y1="8" z1="443" x2="297" y2="8" z2="443" type="gold_block"/>
                     <DrawLine x1="286" y1="8" z1="443" x2="296" y2="8" z2="443" type="air"/>
 
-                    ''' + clean_bread(bread_positions) + '''
-  
+                    
                     <DrawBlock x="287" y="7" z="443" type="rail"/>
                     <DrawBlock x="286" y="8" z="443" type="rail"/>
                     <DrawBlock x="295" y="7" z="443" type="rail"/>
                     <DrawBlock x="296" y="8" z="443" type="rail"/>
                     <DrawLine x1="288" y1="6" z1="443" x2="294" y2="6" z2="443" type="rail"/>
-                    
-                    ''' + draw_bread(bread_positions) + '''
-                    
-                    
                     <DrawEntity x="291.5" y="6" z="443" type="MinecartRideable"/>
+
+                    <!-- Draw tools -->
+                    <DrawItem x="292" y="4" z="434" type="diamond_pickaxe"/>
+                    <DrawItem x="291" y="4" z="434" type="diamond_shovel"/>
+                    <DrawItem x="290" y="4" z="434" type="diamond_sword"/>
+                    
+                    
 
                   </DrawingDecorator>
                   <ServerQuitWhenAnyAgentFinishes/>
@@ -114,19 +100,18 @@ def get_MMC_environment(bread_positions, tick_lengths, skip_step, desired_missio
                   <Placement x="293.5" y="4" z="433.5" yaw="0"/>
                   <Inventory></Inventory>
                 </AgentStart>
-                  <AgentHandlers>
-                  <ObservationFromFullInventory flat="false"/>
+                <AgentHandlers>
+                  <ObservationFromHotBar/>
                   <AbsoluteMovementCommands/>
                   <ObservationFromNearbyEntities>
-                    <Range name="entities" xrange="40" yrange="40" zrange="40"/>
+                    <Range name="entities" xrange="20" yrange="20" zrange="20"/>
                   </ObservationFromNearbyEntities>
-                  <ObservationFromFullStats/>
                   <ContinuousMovementCommands turnSpeedDegs="180"/>
                   <MissionQuitCommands/>
                   <AgentQuitFromReachingCommandQuota total="''' + str((2 * total_allowed_actions)+1) + '''"/>
                   <VideoProducer>
-                    <Width>400</Width>
-                    <Height>300</Height>
+                    <Width>1000</Width>
+                    <Height>600</Height>
                   </VideoProducer>
                 </AgentHandlers>
 
@@ -134,7 +119,7 @@ def get_MMC_environment(bread_positions, tick_lengths, skip_step, desired_missio
             </Mission>'''
     return missionXML
 
-class MalmoMountainCart(gym2.Env):
+class ExtendedMalmoMountainCart(gym2.Env):
     metadata = {
         'render.modes': ['human', 'rgb_array'],
         'video.frames_per_second': 30,
@@ -155,12 +140,7 @@ class MalmoMountainCart(gym2.Env):
         #load Minecraft version name
         self.minecraft_dir = '/' + os.environ['MALMO_DIR'] + '/'
         print(self.minecraft_dir)
-        self.mission_xml = get_MMC_environment(self.bread_positions, 
-                                               tick_lengths,
-                                               skip_step,
-                                               desired_mission_time,
-                                               self.minecraft_dir,
-                                               mission_start_sleep=self.mission_start_sleep)
+        self.mission_xml = get_MMC_environment(tick_lengths, skip_step, desired_mission_time)
         # Create default Malmo objects:
         self.agent_host = MalmoPython.AgentHost()
         self.my_mission = MalmoPython.MissionSpec(self.mission_xml, True)
@@ -199,12 +179,7 @@ class MalmoMountainCart(gym2.Env):
         self.skip_step = skip_step
         self.tick_lengths = tick_lengths
         self.total_allowed_actions = int((20/(skip_step+1)) * desired_mission_time)
-        self.mission_xml = get_MMC_environment(self.bread_positions, 
-                                               tick_lengths,
-                                               skip_step,
-                                               desired_mission_time,
-                                               self.minecraft_dir,
-                                               mission_start_sleep=self.mission_start_sleep)
+        self.mission_xml = get_MMC_environment(tick_lengths, skip_step, desired_mission_time)
         # Create default Malmo objects:
         self.agent_host = MalmoPython.AgentHost()
         self.my_mission = MalmoPython.MissionSpec(self.mission_xml, True)
@@ -233,7 +208,6 @@ class MalmoMountainCart(gym2.Env):
         while True:
             time.sleep(0.001)  # wait for 1ms to not consume entire CPU
             world_state = self.agent_host.peekWorldState()
-            #print(world_state.number_of_observations_since_last_state)
             if world_state.number_of_observations_since_last_state > (self.skip_step+1):
                 if not first_state:
                     print("DAMMIT, WE LOST %s OBSERVATION" % (world_state.number_of_observations_since_last_state - self.skip_step))
@@ -243,17 +217,7 @@ class MalmoMountainCart(gym2.Env):
         return self.agent_host.getWorldState()
 
     def reset(self, goal=None):
-        self.reset_nb += 1
-        #print('RESET NUMBER {}'.format(self.reset_nb))
-        #print('Resetting mission')
-        # world_state = self.get_world_state()
-        # print(world_state.has_mission_begun)
-        # if world_state.has_mission_begun: # if true another mission is still running
-        #     print(self.current_step)
-        #     print('*** Aborting previous mission ***')
-        #     self.agent_host.sendCommand("quit")
         world_state = self.agent_host.peekWorldState()
-        #print("resetting, previous mission running ?: {}".format(world_state.is_mission_running))
         if world_state.is_mission_running:
             self.agent_host.sendCommand("quit")
             while world_state.is_mission_running:
@@ -270,17 +234,12 @@ class MalmoMountainCart(gym2.Env):
         sleep_time = [0.01, 0.1, 0.2, 0.4, 2., 5., 5.]
         for retry in range(max_retries):
             try:
-                #print('trying to start misison')
-                #world_state = self.agent_host.peekWorldState()
-                #print("SHOULD BE FALSE: {}".format(world_state.is_mission_running))
                 self.agent_host.startMission(self.my_mission,
                                              self.client_pool,
                                              self.my_mission_record,
                                              0, "answer is 42")
-
                 break
             except RuntimeError as e:
-                #print('failed')
                 if retry == max_retries - 1:
                     print("Error starting mission:", e)
                     exit(1)
@@ -309,11 +268,12 @@ class MalmoMountainCart(gym2.Env):
         #return obs, reward, done, {}
         #print(obs)
         #print("mission started")
-        time.sleep(self.mission_start_sleep +0.02)
+        time.sleep(self.mission_start_sleep) #+0.02)
         return obs
 
     def get_state(self, obs):
-        breads = np.ones(len(self.bread_positions))
+        print(obs)
+        tools = np.zeros((3,3))
         for e in obs['entities']:
             if e['name'] == 'MinecartRideable':
                 cart_x, cart_y, cart_z = e['x'], e['y'], e['z']
@@ -321,10 +281,7 @@ class MalmoMountainCart(gym2.Env):
             if e['name'] == 'FlowersBot':
                 agent_x, agent_y, agent_z, agent_yaw = e['x'], e['y'], e['z'], (e['yaw'] % 360)
                 agent_vx, agent_vy, agent_vz = e['motionX'], e['motionY'], e['motionZ']
-            if e['name'] == 'bread':
-                pos = [e['x'],e['y'],e['z']]
-                bread_idx = self.bread_positions.index(pos) # current bread must be one of the positioned bread
-                breads[bread_idx] = 0 #if bread is in arena it's not in our agent's pocket, so 0
+        #tools[0] = 1 if
         return np.array([agent_x, agent_y, agent_z, cart_x] + breads.tolist())
 
 

@@ -17,6 +17,14 @@ register(
     reward_threshold=100.0,
 )
 
+register(
+    id='ExtendedMalmoMountainCart-v0',
+    entry_point='gym2.envs.malmo:ExtendedMalmoMountainCart',
+    max_episode_steps=28,
+    reward_threshold=100.0,
+)
+
+
 
 
 # Algorithmic
