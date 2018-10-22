@@ -6,6 +6,7 @@ sys.path.append('../../../../')
 import click
 import numpy as np
 import json
+import pickle
 from mpi4py import MPI
 
 from baselines import logger
@@ -37,6 +38,7 @@ def train(policy, rollout_worker, evaluator,
     periodic_policy_path = os.path.join(logger.get_dir(), 'policy_{}.pkl')
 
     logger.info("Training...")
+    episodes = []
     best_success_rate = -1
     for epoch in range(n_epochs):
         # train
@@ -44,6 +46,7 @@ def train(policy, rollout_worker, evaluator,
         for _ in range(n_cycles):
             episode = rollout_worker.generate_rollouts()
             policy.store_episode(episode)
+            episodes.append(episode)
             for _ in range(n_batches):
                 policy.train()
             policy.update_target_net()
@@ -65,6 +68,7 @@ def train(policy, rollout_worker, evaluator,
         if rank == 0:
             logger.dump_tabular()
 
+        all_episodes = MPI.COMM_WORLD.gather(episodes, root=0)
         # save the policy if it's better than the previous ones
         success_rate = mpi_average(evaluator.current_success_rate())
         if rank == 0 and success_rate >= best_success_rate and save_policies:
@@ -75,7 +79,7 @@ def train(policy, rollout_worker, evaluator,
         if rank == 0 and policy_save_interval > 0 and epoch % policy_save_interval == 0 and save_policies:
             policy_path = periodic_policy_path.format(epoch)
             logger.info('Saving periodic policy to {} ...'.format(policy_path))
-            pickle.dump(episodes, open( kwargs['logdir']+"her_mmc.pickle", "wb" ))
+            pickle.dump(all_episodes, open( kwargs['logdir']+"her_mmc.pickle", "wb" ))
             evaluator.save_policy(policy_path)
 
         # make sure that different threads have different seeds

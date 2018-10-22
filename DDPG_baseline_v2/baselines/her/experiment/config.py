@@ -30,9 +30,9 @@ DEFAULT_PARAMS = {
     'relative_goals': False,
     # training
     'n_cycles': 50,  # per epoch
-    'rollout_batch_size': 16,  # per mpi thread
+    'rollout_batch_size': 5,  # per mpi thread
     'n_batches': 40,  # training batches per cycle
-    'batch_size': 2048,  # per mpi thread, measured in transitions and reduced to even multiple of chunk_length.
+    'batch_size': 512,  # per mpi thread, measured in transitions and reduced to even multiple of chunk_length.
     'n_test_rollouts': 10,  # number of test rollouts per epoch, each consists of rollout_batch_size rollouts
     'test_with_polyak': False,  # run test episodes with the target network
     # exploration
