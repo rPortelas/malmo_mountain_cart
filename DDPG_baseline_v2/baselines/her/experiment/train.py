@@ -75,6 +75,7 @@ def train(policy, rollout_worker, evaluator,
         if rank == 0 and policy_save_interval > 0 and epoch % policy_save_interval == 0 and save_policies:
             policy_path = periodic_policy_path.format(epoch)
             logger.info('Saving periodic policy to {} ...'.format(policy_path))
+            pickle.dump(episodes, open( kwargs['logdir']+"her_mmc.pickle", "wb" ))
             evaluator.save_policy(policy_path)
 
         # make sure that different threads have different seeds

@@ -1,5 +1,5 @@
 import numpy as np
-import gym as gym
+import gym2 as gym
 
 from baselines import logger
 from baselines.her.ddpg import DDPG
