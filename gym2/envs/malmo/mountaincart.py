@@ -402,7 +402,7 @@ class MalmoMountainCart(gym2.Env):
             #print('array mode')
             bread_goal_achieved = (achieved_goal[:,4:] == goal[:,4:]).all(axis=1)
             #print('bread_goals: {}'.format(bread_goal_achieved))
-            agent_cart_positions_achieved = ((np.abs(achieved_goal[:,:4] - goal[:,:4])) < 0.5).all(axis=1)
+            agent_cart_positions_achieved = ((np.abs(achieved_goal[:,:4] - goal[:,:4])) < 1.5).all(axis=1)
             #print('agent_goals: {}'.format(agent_cart_positions_achieved))
             rewards = []
             for b_g, a_c_g in zip(bread_goal_achieved, agent_cart_positions_achieved):
@@ -414,7 +414,7 @@ class MalmoMountainCart(gym2.Env):
             return np.array(rewards)
         else:
             bread_goal_achieved = (achieved_goal[4:] == goal[4:]).all()
-            agent_cart_positions_achieved = ((np.abs(achieved_goal[:4] - goal[:4])) < 0.5).all()
+            agent_cart_positions_achieved = ((np.abs(achieved_goal[:4] - goal[:4])) < 1.5).all()
             if bread_goal_achieved and agent_cart_positions_achieved:
                 return np.array([1.])
             else:
