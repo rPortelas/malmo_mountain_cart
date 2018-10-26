@@ -2,7 +2,7 @@ import gym2
 from gym2 import spaces
 from gym2.utils import seeding
 import numpy as np
-import MalmoPython
+import malmo.MalmoPython as MalmoPython
 import json
 import time
 import random

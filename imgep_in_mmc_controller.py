@@ -1,5 +1,4 @@
 from builtins import range
-import MalmoPython
 import os
 import os.path
 import sys

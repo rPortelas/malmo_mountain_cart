@@ -1,15 +1,12 @@
 import gym2
 from gym2 import spaces
-from gym2.utils import seeding
 import numpy as np
-import MalmoPython
 import json
 import time
 import random
-import sys
-import getpass
+import malmo.MalmoPython as MalmoPython
 import os
-sys.path.append('/home/rportelas/malmo_mountain_cart/')
+
 from utils.gep_utils import Bounds, unscale_vector
 # place bread at given positions
 def draw_bread(bread_positions):
@@ -26,7 +23,7 @@ def clean_bread(bread_positions):
         xml_string += '<DrawBlock x="%s" y="%s" z="%s" type="air"/>' % (int(x),int(y),int(z))
     return xml_string
 
-def get_MMC_environment(bread_positions, tick_lengths, skip_step, desired_mission_time, minecraft_dir, mission_start_sleep=0.5):
+def get_MMC_environment(bread_positions, tick_lengths, skip_step, desired_mission_time, mission_start_sleep=0.5):
     total_allowed_actions = int((20/(skip_step+1)) * desired_mission_time) # dependent of skip_step, works if =1
     # if big overclocking, set display refresh rate to 1
     mod_setting = '' if tick_lengths >= 25 else "<PrioritiseOffscreenRendering>true</PrioritiseOffscreenRendering>"
@@ -152,14 +149,10 @@ class MalmoMountainCart(gym2.Env):
         self.mission_start_sleep = 0.2
         self.bread_positions = [[293.5,4,436.5],[289.5,4,437.5],[289.5,4,440.5],[291.5,6,442.5],[294.5,6,443.5]]
 
-        #load Minecraft version name
-        self.minecraft_dir = '/' + os.environ['MALMO_DIR'] + '/'
-        print(self.minecraft_dir)
         self.mission_xml = get_MMC_environment(self.bread_positions, 
                                                tick_lengths,
                                                skip_step,
                                                desired_mission_time,
-                                               self.minecraft_dir,
                                                mission_start_sleep=self.mission_start_sleep)
         # Create default Malmo objects:
         self.agent_host = MalmoPython.AgentHost()
@@ -203,7 +196,6 @@ class MalmoMountainCart(gym2.Env):
                                                tick_lengths,
                                                skip_step,
                                                desired_mission_time,
-                                               self.minecraft_dir,
                                                mission_start_sleep=self.mission_start_sleep)
         # Create default Malmo objects:
         self.agent_host = MalmoPython.AgentHost()
@@ -282,7 +274,7 @@ class MalmoMountainCart(gym2.Env):
             except RuntimeError as e:
                 #print('failed')
                 if retry == max_retries - 1:
-                    print("Error starting mission:", e)
+                    #print("Error starting mission:", e)
                     exit(1)
                 else:
                     time.sleep(sleep_time[retry])
