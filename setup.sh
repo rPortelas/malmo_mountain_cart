@@ -1,4 +1,11 @@
 #!/bin/bash
+
+#first install the malmo package
+pip3 install malmo
+cd ~
+python3 -c 'import malmo.minecraftbootstrap; malmo.minecraftbootstrap.download()'
+
+
 malmo_folder=MalmoPlatform
 env_variable="export MALMO_XSD_PATH=/home/$USER/$malmo_folder/Schemas"
 #mc_world_name="flowers_v4"
