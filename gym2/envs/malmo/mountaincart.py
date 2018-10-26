@@ -272,7 +272,7 @@ class MalmoMountainCart(gym2.Env):
 
                 break
             except RuntimeError as e:
-                #print('failed')
+                print('failed')
                 if retry == max_retries - 1:
                     #print("Error starting mission:", e)
                     exit(1)
@@ -327,7 +327,7 @@ class MalmoMountainCart(gym2.Env):
         # format actions for environment
         actions = ["move " + str(actions[0]), "strafe " + str(actions[1])]
         self.current_step += 1
-        #print(self.current_step)
+        print(self.current_step)
         done = False
         # print self.current_step
         # take the action only if mission is still running
@@ -351,6 +351,7 @@ class MalmoMountainCart(gym2.Env):
             obvsText = world_state.observations[-1].text
             observation = json.loads(obvsText)  # observation comes in as a JSON string...
             state = self.get_state(observation)
+            print(state)
             self.previous_state = state
 
             if self.current_step == self.total_allowed_actions:  # end of episode
