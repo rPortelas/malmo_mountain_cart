@@ -327,7 +327,6 @@ class MalmoMountainCart(gym2.Env):
         # format actions for environment
         actions = ["move " + str(actions[0]), "strafe " + str(actions[1])]
         self.current_step += 1
-        print(self.current_step)
         done = False
         # print self.current_step
         # take the action only if mission is still running
@@ -351,7 +350,6 @@ class MalmoMountainCart(gym2.Env):
             obvsText = world_state.observations[-1].text
             observation = json.loads(obvsText)  # observation comes in as a JSON string...
             state = self.get_state(observation)
-            print(state)
             self.previous_state = state
 
             if self.current_step == self.total_allowed_actions:  # end of episode

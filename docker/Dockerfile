@@ -1,12 +1,13 @@
 ## Custom Dockerfile allowing remote display of Malmo installed using the pip3 Python wheel
-FROM consol/ubuntu-xfce-vnc
+#FROM consol/ubuntu-xfce-vnc
+FROM ubuntu:16.04
 ENV REFRESHED_AT 2018-03-18
 
 ## Install as root 
 USER 0
 
 # Change wallpaper
-COPY xfce4-desktop.xml /headless/.config/xfce4/xfconf/xfce-perchannel-xml/
+#COPY xfce4-desktop.xml /headless/.config/xfce4/xfconf/xfce-perchannel-xml/
 
 # 16.04 image doesn't contain sudo - install that first:
 RUN apt-get update && apt-get install -y sudo
@@ -20,7 +21,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     python3-pip \
     openjdk-8-jdk \
-    ffmpeg 
+    ffmpeg \
+    xvfb
 
 RUN sudo update-ca-certificates -f
 RUN sudo pip3 install numpy matplotlib scipy
@@ -36,19 +38,21 @@ WORKDIR /home/malmo
 # Set MALMO_XSD_PATH to download install location.
 ENV MALMO_XSD_PATH=/home/malmo/MalmoPlatform/Schemas
 
-# TODO for now pip install package "malmo" from the test pypi web site. 
-# Pass in --build-arg MALMOVERSION="x.x.x" to re-install
-#ARG MALMOVERSION=unknown
-#RUN MALMOVERSION=${MALMOVERSION} sudo pip3 install --index-url https://test.pypi.org/simple/ "malmo"
-#RUN MALMOVERSION=${MALMOVERSION} sudo pip3 install "malmo==0.36.0"
 RUN sudo pip3 install malmo
 RUN python3 -c "import malmo.minecraftbootstrap;malmo.minecraftbootstrap.download(buildMod=True)"
 
-# Install Jupyter:
-RUN sudo pip3 install setuptools
-RUN sudo pip3 install jupyter
+# precompile stuff
+RUN mkdir ~/.gradle && echo 'org.gradle.daemon=true\n' > ~/.gradle/gradle.properties
+WORKDIR /home/malmo/MalmoPlatform/Minecraft
+RUN ./gradlew setupDecompWorkspace
+RUN ./gradlew build
 
+# Install Jupyter:
+#RUN sudo pip3 install setuptools
+#RUN sudo pip3 install jupyter
+COPY options.txt /home/malmo/MalmoPlatform/Minecraft/run/
 RUN sudo apt-get install -y dos2unix
 COPY ./console_startup.sh /home/malmo/console_startup.sh
 RUN sudo dos2unix /home/malmo/console_startup.sh
 ENTRYPOINT ["/home/malmo/console_startup.sh"]
+CMD []

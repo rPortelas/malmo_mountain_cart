@@ -31,5 +31,5 @@ echo $malmo_folder > minecraft_version_config.txt
 #cp -R ~/$malmo_folder/Python_Examples/MalmoPython.so .
 
 #Copy Minecraft optimized configuration
-cp options.txt ~/$malmo_folder/Minecraft/run/
+cp docker/options.txt ~/$malmo_folder/Minecraft/run/
 echo "You can now source your bashrc"
