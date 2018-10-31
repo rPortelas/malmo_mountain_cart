@@ -43,6 +43,12 @@ ENV MALMO_XSD_PATH=/home/malmo/MalmoPlatform/Schemas
 RUN sudo pip3 install malmo
 RUN python3 -c "import malmo.minecraftbootstrap;malmo.minecraftbootstrap.download(buildMod=True)"
 
+# precompile stuff
+RUN echo 'org.gradle.daemon=true\n' > ~/.gradle/gradle.properties
+WORKDIR /home/malmo/MalmoPlatform/Minecraft
+RUN ./gradlew setupDecompWorkspace
+RUN ./gradlew build
+
 COPY options.txt /home/malmo/MalmoPlatform/Minecraft/run/
 RUN sudo apt-get install -y dos2unix
 COPY ./console_startup.sh /home/malmo/console_startup.sh
