@@ -90,7 +90,7 @@ class GEP(object):
         return self.current_policy
 
     def perceive(self, outcome):
-        assert(outcome.shape[0] == self.total_outcome_range)
+        #assert(outcome.shape[0] == self.total_outcome_range)
         
         if self.model_babbling_mode == "active":
             # update interest module of choosen module if not bootstraping

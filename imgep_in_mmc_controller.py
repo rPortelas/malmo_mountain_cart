@@ -156,7 +156,7 @@ if distractors:
 experiment_name = args.experiment_name if args.experiment_name else "experiment"
 savefile_name = experiment_name+"_save.pickle"
 book_keeping_file_name = experiment_name+"_bk.pickle"
-save_step = 200
+save_step = 1000
 plot_step = 100000
 #eval_step = 200
 
@@ -177,6 +177,10 @@ full_outcome_bounds = b.get_bounds(full_outcome)
 
 if model_type == "random_flat":
     outcome1 = full_outcome
+    config = {'policy_nb_dims': total_policy_params,
+              'modules':{'mod1':{'outcome_range': np.array([full_outcome.index(var) for var in outcome1])}}}
+elif model_type == "random_sgs":
+    outcome1 = [full_outcome[3]]
     config = {'policy_nb_dims': total_policy_params,
               'modules':{'mod1':{'outcome_range': np.array([full_outcome.index(var) for var in outcome1])}}}
 elif (model_type == "random_modular") or (args.model_type == "active_modular"):
