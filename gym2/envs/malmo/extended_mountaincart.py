@@ -9,12 +9,11 @@ import random
 import sys
 import getpass
 import os
-sys.path.append('/home/rportelas/malmo_mountain_cart/')
 from utils.gep_utils import Bounds, unscale_vector
 
-PICKAXE_POS = []
-def get_MMC_environment(tick_lengths, skip_step, desired_mission_time):
-    total_allowed_actions = int((20/(skip_step+1)) * desired_mission_time) # dependent of skip_step, works if =1
+PICKAXE_POS = [292,437]
+D_TOOL_POS = [290,437]
+def get_MMC_environment(tick_lengths, total_allowed_actions):
     # if big overclocking, set display refresh rate to 1
     mod_setting = '' if tick_lengths >= 25 else "<PrioritiseOffscreenRendering>true</PrioritiseOffscreenRendering>"
     missionXML = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
@@ -46,48 +45,50 @@ def get_MMC_environment(tick_lengths, skip_step, desired_mission_time):
                     <DrawCuboid x1="285" y1="3" z1="431" x2="302" y2="3" z2="446" type="bedrock" />
                     
                     <!-- Draw arena long side -->
-                    <DrawCuboid x1="288" y1="4" z1="432" x2="294" y2="6" z2="445" type="air"/>
-                    <DrawCuboid x1="288" y1="4" z1="432" x2="294" y2="6" z2="445" type="bedrock"/>
-                    <DrawCuboid x1="289" y1="4" z1="433" x2="293" y2="6" z2="444" type="air"/>
+                    <DrawCuboid x1="287" y1="4" z1="432" x2="295" y2="6" z2="445" type="air"/>
+                    <DrawCuboid x1="287" y1="4" z1="432" x2="295" y2="6" z2="445" type="bedrock"/>
+                    <DrawCuboid x1="289" y1="4" z1="433" x2="293" y2="6" z2="443" type="air"/>
+                    <DrawCuboid x1="288" y1="4" z1="433" x2="294" y2="6" z2="439" type="air"/>
                     
                     <!-- Draw arena width side -->
-                    <DrawCuboid x1="285" y1="4" z1="441" x2="297" y2="6" z2="444" type="air"/>
-                    <DrawCuboid x1="285" y1="4" z1="441" x2="297" y2="6" z2="444" type="bedrock"/>
-                    <DrawCuboid x1="289" y1="6" z1="441" x2="293" y2="6" z2="443" type="air"/>
-                    <DrawCuboid x1="297" y1="6" z1="444" x2="285" y2="9" z2="444" type="bedrock"/>
+                    <DrawCuboid x1="289" y1="6" z1="445" x2="293" y2="6" z2="445" type="air"/>
+                    <DrawCuboid x1="297" y1="6" z1="445" x2="285" y2="9" z2="445" type="bedrock"/> 
                     
-                    <!-- Draw stairs -->
-                    <DrawLine x1="290" y1="4" z1="439" x2="292" y2="4" z2="439" type="stone_brick_stairs" face="SOUTH" />
-                    <DrawLine x1="290" y1="4" z1="440" x2="292" y2="4" z2="440" type="bedrock"/>
-                    <DrawLine x1="290" y1="5" z1="440" x2="292" y2="5" z2="440" type="stone_brick_stairs" face="SOUTH" />
+                    <!-- Draw diamond blocks -->
+                    <DrawCuboid x1="290" y1="5" z1="441" x2="292" y2="5" z2="441" type="diamond_ore"/>
+                    <!-- fill row -->
+                     <DrawBlock x="293" y="5" z="441" type="bedrock" />
+                      <DrawBlock x="289" y="5" z="441" type="bedrock" />
+                     <!-- obsidian used as markers to detect diamond line -->
+                    <DrawBlock x="294" y="5" z="441" type="obsidian" />
                     
-                    <!-- Draw dirt blocks -->
-                    <DrawCuboid x1="290" y1="6" z1="441" x2="292" y2="7" z2="441" type="diamond_ore"/>
+                    <!-- Draw rail tracks -->
+                    <DrawLine x1="288" y1="4" z1="443" x2="294" y2="4" z2="443" type="air"/>
+
+                    <DrawLine x1="286" y1="5" z1="443" x2="296" y2="5" z2="443" type="bedrock"/>
+                    <DrawLine x1="287" y1="5" z1="443" x2="295" y2="5" z2="443" type="air"/>
+
+                    <DrawLine x1="285" y1="6" z1="443" x2="297" y2="6" z2="443" type="gold_block"/>
+                    <DrawLine x1="286" y1="6" z1="443" x2="296" y2="6" z2="443" type="air"/>
+
+  
+                    <DrawBlock x="287" y="5" z="443" type="rail"/>
+                    <DrawBlock x="286" y="6" z="443" type="rail"/>
+                    <DrawBlock x="295" y="5" z="443" type="rail"/>
+                    <DrawBlock x="296" y="6" z="443" type="rail"/>
+                    <DrawLine x1="288" y1="4" z1="443" x2="294" y2="4" z2="443" type="rail"/>
+                                      
+                    
+                    <DrawEntity x="291.5" y="7" z="443" type="MinecartRideable"/>
+                    
+                    <!-- Draw starting cage -->
+                    <DrawCuboid x1="290" y1="4" z1="436" x2="292" y2="4" z2="436" type="bedrock"/>
+                    <DrawBlock x="291" y="4" z="437" type="bedrock" />
 
                   
-                    <!-- Draw rail tracks -->
-                    <DrawLine x1="288" y1="6" z1="443" x2="294" y2="6" z2="443" type="air"/>
-                    
-                    <DrawLine x1="286" y1="7" z1="443" x2="296" y2="7" z2="443" type="bedrock"/>
-                    <DrawLine x1="287" y1="7" z1="443" x2="295" y2="7" z2="443" type="air"/>
-                    
-                    <DrawLine x1="285" y1="8" z1="443" x2="297" y2="8" z2="443" type="gold_block"/>
-                    <DrawLine x1="286" y1="8" z1="443" x2="296" y2="8" z2="443" type="air"/>
-
-                    
-                    <DrawBlock x="287" y="7" z="443" type="rail"/>
-                    <DrawBlock x="286" y="8" z="443" type="rail"/>
-                    <DrawBlock x="295" y="7" z="443" type="rail"/>
-                    <DrawBlock x="296" y="8" z="443" type="rail"/>
-                    <DrawLine x1="288" y1="6" z1="443" x2="294" y2="6" z2="443" type="rail"/>
-                    <DrawEntity x="291.5" y="6" z="443" type="MinecartRideable"/>
-
                     <!-- Draw tools -->
-                    <DrawItem x="292" y="4" z="434" type="diamond_pickaxe"/>
-                    <DrawItem x="291" y="4" z="434" type="diamond_shovel"/>
-                    <DrawItem x="290" y="4" z="434" type="diamond_sword"/>
-                    
-                    
+                    <DrawItem x="''' + str(PICKAXE_POS[0]) + '''" y="4" z="'''+ str(PICKAXE_POS[1]) + '''" type="diamond_pickaxe"/>
+                    <DrawItem x="''' + str(D_TOOL_POS[0]) + '''" y="4" z="'''+ str(D_TOOL_POS[1]) + '''" type="diamond_shovel"/>
 
                   </DrawingDecorator>
                   <ServerQuitWhenAnyAgentFinishes/>
@@ -101,11 +102,16 @@ def get_MMC_environment(tick_lengths, skip_step, desired_mission_time):
                   <Inventory></Inventory>
                 </AgentStart>
                 <AgentHandlers>
-                  <ObservationFromHotBar/>
-                  <AbsoluteMovementCommands/>
+                  <ObservationFromGrid>
+                      <Grid name="grid">
+                        <min x="-6" y="1" z="-4"/>
+                        <max x="6" y="1" z="8"/>
+                      </Grid>
+                  </ObservationFromGrid>
                   <ObservationFromNearbyEntities>
-                    <Range name="entities" xrange="20" yrange="20" zrange="20"/>
+                  <Range name="entities" xrange="15" yrange="15" zrange="15"/>
                   </ObservationFromNearbyEntities>
+                  <AbsoluteMovementCommands/>
                   <ContinuousMovementCommands turnSpeedDegs="180"/>
                   <MissionQuitCommands/>
                   <AgentQuitFromReachingCommandQuota total="''' + str((2 * total_allowed_actions)+1) + '''"/>
@@ -125,22 +131,20 @@ class ExtendedMalmoMountainCart(gym2.Env):
         'video.frames_per_second': 30,
     }
 
-    def __init__(self, port=10000, tick_lengths=15, skip_step=4, desired_mission_time=7, sparse=False, reward_mixing=20):
+    def __init__(self, port=10000, tick_lengths=15, skip_step=4, desired_mission_time=8, sparse=False,
+                 reward_mixing=20):
         print('Making new MMC instance')
         self.skip_step = skip_step
         self.tick_lengths = tick_lengths
         self.total_allowed_actions = int((20 / (skip_step + 1)) * desired_mission_time)
+        print(self.total_allowed_actions)
         self._sparse = sparse
         self._reward_mixing = reward_mixing
 
         # define bread positions in MMC arena
         self.mission_start_sleep = 0.2
-        self.bread_positions = [[293.5,4,436.5],[289.5,4,437.5],[289.5,4,440.5],[291.5,6,442.5],[294.5,6,443.5]]
 
-        #load Minecraft version name
-        self.minecraft_dir = '/' + os.environ['MALMO_DIR'] + '/'
-        print(self.minecraft_dir)
-        self.mission_xml = get_MMC_environment(tick_lengths, skip_step, desired_mission_time)
+        self.mission_xml = get_MMC_environment(tick_lengths, self.total_allowed_actions)
         # Create default Malmo objects:
         self.agent_host = MalmoPython.AgentHost()
         self.my_mission = MalmoPython.MissionSpec(self.mission_xml, True)
@@ -151,44 +155,43 @@ class ExtendedMalmoMountainCart(gym2.Env):
         print("Attempt to communicate with Minecraft")
         # enable the use of up to 21 parallel malmo mountain carts
         for i in range(20):
-            self.client_pool.add(MalmoPython.ClientInfo( "127.0.0.1", port+i))
+            self.client_pool.add(MalmoPython.ClientInfo("127.0.0.1", port + i))
 
-        n_act = 2
-        n_obs = 9
+        n_act = 3
+        n_obs = 10
 
         self.action_space = spaces.Box(low=-np.ones(n_act), high=np.ones(n_act))
-        self.observation_space = spaces.Box(low=-np.repeat([np.array([np.inf])], n_obs), high=np.repeat([np.array([np.inf])], n_obs))
+        self.observation_space = spaces.Box(low=-np.repeat([np.array([np.inf])], n_obs),
+                                            high=np.repeat([np.array([np.inf])], n_obs))
 
         # init goal sampling
-        self.state_names = ['agent_x','agent_y','agent_z','cart_x'] + ['bread_'+str(i) for i in range(5)]
+        self.state_names = ['agent_x', 'agent_y', 'agent_z', 'cart_x'] + ['block_' + str(i) for i in range(6)] + ['tool_' + str(i) for i in range(3)]
         self.b = Bounds()
-        self.b.add('agent_x',[288.3,294.7])
-        self.b.add('agent_y',[4,6])
-        self.b.add('agent_z',[433.3,443.7])
-        self.b.add('cart_x',[285,297])
-        for i in range(5):
-            self.b.add('bread_'+str(i),[0,1])
+        self.b.add('agent_x', [288.3, 294.7])
+        self.b.add('agent_z', [433.3, 443.7])
+        self.b.add('pickaxe_x', [288.3, 294.7])
+        self.b.add('pickaxe_z', [433.3, 443.7])
+        self.b.add('shovel_x', [288.3, 294.7])
+        self.b.add('shovel_z', [433.3, 443.7])
+        for i in range(3):
+            self.b.add('block_' + str(i), [-1, 1])
+        self.b.add('cart_x', [285, 297])
+
 
         self.current_step = 0
         self.reset_nb = 0
         self.seed()
-        #self.reset()
 
     # call this method to change default parameters
-    def my_init(self, port=10000, tick_lengths=10, skip_step=4, desired_mission_time=7):
+    def my_init(self, port=10000, tick_lengths=15, skip_step=4, desired_mission_time=8):
         self.skip_step = skip_step
         self.tick_lengths = tick_lengths
-        self.total_allowed_actions = int((20/(skip_step+1)) * desired_mission_time)
-        self.mission_xml = get_MMC_environment(tick_lengths, skip_step, desired_mission_time)
+        self.total_allowed_actions = int((20 / (skip_step + 1)) * desired_mission_time)
+        self.mission_xml = get_MMC_environment(tick_lengths, self.total_allowed_actions)
         # Create default Malmo objects:
         self.agent_host = MalmoPython.AgentHost()
         self.my_mission = MalmoPython.MissionSpec(self.mission_xml, True)
         self.my_mission_record = MalmoPython.MissionRecordSpec()
-
-        #self.client_pool = MalmoPython.ClientPool()
-        #print("Attempt to communicate with Minecraft through port %s" % port)
-        #self.client_pool.add(MalmoPython.ClientInfo( "127.0.0.1", port))
-
 
     def seed(self, seed=None):
         random.seed(seed)
@@ -199,18 +202,19 @@ class ExtendedMalmoMountainCart(gym2.Env):
         goal = np.random.random(9) * 2 - 1
         env_scaled_goal = unscale_vector(goal, np.array(self.b.get_bounds(self.state_names)))
         env_scaled_goal[4:] = np.array([0 if b < 0.5 else 1 for b in env_scaled_goal[4:]])
-        #print("goal sampled: {}".format(env_scaled_goal))
+        # print("goal sampled: {}".format(env_scaled_goal))
         return env_scaled_goal
-        
 
     def get_world_state(self, first_state=False):
         # wait till we have got at least one observation or mission has ended
         while True:
             time.sleep(0.001)  # wait for 1ms to not consume entire CPU
             world_state = self.agent_host.peekWorldState()
-            if world_state.number_of_observations_since_last_state > (self.skip_step+1):
+            # print(world_state.number_of_observations_since_last_state)
+            if world_state.number_of_observations_since_last_state > (self.skip_step + 1):
                 if not first_state:
-                    print("DAMMIT, WE LOST %s OBSERVATION" % (world_state.number_of_observations_since_last_state - self.skip_step))
+                    print("DAMMIT, WE LOST %s OBSERVATION" % (
+                                world_state.number_of_observations_since_last_state - self.skip_step))
                     print(self.current_step)
             if world_state.number_of_observations_since_last_state > self.skip_step or not world_state.is_mission_running:
                 break
@@ -218,6 +222,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
 
     def reset(self, goal=None):
         world_state = self.agent_host.peekWorldState()
+        # print("resetting, previous mission running ?: {}".format(world_state.is_mission_running))
         if world_state.is_mission_running:
             self.agent_host.sendCommand("quit")
             while world_state.is_mission_running:
@@ -234,14 +239,19 @@ class ExtendedMalmoMountainCart(gym2.Env):
         sleep_time = [0.01, 0.1, 0.2, 0.4, 2., 5., 5.]
         for retry in range(max_retries):
             try:
+                # print('trying to start misison')
+                # world_state = self.agent_host.peekWorldState()
+                # print("SHOULD BE FALSE: {}".format(world_state.is_mission_running))
                 self.agent_host.startMission(self.my_mission,
                                              self.client_pool,
                                              self.my_mission_record,
                                              0, "answer is 42")
+
                 break
             except RuntimeError as e:
+                print('failed')
                 if retry == max_retries - 1:
-                    print("Error starting mission:", e)
+                    # print("Error starting mission:", e)
                     exit(1)
                 else:
                     time.sleep(sleep_time[retry])
@@ -257,54 +267,69 @@ class ExtendedMalmoMountainCart(gym2.Env):
         observation = json.loads(obvsText)  # observation comes in as a JSON string...
         self.current_step = 0
 
-        self.desired_goal = self.sample_goal()
+        #self.desired_goal = self.sample_goal()
         state = self.get_state(observation)
-        reward = self.compute_reward(state, self.desired_goal)
+        #reward = self.compute_reward(state, self.desired_goal)
 
         obs = dict(observation=state,
                    achieved_goal=state,
-                   desired_goal=self.desired_goal)
-        done = False
-        #return obs, reward, done, {}
-        #print(obs)
-        #print("mission started")
-        time.sleep(self.mission_start_sleep) #+0.02)
+                   desired_goal=None)
+
+        time.sleep(self.mission_start_sleep + 0.02)
         return obs
 
-    def get_state(self, obs):
-        print(obs)
-        tools = np.zeros((3,3))
-        for e in obs['entities']:
-            if e['name'] == 'MinecartRideable':
-                cart_x, cart_y, cart_z = e['x'], e['y'], e['z']
-                cart_vx, cart_vy, cart_vz = e['motionX'], e['motionY'], e['motionZ']
-            if e['name'] == 'FlowersBot':
-                agent_x, agent_y, agent_z, agent_yaw = e['x'], e['y'], e['z'], (e['yaw'] % 360)
-                agent_vx, agent_vy, agent_vz = e['motionX'], e['motionY'], e['motionZ']
-        #tools[0] = 1 if
-        return np.array([agent_x, agent_y, agent_z, cart_x] + breads.tolist())
+    def extract_block_state(self, obs):
+        if not 'grid' in obs:
+            print('WARNING GRID NOT HERE, WILL SUPPOSE BLOCKS NOT MINED')
+            return [-1., -1., -1.]
+        grid = np.array(obs['grid']).reshape(13, 13)
+        marker_pos = np.argwhere(grid == 'obsidian')
+        start_x, start_y = marker_pos[0][0], marker_pos[0][1]
+        diamond_blocks = grid[start_x,start_y-4:start_y-1]
+        return [-1. if v=='diamond_ore' else 1. for v in diamond_blocks]
 
+    def get_state(self, obs):
+        #print(obs)
+        blocks = self.extract_block_state(obs)
+        agent = obs['entities'][0]
+        assert(agent['name'] == 'FlowersBot')
+        agent_pos = [agent['x'], agent['z']]
+        pickaxe_pos = None
+        shovel_pos = None
+        for e in obs['entities']:
+            if e['name'] == 'diamond_pickaxe':
+                pickaxe_pos = [e['x'], e['z']]
+            if e['name'] == 'diamond_shovel':
+                shovel_pos = [e['x'], e['z']]
+            if e['name'] == 'MinecartRideable':
+                cart_x = [e['x']]
+        if pickaxe_pos == None: #If not in arena then agents has it
+            pickaxe_pos = agent_pos
+        if shovel_pos == None:
+            shovel_pos = agent_pos
+
+        #print(agent_pos + pickaxe_pos + shovel_pos + blocks + cart_x)
+        return np.array(agent_pos + pickaxe_pos + shovel_pos + blocks + cart_x)
 
     def step(self, actions):
         if self.current_step == self.total_allowed_actions:
             print('Trying to take action in finished episode')
             return 0
         # format actions for environment
-        actions = ["move " + str(actions[0]), "strafe " + str(actions[1])]
+        actions = ["move " + str(actions[0]), "strafe " + str(actions[1]), "attack " + str(actions[2])]
         self.current_step += 1
-        #print(self.current_step)
         done = False
         # print self.current_step
         # take the action only if mission is still running
         world_state = self.agent_host.peekWorldState()
-        #print(self.current_step)
+        # print(self.current_step)
         if world_state.is_mission_running:
             # take action
             for a in actions:
                 self.agent_host.sendCommand(a)
 
             # wait for the new state
-            if self.current_step == 1: #first time we acted, discard missed observation warning
+            if self.current_step == 1:  # first time we acted, discard missed observation warning
                 world_state = self.get_world_state(first_state=True)
             else:
                 world_state = self.get_world_state()
@@ -319,13 +344,11 @@ class ExtendedMalmoMountainCart(gym2.Env):
             self.previous_state = state
 
             if self.current_step == self.total_allowed_actions:  # end of episode
-                # last cmd, must teleport to avoid weird glitch with minecart environment
-                self.agent_host.sendCommand("tp 293 7 433.5")
                 # send final dummy action
-                #self.agent_host.sendCommand("move 0")
+                self.agent_host.sendCommand("move 0")
                 world_state = self.agent_host.peekWorldState()
                 while world_state.is_mission_running:
-                    #print('waiting for end of mission')
+                    # print('waiting for end of mission')
                     time.sleep(0.01)
                     world_state = self.agent_host.peekWorldState()
                 done = True
@@ -338,54 +361,39 @@ class ExtendedMalmoMountainCart(gym2.Env):
         #     # detect terminal state
         #     # print not world_state.is_mission_running
 
-        reward = self.compute_reward(state, self.desired_goal)
-        info = {'is_success': bool(reward == 1)}
+        #reward = self.compute_reward(state, self.desired_goal)
+        #info = {'is_success': bool(reward == 1)}
 
         obs = dict(observation=state,
                    achieved_goal=state,
-                   desired_goal=self.desired_goal)
-        #print(obs)
-        #print('reward: {}'.format(reward))
-        #print(done)
-        return obs, reward, done, info
-        # for ddpg
-        # return state, reward, done, {}
+                   desired_goal=None)
+        return obs, 0, done, {}
 
     def compute_reward(self, achieved_goal, goal, info=None):
-        #print("achieved: {}, \n goal:{}".format(achieved_goal, goal))
-        position_tol = 1. # 1 block tolerance to reach a cart or agent goal position
-        #print(achieved_goal.shape)
-        if achieved_goal.ndim>1:
-            #print('array mode')
-            bread_goal_achieved = (achieved_goal[:,4:] == goal[:,4:]).all(axis=1)
-            #print('bread_goals: {}'.format(bread_goal_achieved))
-            agent_cart_positions_achieved = ((np.abs(achieved_goal[:,:4] - goal[:,:4])) < 0.5).all(axis=1)
-            #print('agent_goals: {}'.format(agent_cart_positions_achieved))
+        # print("achieved: {}, \n goal:{}".format(achieved_goal, goal))
+        position_tol = 1.  # 1 block tolerance to reach a cart or agent goal position
+        # print(achieved_goal.shape)
+        if achieved_goal.ndim > 1:
+            # print('array mode')
+            bread_goal_achieved = (achieved_goal[:, 4:] == goal[:, 4:]).all(axis=1)
+            # print('bread_goals: {}'.format(bread_goal_achieved))
+            agent_cart_positions_achieved = ((np.abs(achieved_goal[:, :4] - goal[:, :4])) < 1.5).all(axis=1)
+            # print('agent_goals: {}'.format(agent_cart_positions_achieved))
             rewards = []
             for b_g, a_c_g in zip(bread_goal_achieved, agent_cart_positions_achieved):
                 if b_g and a_c_g:
                     rewards.append(1.)
                 else:
                     rewards.append(0.)
-            #print(rewards)
+            # print(rewards)
             return np.array(rewards)
         else:
             bread_goal_achieved = (achieved_goal[4:] == goal[4:]).all()
-            agent_cart_positions_achieved = ((np.abs(achieved_goal[:4] - goal[:4])) < 0.5).all()
+            agent_cart_positions_achieved = ((np.abs(achieved_goal[:4] - goal[:4])) < 1.5).all()
             if bread_goal_achieved and agent_cart_positions_achieved:
                 return np.array([1.])
             else:
                 return np.array([0])
-        #print("bread: {}".format(bread_goal_achieved))
-
-
-       
-        #print((np.abs(achieved_goal[:3] - goal[:3])))
-        #print("agent pos goal: {}".format(((np.abs(achieved_goal[:3] - goal[:3])) < 0.5).all()))
-
-
-        #d = np.linalg.norm(achieved_goal - goal, ord=2)
-        #return -d
 
     def compute_reward_ddpg(self, state):
         # check whether cart is up
@@ -396,10 +404,8 @@ class ExtendedMalmoMountainCart(gym2.Env):
         reward = state[4:].sum() + self._reward_mixing * cart_up
         return reward
 
-
-
     def render():
-     pass
+        pass
 
     def close(self):
         print('closing instance')

@@ -14,10 +14,10 @@ import collections
 
 
 # init neural network policy
-state_bounds = np.array([[-1.,1.]]*9)
+state_bounds = np.array([[-1.,1.]]*10)
 hidden_layer_size = 64
-state_size = 9
-action_set_size = 2
+state_size = 10
+action_set_size = 3
 model = Simple_NN(state_size, state_bounds, action_set_size , hidden_layer_size)
 policy_nb_dims = model.nb_w1_weights + model.nb_w2_weights
 
@@ -25,7 +25,7 @@ policy_nb_dims = model.nb_w1_weights + model.nb_w2_weights
 nb_iterations = 100000
 outputs = np.zeros((nb_iterations, action_set_size))
 
-temperature_param = [0.24,0.28] # 0.17 (or 0.12 when input=21) works great !
+temperature_param = [0.21,0.22] # 0.17 (or 0.12 when input=21) works great !
 for tmp in temperature_param:
     print("using tanh temperature of %s" % temperature_param)
     model.tmp_controller = tmp
@@ -53,6 +53,8 @@ for tmp in temperature_param:
     plt.hist(outputs[:,0])
     plt.figure(2)
     plt.hist(outputs[:,1])
+    plt.figure(3)
+    plt.hist(outputs[:, 2])
     plt.show(block=False)
     time.sleep(2.)
     plt.close(1)

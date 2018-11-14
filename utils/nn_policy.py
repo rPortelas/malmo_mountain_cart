@@ -10,6 +10,8 @@ class Simple_NN(object):
         self.hidden_size = hidden_size
         if self.in_size == 9:
             self.tmp_controller = 0.24 #0.25
+        elif self.in_size == 10:
+            self.tmp_controller = 0.21
         else:
             raise NotImplementedError
 
