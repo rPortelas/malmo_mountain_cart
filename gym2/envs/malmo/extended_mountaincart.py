@@ -289,6 +289,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
             assert (agent['name'] == 'FlowersBot')
             agent_pos = [agent['x'], agent['y'], agent['z']]
             print('WARNING obsidian marker not detected !!! grid: {}, step: {}, agent_pos: {}'.format(grid, self.current_step, agent_pos))
+            return [-1., -1., -1.]
         start_x, start_y = marker_pos[0][0], marker_pos[0][1]
         diamond_blocks = grid[start_x,start_y-4:start_y-1]
         return [-1. if v=='diamond_ore' else 1. for v in diamond_blocks]
