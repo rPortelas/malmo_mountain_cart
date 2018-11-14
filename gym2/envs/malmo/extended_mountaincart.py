@@ -284,6 +284,11 @@ class ExtendedMalmoMountainCart(gym2.Env):
             return [-1., -1., -1.]
         grid = np.array(obs['grid']).reshape(13, 13)
         marker_pos = np.argwhere(grid == 'obsidian')
+        if marker_pos == []:
+            agent = obs['entities'][0]
+            assert (agent['name'] == 'FlowersBot')
+            agent_pos = [agent['x'], agent['z']]
+            print('WARNING obsidian marker not detected !!! grid: {}, step: {}, agent_pos: {}'.format(grid, self.current_step, agent_pos))
         start_x, start_y = marker_pos[0][0], marker_pos[0][1]
         diamond_blocks = grid[start_x,start_y-4:start_y-1]
         return [-1. if v=='diamond_ore' else 1. for v in diamond_blocks]
