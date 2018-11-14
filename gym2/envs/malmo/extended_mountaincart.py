@@ -279,12 +279,11 @@ class ExtendedMalmoMountainCart(gym2.Env):
         return obs
 
     def extract_block_state(self, obs):
-        if not 'grid' in obs:
-            print('WARNING GRID NOT HERE, WILL SUPPOSE BLOCKS NOT MINED')
+        if self.current_step <= 2:
+            # avoid using grid observation in (unstable) mission starting part
             return [-1., -1., -1.]
         grid = np.array(obs['grid']).reshape(13, 13)
         marker_pos = np.argwhere(grid == 'obsidian')
-        print(marker_pos)
         if len(marker_pos) == 0:
             agent = obs['entities'][0]
             assert (agent['name'] == 'FlowersBot')
