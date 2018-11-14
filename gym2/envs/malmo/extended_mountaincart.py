@@ -114,10 +114,10 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                   <AbsoluteMovementCommands/>
                   <ContinuousMovementCommands turnSpeedDegs="180"/>
                   <MissionQuitCommands/>
-                  <AgentQuitFromReachingCommandQuota total="''' + str((2 * total_allowed_actions)+1) + '''"/>
+                  <AgentQuitFromReachingCommandQuota total="''' + str((3 * total_allowed_actions)+1) + '''"/>
                   <VideoProducer>
-                    <Width>1000</Width>
-                    <Height>600</Height>
+                    <Width>40</Width>
+                    <Height>30</Height>
                   </VideoProducer>
                 </AgentHandlers>
 
@@ -316,7 +316,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
             print('Trying to take action in finished episode')
             return 0
         # format actions for environment
-        actions = ["move " + str(actions[0]), "strafe " + str(actions[1]), "attack " + str(actions[2])]
+        actions = ["move " + str(actions[0]), "strafe " + str(actions[1]), "attack " + str(1 if actions[2] >= 0 else 0)]
         self.current_step += 1
         done = False
         # print self.current_step
