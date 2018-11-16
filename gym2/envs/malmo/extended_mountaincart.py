@@ -11,8 +11,8 @@ import getpass
 import os
 from utils.gep_utils import Bounds, unscale_vector
 
-PICKAXE_POS = [292,437]
-D_TOOL_POS = [290,437]
+PICKAXE_POS = [292,436]
+D_TOOL_POS = [290,436]
 def get_MMC_environment(tick_lengths, total_allowed_actions):
     # if big overclocking, set display refresh rate to 1
     mod_setting = '' if tick_lengths >= 25 else "<PrioritiseOffscreenRendering>true</PrioritiseOffscreenRendering>"
@@ -82,8 +82,9 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                     <DrawEntity x="291.5" y="7" z="443" type="MinecartRideable"/>
                     
                     <!-- Draw starting cage -->
-                    <DrawCuboid x1="290" y1="4" z1="436" x2="292" y2="4" z2="436" type="bedrock"/>
-                    <DrawBlock x="291" y="4" z="437" type="bedrock" />
+                    <DrawCuboid x1="289" y1="4" z1="437" x2="293" y2="5" z2="437" type="bedrock"/>
+                    <DrawCuboid x1="289" y1="4" z1="435" x2="293" y2="4" z2="435" type="bedrock"/>
+                    <DrawBlock x="291" y="4" z="436" type="bedrock" />
 
                   
                     <!-- Draw tools -->
