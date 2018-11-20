@@ -16,6 +16,7 @@ from collections import OrderedDict
 from utils.gep_utils import *
 #from malmo_controller import MalmoController
 import gym2
+import config
 
 def get_outcome(state):
     outcome = state.tolist()
@@ -85,16 +86,7 @@ nb_blocks = 3
 # define variable's bounds for policy input and outcome
 state_names = ['agent_x', 'agent_z', 'pickaxe_x', 'pickaxe_z', 'shovel_x', 'shovel_z'] +\
               ['block_' + str(i) for i in range(nb_blocks)] + ['cart_x']
-b = Bounds()
-b.add('agent_x', [288.3, 294.7])
-b.add('agent_z', [433.3, 443.7])
-b.add('pickaxe_x', [288.3, 294.7])
-b.add('pickaxe_z', [433.3, 443.7])
-b.add('shovel_x', [288.3, 294.7])
-b.add('shovel_z', [433.3, 443.7])
-for i in range(3):
-    b.add('block_' + str(i), [-1, 1])
-b.add('cart_x', [285, 297])
+b = config.get_env_bounds('emmc_env')
 if distractors:
     for d_name in distr_names:
        b.add(d_name, [-1,1]) 
