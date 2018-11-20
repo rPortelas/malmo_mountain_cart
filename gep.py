@@ -95,7 +95,7 @@ class GEP(object):
         if self.model_babbling_mode == "active":
             # update interest module of choosen module if not bootstraping
             if len(self.choosen_modules) != 0:
-                print(self.choosen_modules[-1])
+                #print(self.choosen_modules[-1])
                 m_name = self.choosen_modules[-1]
                 mod_sub_outcome = self.modules_config[m_name]['outcome_range']
                 self.modules[m_name].update_interest(self.current_policy,

@@ -214,9 +214,8 @@ class ExtendedMalmoMountainCart(gym2.Env):
             # print(world_state.number_of_observations_since_last_state)
             if world_state.number_of_observations_since_last_state > (self.skip_step + 1):
                 if not first_state:
-                    print("DAMMIT, WE LOST %s OBSERVATION" % (
-                                world_state.number_of_observations_since_last_state - self.skip_step))
-                    print(self.current_step)
+                    print("DAMMIT, WE LOST %s OBSERVATION, step %s" % (
+                                world_state.number_of_observations_since_last_state - self.skip_step, self.current_step))
             if world_state.number_of_observations_since_last_state > self.skip_step or not world_state.is_mission_running:
                 break
         return self.agent_host.getWorldState()
@@ -252,7 +251,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
             except RuntimeError as e:
                 print('failed')
                 if retry == max_retries - 1:
-                    # print("Error starting mission:", e)
+                    print("!!!!!!!!!!!!!!!!!!!!!!Error starting mission: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!", e)
                     exit(1)
                 else:
                     time.sleep(sleep_time[retry])
