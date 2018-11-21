@@ -82,7 +82,7 @@ else:
     distractors = False
 
 # environment-related init
-nb_blocks = 3
+nb_blocks = 5
 # define variable's bounds for policy input and outcome
 state_names = ['agent_x', 'agent_z', 'pickaxe_x', 'pickaxe_z', 'shovel_x', 'shovel_z'] +\
               ['block_' + str(i) for i in range(nb_blocks)] + ['cart_x']
@@ -94,7 +94,7 @@ if distractors:
 experiment_name = args.experiment_name if args.experiment_name else "experiment"
 savefile_name = experiment_name+"_save.pickle"
 book_keeping_file_name = experiment_name+"_bk.pickle"
-save_step = 200
+save_step = 1000
 
 # init neural network policy
 input_names = state_names
@@ -119,8 +119,8 @@ elif (model_type == "random_modular") or (args.model_type == "active_modular"):
     agent_xz = full_outcome[:2]
     pickaxe_xz = full_outcome[2:4]
     shovel_xz = full_outcome[4:6]
-    blocks = full_outcome[6:9]
-    cart_x = [full_outcome[9]]
+    blocks = full_outcome[6:11]
+    cart_x = [full_outcome[11]]
     config = {'policy_nb_dims': total_policy_params,
               'modules':{'agent_end_pos':{'outcome_range': np.array([full_outcome.index(var) for var in agent_xz])},
                          'pickaxe_end_pos':{'outcome_range': np.array([full_outcome.index(var) for var in pickaxe_xz])},
@@ -182,6 +182,8 @@ else:
     for i in range(nb_blocks):
             b_k['end_block_'+str(i)] = []
 
+print("launching {}, bootstrap: {}, seed: {}, noise: {}, distr?: {}".format(model_type,nb_bootstrap,
+                                                                            seed, exploration_noise, distractors))
 #####################################################################
 port = int(args.server_port) if args.server_port else 10000
 # init malmo controller
@@ -218,3 +220,4 @@ for i in range(starting_iteration,max_iterations):
 
 print("saving gep")
 save_gep(gep, max_iterations, b_k, savefile_name, book_keeping_file_name)
+exit(0)

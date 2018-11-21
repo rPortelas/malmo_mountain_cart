@@ -57,8 +57,8 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                     <!-- Draw diamond blocks -->
                     <DrawCuboid x1="290" y1="5" z1="441" x2="292" y2="5" z2="441" type="diamond_ore"/>
                     <!-- fill row -->
-                     <DrawBlock x="293" y="5" z="441" type="bedrock" />
-                      <DrawBlock x="289" y="5" z="441" type="bedrock" />
+                     <DrawBlock x="293" y="5" z="441" type="diamond_ore" />
+                      <DrawBlock x="289" y="5" z="441" type="diamond_ore" />
                      <!-- obsidian used as markers to detect diamond line -->
                     <DrawBlock x="294" y="5" z="441" type="obsidian" />
                     
@@ -134,50 +134,33 @@ class ExtendedMalmoMountainCart(gym2.Env):
 
     def __init__(self, port=10000, tick_lengths=15, skip_step=4, desired_mission_time=8, sparse=False,
                  reward_mixing=20):
-        print('Making new MMC instance')
         self.skip_step = skip_step
         self.tick_lengths = tick_lengths
         self.total_allowed_actions = int((20 / (skip_step + 1)) * desired_mission_time)
-        print(self.total_allowed_actions)
         self._sparse = sparse
         self._reward_mixing = reward_mixing
 
         # define bread positions in MMC arena
-        self.mission_start_sleep = 0.2
+        self.mission_start_sleep = 0.3
 
         self.mission_xml = get_MMC_environment(tick_lengths, self.total_allowed_actions)
         # Create default Malmo objects:
         self.agent_host = MalmoPython.AgentHost()
         self.my_mission = MalmoPython.MissionSpec(self.mission_xml, True)
-        self.my_mission_record = MalmoPython.MissionRecordSpec()
 
         self.client_pool = MalmoPython.ClientPool()
 
-        print("Attempt to communicate with Minecraft")
+        #print("Attempt to communicate with Minecraft")
         # enable the use of up to 21 parallel malmo mountain carts
         for i in range(20):
             self.client_pool.add(MalmoPython.ClientInfo("127.0.0.1", port + i))
 
         n_act = 3
-        n_obs = 10
+        n_obs = 12
 
         self.action_space = spaces.Box(low=-np.ones(n_act), high=np.ones(n_act))
         self.observation_space = spaces.Box(low=-np.repeat([np.array([np.inf])], n_obs),
                                             high=np.repeat([np.array([np.inf])], n_obs))
-
-        # init goal sampling
-        self.state_names = ['agent_x', 'agent_y', 'agent_z', 'cart_x'] + ['block_' + str(i) for i in range(6)] + ['tool_' + str(i) for i in range(3)]
-        self.b = Bounds()
-        self.b.add('agent_x', [288.3, 294.7])
-        self.b.add('agent_z', [433.3, 443.7])
-        self.b.add('pickaxe_x', [288.3, 294.7])
-        self.b.add('pickaxe_z', [433.3, 443.7])
-        self.b.add('shovel_x', [288.3, 294.7])
-        self.b.add('shovel_z', [433.3, 443.7])
-        for i in range(3):
-            self.b.add('block_' + str(i), [-1, 1])
-        self.b.add('cart_x', [285, 297])
-
 
         self.current_step = 0
         self.reset_nb = 0
@@ -262,6 +245,8 @@ class ExtendedMalmoMountainCart(gym2.Env):
             time.sleep(0.001)
             world_state = self.agent_host.peekWorldState()
 
+        time.sleep(self.mission_start_sleep) #dirty to way to wait for server stability
+
         world_state = self.get_world_state(first_state=True)
         obvsText = world_state.observations[-1].text
         observation = json.loads(obvsText)  # observation comes in as a JSON string...
@@ -274,14 +259,12 @@ class ExtendedMalmoMountainCart(gym2.Env):
         obs = dict(observation=state,
                    achieved_goal=state,
                    desired_goal=None)
-
-        time.sleep(self.mission_start_sleep + 0.02)
         return obs
 
     def extract_block_state(self, obs):
         if self.current_step <= 2:
             # avoid using grid observation in (unstable) mission starting part
-            return [-1., -1., -1.]
+            return [-1., -1., -1., -1., -1.]
         grid = np.array(obs['grid']).reshape(13, 13)
         marker_pos = np.argwhere(grid == 'obsidian')
         if len(marker_pos) == 0:
@@ -289,9 +272,9 @@ class ExtendedMalmoMountainCart(gym2.Env):
             assert (agent['name'] == 'FlowersBot')
             agent_pos = [agent['x'], agent['y'], agent['z']]
             print('WARNING obsidian marker not detected !!! grid: {}, step: {}, agent_pos: {}'.format(grid, self.current_step, agent_pos))
-            return [-1., -1., -1.]
+            return [-1., -1., -1., -1., -1.]
         start_x, start_y = marker_pos[0][0], marker_pos[0][1]
-        diamond_blocks = grid[start_x,start_y-4:start_y-1]
+        diamond_blocks = grid[start_x,start_y-5:start_y]
         return [-1. if v=='diamond_ore' else 1. for v in diamond_blocks]
 
     def get_state(self, obs):
