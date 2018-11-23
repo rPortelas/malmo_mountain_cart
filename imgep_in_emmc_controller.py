@@ -179,6 +179,7 @@ else:
     b_k['end_cart_x'] = []
     b_k['choosen_modules'] = []
     b_k['interests'] = dict()
+    b_k['runtimes'] = {'produce':[], 'run':[], 'perceive':[]}
     for i in range(nb_blocks):
             b_k['end_block_'+str(i)] = []
 
@@ -188,19 +189,27 @@ print("launching {}, bootstrap: {}, seed: {}, noise: {}, distr?: {}".format(mode
 port = int(args.server_port) if args.server_port else 10000
 # init malmo controller
 malmo = gym2.make('ExtendedMalmoMountainCart-v0')
-malmo.env.my_init(skip_step=4, tick_lengths=15)
+malmo.env.my_init(skip_step=4, tick_lengths=50)
 
 for i in range(starting_iteration,max_iterations):
     print("########### Iteration # %s ##########" % (i))
     # generate policy using gep
+    prod_time_start = time.time()
     policy_params = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
+    prod_time_end = time.time()
     outcome = run_episode(policy_params)
+    run_ep_end = time.time()
 
     # scale outcome dimensions to [-1,1]
     scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
     gep.perceive(scaled_outcome)
+    perceive_end = time.time()
+
 
     # boring book keeping
+    b_k['runtimes']['produce'] = prod_time_end - prod_time_start
+    b_k['runtimes']['run'] = run_ep_end - prod_time_end
+    b_k['runtimes']['perceive'] = perceive_end - run_ep_end
     b_k['end_agent_x'].append(outcome[full_outcome.index('agent_x')])
     b_k['end_agent_z'].append(outcome[full_outcome.index('agent_z')])
     b_k['end_pickaxe_x'].append(outcome[full_outcome.index('pickaxe_x')])
@@ -217,7 +226,4 @@ for i in range(starting_iteration,max_iterations):
         if model_type == "active_modular":
             b_k['interests'] = gep.interests
         save_gep(gep, i+1, b_k, savefile_name, book_keeping_file_name)
-
-print("saving gep")
-save_gep(gep, max_iterations, b_k, savefile_name, book_keeping_file_name)
 exit(0)
