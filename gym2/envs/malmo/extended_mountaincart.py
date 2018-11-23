@@ -13,6 +13,7 @@ from utils.gep_utils import Bounds, unscale_vector
 
 PICKAXE_POS = [292,436]
 D_TOOL_POS = [290,436]
+LOG = True
 def get_MMC_environment(tick_lengths, total_allowed_actions):
     # if big overclocking, set display refresh rate to 1
     mod_setting = '' if tick_lengths >= 25 else "<PrioritiseOffscreenRendering>true</PrioritiseOffscreenRendering>"
@@ -205,7 +206,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
 
     def reset(self, goal=None):
         world_state = self.agent_host.peekWorldState()
-        # print("resetting, previous mission running ?: {}".format(world_state.is_mission_running))
+        if LOG: print("resetting, previous mission running ?: {}".format(world_state.is_mission_running))
         if world_state.is_mission_running:
             self.agent_host.sendCommand("quit")
             while world_state.is_mission_running:
@@ -222,9 +223,9 @@ class ExtendedMalmoMountainCart(gym2.Env):
         sleep_time = [0.01, 0.1, 0.2, 0.4, 2., 5., 5.]
         for retry in range(max_retries):
             try:
-                # print('trying to start misison')
+                if LOG: print('trying to start mission')
                 # world_state = self.agent_host.peekWorldState()
-                # print("SHOULD BE FALSE: {}".format(world_state.is_mission_running))
+                if LOG: print("SHOULD BE FALSE: {}".format(world_state.is_mission_running))
                 self.agent_host.startMission(self.my_mission,
                                              self.client_pool,
                                              self.my_mission_record,
@@ -232,7 +233,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
 
                 break
             except RuntimeError as e:
-                print('failed')
+                if LOG: print('failed')
                 if retry == max_retries - 1:
                     print("!!!!!!!!!!!!!!!!!!!!!!Error starting mission: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!", e)
                     exit(1)
@@ -240,6 +241,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
                     time.sleep(sleep_time[retry])
 
         # Loop until mission starts:
+        if LOG: print('Loop until mission starts')
         world_state = self.agent_host.peekWorldState()
         while not world_state.has_mission_begun:
             time.sleep(0.001)
@@ -301,6 +303,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
         return np.array(agent_pos + pickaxe_pos + shovel_pos + blocks + cart_x)
 
     def step(self, actions):
+        if LOG: print('starting step number {}'.format(self.current_step))
         if self.current_step == self.total_allowed_actions:
             print('Trying to take action in finished episode')
             return 0
@@ -337,21 +340,13 @@ class ExtendedMalmoMountainCart(gym2.Env):
                 self.agent_host.sendCommand("move 0")
                 world_state = self.agent_host.peekWorldState()
                 while world_state.is_mission_running:
-                    # print('waiting for end of mission')
+                    if LOG: print('waiting for end of mission')
                     time.sleep(0.01)
                     world_state = self.agent_host.peekWorldState()
                 done = True
         else:
             print('MISSION ABORTED BEFORE END OF EP, step:{}'.format(self.current_step))
             done = True
-
-        # else:
-        #     state = self.previous_state  # last state is state n-1
-        #     # detect terminal state
-        #     # print not world_state.is_mission_running
-
-        #reward = self.compute_reward(state, self.desired_goal)
-        #info = {'is_success': bool(reward == 1)}
 
         obs = dict(observation=state,
                    achieved_goal=state,
