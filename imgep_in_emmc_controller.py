@@ -226,4 +226,5 @@ for i in range(starting_iteration,max_iterations):
         if model_type == "active_modular":
             b_k['interests'] = gep.interests
         save_gep(gep, i+1, b_k, savefile_name, book_keeping_file_name)
+print("closing {}".format(b_k['parameters']))
 exit(0)
