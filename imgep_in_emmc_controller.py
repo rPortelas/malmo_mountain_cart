@@ -207,9 +207,9 @@ for i in range(starting_iteration,max_iterations):
 
 
     # boring book keeping
-    b_k['runtimes']['produce'] = prod_time_end - prod_time_start
-    b_k['runtimes']['run'] = run_ep_end - prod_time_end
-    b_k['runtimes']['perceive'] = perceive_end - run_ep_end
+    b_k['runtimes']['produce'].append(prod_time_end - prod_time_start)
+    b_k['runtimes']['run'].append(run_ep_end - prod_time_end)
+    b_k['runtimes']['perceive'].append(perceive_end - run_ep_end)
     b_k['end_agent_x'].append(outcome[full_outcome.index('agent_x')])
     b_k['end_agent_z'].append(outcome[full_outcome.index('agent_z')])
     b_k['end_pickaxe_x'].append(outcome[full_outcome.index('pickaxe_x')])
