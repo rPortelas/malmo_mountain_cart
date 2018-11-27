@@ -140,10 +140,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
         self.total_allowed_actions = int((20 / (skip_step + 1)) * desired_mission_time)
         self._sparse = sparse
         self._reward_mixing = reward_mixing
-
-        # define bread positions in MMC arena
-        self.mission_start_sleep = 0.3
-
+        self.mission_start_sleep = 0.2
         self.mission_xml = get_MMC_environment(tick_lengths, self.total_allowed_actions)
         # Create default Malmo objects:
         self.agent_host = MalmoPython.AgentHost()
@@ -303,7 +300,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
         return np.array(agent_pos + pickaxe_pos + shovel_pos + blocks + cart_x)
 
     def step(self, actions):
-        if LOG: print('starting step number {}'.format(self.current_step))
+        if LOG: print('starting step number {}, acts: {}'.format(self.current_step, actions))
         if self.current_step == self.total_allowed_actions:
             print('Trying to take action in finished episode')
             return 0
