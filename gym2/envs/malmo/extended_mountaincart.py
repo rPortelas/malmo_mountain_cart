@@ -330,14 +330,19 @@ class ExtendedMalmoMountainCart(gym2.Env):
             for error in world_state.errors:
                 print(error.text)
 
-            obvsText = world_state.observations[-1].text
-            observation = json.loads(obvsText)  # observation comes in as a JSON string...
-            state = self.get_state(observation)
-            self.previous_state = state
+            world_state = self.agent_host.peekWorldState()
+            if world_state.is_mission_running:
+                obvsText = world_state.observations[-1].text
+                observation = json.loads(obvsText)  # observation comes in as a JSON string...
+                state = self.get_state(observation)
+                self.previous_state = state
+            else:
+                print('SHOULD NOT HAPPEN, MISSION ENDED AT STEP {} BEFORE THEORETICAL END'.format(self.current_step))
+                state = self.previous_state
 
             if self.current_step == self.total_allowed_actions:  # end of episode
-                # send final dummy action
-                self.agent_host.sendCommand("move 0")
+                # send quit action
+                self.agent_host.sendCommand("quit")
                 world_state = self.agent_host.peekWorldState()
                 while world_state.is_mission_running:
                     if LOG: print('waiting for end of mission')
