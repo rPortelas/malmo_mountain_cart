@@ -327,7 +327,6 @@ class ExtendedMalmoMountainCart(gym2.Env):
             for error in world_state.errors:
                 print(error.text)
 
-            world_state = self.agent_host.peekWorldState()
             if world_state.is_mission_running:
                 obvsText = world_state.observations[-1].text
                 observation = json.loads(obvsText)  # observation comes in as a JSON string...
