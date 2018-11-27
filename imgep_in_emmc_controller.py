@@ -183,13 +183,12 @@ else:
     for i in range(nb_blocks):
             b_k['end_block_'+str(i)] = []
 
-print("launching {}, bootstrap: {}, seed: {}, noise: {}, distr?: {}".format(model_type,nb_bootstrap,
-                                                                            seed, exploration_noise, distractors))
+print("launching {}".format(b_k['parameters']))
 #####################################################################
 port = int(args.server_port) if args.server_port else 10000
 # init malmo controller
 malmo = gym2.make('ExtendedMalmoMountainCart-v0')
-malmo.env.my_init(skip_step=4, tick_lengths=50)
+malmo.env.my_init(skip_step=4, tick_lengths=10)
 
 for i in range(starting_iteration,max_iterations):
     print("########### Iteration # %s ##########" % (i))
