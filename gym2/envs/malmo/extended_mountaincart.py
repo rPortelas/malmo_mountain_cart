@@ -165,7 +165,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
         self.seed()
 
     # call this method to change default parameters
-    def my_init(self, port=10000, tick_lengths=15, skip_step=4, desired_mission_time=8):
+    def my_init(self, port=None, tick_lengths=15, skip_step=4, desired_mission_time=8):
         self.skip_step = skip_step
         self.tick_lengths = tick_lengths
         self.total_allowed_actions = int((20 / (skip_step + 1)) * desired_mission_time)
@@ -174,6 +174,10 @@ class ExtendedMalmoMountainCart(gym2.Env):
         self.agent_host = MalmoPython.AgentHost()
         self.my_mission = MalmoPython.MissionSpec(self.mission_xml, True)
         self.my_mission_record = MalmoPython.MissionRecordSpec()
+
+        if port is not None:
+            self.client_pool = MalmoPython.ClientPool()
+            self.client_pool.add(MalmoPython.ClientInfo("127.0.0.1", port))
 
     def seed(self, seed=None):
         random.seed(seed)

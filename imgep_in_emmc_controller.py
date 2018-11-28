@@ -185,10 +185,10 @@ else:
 
 print("launching {}".format(b_k['parameters']))
 #####################################################################
-port = int(args.server_port) if args.server_port else 10000
+port = int(args.server_port) if args.server_port else None
 # init malmo controller
 malmo = gym2.make('ExtendedMalmoMountainCart-v0')
-malmo.env.my_init(skip_step=4, tick_lengths=10)
+malmo.env.my_init(port=port, skip_step=4, tick_lengths=10)
 
 for i in range(starting_iteration,max_iterations):
     print("########### Iteration # %s ##########" % (i))
