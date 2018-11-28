@@ -100,7 +100,7 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
               <AgentSection mode="Survival">
                 <Name>FlowersBot</Name>
                 <AgentStart>
-                  <Placement x="293.5" y="4.2" z="433.5" yaw="0"/>
+                  <Placement x="291.5" y="4.2" z="433.5" yaw="0"/>
                   <Inventory></Inventory>
                 </AgentStart>
                 <AgentHandlers>
