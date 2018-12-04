@@ -94,6 +94,7 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
 
                   </DrawingDecorator>
                   <ServerQuitWhenAnyAgentFinishes/>
+                  <ServerQuitFromTimeUp description="" timeLimitMs="15000"/>
                 </ServerHandlers>
               </ServerSection>
 
