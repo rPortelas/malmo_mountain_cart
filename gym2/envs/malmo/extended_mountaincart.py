@@ -13,7 +13,7 @@ from utils.gep_utils import Bounds, unscale_vector
 
 PICKAXE_POS = [292,436]
 D_TOOL_POS = [290,436]
-LOG = True
+LOG = False
 def get_MMC_environment(tick_lengths, total_allowed_actions):
     # if big overclocking, set display refresh rate to 1
     mod_setting = '' if tick_lengths >= 25 else "<PrioritiseOffscreenRendering>true</PrioritiseOffscreenRendering>"
@@ -56,10 +56,10 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                     <DrawCuboid x1="297" y1="6" z1="445" x2="285" y2="9" z2="445" type="bedrock"/> 
                     
                     <!-- Draw diamond blocks -->
-                    <DrawCuboid x1="290" y1="5" z1="441" x2="292" y2="5" z2="441" type="diamond_ore"/>
+                    <DrawCuboid x1="290" y1="5" z1="441" x2="292" y2="5" z2="441" type="coal_ore"/>
                     <!-- fill row -->
-                     <DrawBlock x="293" y="5" z="441" type="diamond_ore" />
-                      <DrawBlock x="289" y="5" z="441" type="diamond_ore" />
+                     <DrawBlock x="293" y="5" z="441" type="coal_ore" />
+                      <DrawBlock x="289" y="5" z="441" type="coal_ore" />
                      <!-- obsidian used as markers to detect diamond line -->
                     <DrawBlock x="294" y="5" z="441" type="obsidian" />
                     
@@ -89,12 +89,12 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
 
                   
                     <!-- Draw tools -->
-                    <DrawItem x="''' + str(PICKAXE_POS[0]) + '''" y="4" z="'''+ str(PICKAXE_POS[1]) + '''" type="diamond_pickaxe"/>
+                    <DrawItem x="''' + str(PICKAXE_POS[0]) + '''" y="4" z="'''+ str(PICKAXE_POS[1]) + '''" type="golden_pickaxe"/>
                     <DrawItem x="''' + str(D_TOOL_POS[0]) + '''" y="4" z="'''+ str(D_TOOL_POS[1]) + '''" type="diamond_shovel"/>
 
                   </DrawingDecorator>
                   <ServerQuitWhenAnyAgentFinishes/>
-                  <ServerQuitFromTimeUp description="" timeLimitMs="15000"/>
+                  <ServerQuitFromTimeUp description="" timeLimitMs="25000"/>
                 </ServerHandlers>
               </ServerSection>
 
@@ -176,9 +176,9 @@ class ExtendedMalmoMountainCart(gym2.Env):
         self.my_mission = MalmoPython.MissionSpec(self.mission_xml, True)
         self.my_mission_record = MalmoPython.MissionRecordSpec()
 
-        if port is not None:
-            self.client_pool = MalmoPython.ClientPool()
-            self.client_pool.add(MalmoPython.ClientInfo("127.0.0.1", port))
+        #if port is not None:
+        #    self.client_pool = MalmoPython.ClientPool()
+        #    self.client_pool.add(MalmoPython.ClientInfo("127.0.0.1", port))
 
     def seed(self, seed=None):
         random.seed(seed)
@@ -279,7 +279,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
             return [-1., -1., -1., -1., -1.]
         start_x, start_y = marker_pos[0][0], marker_pos[0][1]
         diamond_blocks = grid[start_x,start_y-5:start_y]
-        return [-1. if v=='diamond_ore' else 1. for v in diamond_blocks]
+        return [-1. if v=='coal_ore' else 1. for v in diamond_blocks]
 
     def get_state(self, obs):
         #print(obs)
@@ -290,7 +290,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
         pickaxe_pos = None
         shovel_pos = None
         for e in obs['entities']:
-            if e['name'] == 'diamond_pickaxe':
+            if e['name'] == 'golden_pickaxe':
                 pickaxe_pos = [e['x'], e['z']]
             if e['name'] == 'diamond_shovel':
                 shovel_pos = [e['x'], e['z']]
