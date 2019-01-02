@@ -13,10 +13,11 @@ class LearningModule(object):
         self.explo_noise = explo_noise
         self.babbling_mode = babbling_mode
 
+        self.generated_goals = None
+        self.observed_outcomes = None
+
         if self.babbling_mode == "active":
-            self.mean_rate = 100. # running mean window 
-            self.generated_goals = None
-            self.observed_outcomes = None
+            self.mean_rate = 100. # running mean window
             self.interest = 0
             self.progress = 0
             self.interest_knn = NearestNeighbors(n_neighbors=1, metric='euclidean', algorithm='ball_tree')
@@ -30,12 +31,14 @@ class LearningModule(object):
         goal = np.random.random(self.o_size) * 2 - 1
         goal = goal.reshape(1,-1)
         add_noise = True
+
+        if self.generated_goals is None:
+            self.generated_goals = np.array(goal)
+        else:
+            self.generated_goals = np.vstack((self.generated_goals, goal))
+
         if self.babbling_mode == "active":
             #print self.counter
-            if self.generated_goals is None:
-                self.generated_goals = np.array(goal)
-            else:
-                self.generated_goals = np.vstack((self.generated_goals, goal))
             self.counter += 1
             if self.update_interest_step == 1: #compute noisy interest at every step
                 add_noise = True
@@ -53,7 +56,7 @@ class LearningModule(object):
             policy = np.clip(policy, -1, 1)
         return policy[0]
 
-    def update_interest(self, policy, outcome):
+    def perceive(self, policy, outcome):
         policy = policy.reshape(1,-1)
         outcome = outcome.reshape(1,-1)
         if self.babbling_mode == "active":
@@ -68,7 +71,7 @@ class LearningModule(object):
                 return
             self.counter = 0 # reset counter
             #print 'updating interest'
-            #print 'update'
+            #print 'update'gene
             assert(self.generated_goals.shape[0] == (self.observed_outcomes.shape[0] + 1))
             previous_goals = self.generated_goals[:-1,:]
             current_goal = self.generated_goals[-1,:].reshape(1,-1)
@@ -86,8 +89,8 @@ class LearningModule(object):
             # with s_g current goal and s observed outcome
             # s_g' closest previous goal and s' its observed outcome
             #print 'old interest: %s' % self.interest
-            dist_goal_old_outcome = np.mean(np.abs(current_goal - closest_previous_goal_outcome))
-            dist_goal_cur_outcome = np.mean(np.abs(current_goal - outcome))
+            dist_goal_old_outcome = np.linalg.norm(current_goal - closest_previous_goal_outcome)
+            dist_goal_cur_outcome = np.linalg.norm(current_goal - outcome)
             progress = dist_goal_old_outcome - dist_goal_cur_outcome
             self.progress = ((self.mean_rate-1)/self.mean_rate) * self.progress + (1/self.mean_rate) * progress
             self.interest = np.abs(self.progress)
@@ -95,4 +98,8 @@ class LearningModule(object):
             #update observed outcomes
             self.observed_outcomes = np.vstack((self.observed_outcomes, outcome))
         else:
-            raise NotImplementedError
+            if self.generated_goals.shape[0] != 0: #end of bt phase, goals are sampled
+                if self.generated_goals.shape[0] == 1:
+                    self.observed_outcomes = np.array(outcome)
+                else:
+                    self.observed_outcomes = np.vstack((self.observed_outcomes, outcome))

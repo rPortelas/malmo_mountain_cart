@@ -197,6 +197,10 @@ for i in range(starting_iteration,max_iterations):
     policy_params = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
     prod_time_end = time.time()
     outcome = run_episode(policy_params)
+    #print(outcome)
+    if outcome[-1] != 291.5:
+        with open("{}_policy_cart_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
+            pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
     run_ep_end = time.time()
 
     # scale outcome dimensions to [-1,1]

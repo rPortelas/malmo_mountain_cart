@@ -91,15 +91,14 @@ class GEP(object):
 
     def perceive(self, outcome):
         #assert(outcome.shape[0] == self.total_outcome_range)
-        
+        if len(self.choosen_modules) != 0:
+            # print(self.choosen_modules[-1])
+            m_name = self.choosen_modules[-1]
+            mod_sub_outcome = self.modules_config[m_name]['outcome_range']
+            self.modules[m_name].perceive(self.current_policy,
+                                          np.take(outcome, mod_sub_outcome))
         if self.model_babbling_mode == "active":
             # update interest module of choosen module if not bootstraping
-            if len(self.choosen_modules) != 0:
-                #print(self.choosen_modules[-1])
-                m_name = self.choosen_modules[-1]
-                mod_sub_outcome = self.modules_config[m_name]['outcome_range']
-                self.modules[m_name].update_interest(self.current_policy,
-                                                     np.take(outcome, mod_sub_outcome))
             # interests book-keeping
             for m_name,m in self.modules.items():
                 self.interests[m_name].append(m.interest)

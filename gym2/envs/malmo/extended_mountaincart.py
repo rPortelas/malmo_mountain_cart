@@ -176,10 +176,12 @@ class ExtendedMalmoMountainCart(gym2.Env):
         self.agent_host = MalmoPython.AgentHost()
         self.my_mission = MalmoPython.MissionSpec(self.mission_xml, True)
         self.my_mission_record = MalmoPython.MissionRecordSpec()
-
+        self.client_pool = MalmoPython.ClientPool()
         if port is not None:
-            self.client_pool = MalmoPython.ClientPool()
             self.client_pool.add(MalmoPython.ClientInfo("127.0.0.1", port))
+        else:
+            for i in range(20):
+                self.client_pool.add(MalmoPython.ClientInfo("127.0.0.1", 10000 + i))
 
     def seed(self, seed=None):
         random.seed(seed)
