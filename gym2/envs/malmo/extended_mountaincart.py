@@ -151,8 +151,8 @@ class ExtendedMalmoMountainCart(gym2.Env):
 
         #print("Attempt to communicate with Minecraft")
         # enable the use of up to 21 parallel malmo mountain carts
-        for i in range(20):
-            self.client_pool.add(MalmoPython.ClientInfo("127.0.0.1", port + i))
+        #for i in range(20):
+        #    self.client_pool.add(MalmoPython.ClientInfo("127.0.0.1", port + i))
 
         n_act = 3
         n_obs = 12
@@ -176,9 +176,9 @@ class ExtendedMalmoMountainCart(gym2.Env):
         self.my_mission = MalmoPython.MissionSpec(self.mission_xml, True)
         self.my_mission_record = MalmoPython.MissionRecordSpec()
 
-        #if port is not None:
-        #    self.client_pool = MalmoPython.ClientPool()
-        #    self.client_pool.add(MalmoPython.ClientInfo("127.0.0.1", port))
+        if port is not None:
+            self.client_pool = MalmoPython.ClientPool()
+            self.client_pool.add(MalmoPython.ClientInfo("127.0.0.1", port))
 
     def seed(self, seed=None):
         random.seed(seed)
@@ -305,7 +305,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
         return np.array(agent_pos + pickaxe_pos + shovel_pos + blocks + cart_x)
 
     def step(self, actions):
-        if LOG: print('starting step number {}, acts: {}'.format(self.current_step, actions))
+        if LOG: print('time:{}, starting step number {}, acts: {}'.format(time.time(), self.current_step, actions))
         if self.current_step == self.total_allowed_actions:
             print('Trying to take action in finished episode')
             return 0
