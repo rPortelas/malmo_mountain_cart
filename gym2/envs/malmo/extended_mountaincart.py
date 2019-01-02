@@ -17,6 +17,7 @@ LOG = False
 def get_MMC_environment(tick_lengths, total_allowed_actions):
     # if big overclocking, set display refresh rate to 1
     mod_setting = '' if tick_lengths >= 25 else "<PrioritiseOffscreenRendering>true</PrioritiseOffscreenRendering>"
+    max_time = str((50/tick_lengths) * 25000)
     missionXML = '''<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
             <Mission xmlns="http://ProjectMalmo.microsoft.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
@@ -94,7 +95,7 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
 
                   </DrawingDecorator>
                   <ServerQuitWhenAnyAgentFinishes/>
-                  <ServerQuitFromTimeUp description="" timeLimitMs="25000"/>
+                  <ServerQuitFromTimeUp description="" timeLimitMs="'''+ max_time + '''"/>
                 </ServerHandlers>
               </ServerSection>
 
