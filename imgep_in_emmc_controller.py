@@ -180,6 +180,7 @@ else:
     b_k['choosen_modules'] = []
     b_k['interests'] = dict()
     b_k['runtimes'] = {'produce':[], 'run':[], 'perceive':[]}
+    b_k['modules'] = {}
     for i in range(nb_blocks):
             b_k['end_block_'+str(i)] = []
 
@@ -226,6 +227,7 @@ for i in range(starting_iteration,max_iterations):
     if ((i+1) % save_step) == 0:
         print("saving gep")
         b_k['choosen_modules'] = gep.choosen_modules
+        b_k['modules'] = gep.modules
         if model_type == "active_modular":
             b_k['interests'] = gep.interests
         save_gep(gep, i+1, b_k, savefile_name, book_keeping_file_name)
