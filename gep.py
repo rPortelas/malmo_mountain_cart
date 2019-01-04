@@ -6,10 +6,14 @@ from utils.gep_utils import scale_vector, proportional_choice
 
 class GEP(object):
 
-    def __init__(self, config, model_babbling_mode="random", explo_noise=0.1, update_interest_step=5):
+    def __init__(self, config, model_babbling_mode="random", explo_noise=0.1, p_mutate=0.5, bootstrap_type="random", max_steps=32, seq_size=4, update_interest_step=5):
         
         self.model_babbling_mode = model_babbling_mode
         self.explo_noise = explo_noise
+        self.bootstrap_type = bootstrap_type
+        self.max_steps = max_steps
+        self.seq_size = seq_size
+        self.steps_per_nn = max_steps / seq_size
 
         # book keeping
         self.choosen_modules = [] 
@@ -29,7 +33,9 @@ class GEP(object):
                                                   outcome_size, 
                                                   model_babbling_mode, 
                                                   explo_noise=explo_noise,
-                                                  update_interest_step=update_interest_step)
+                                                  update_interest_step=update_interest_step,
+                                                  seq_size=self.seq_size,
+                                                  p_mutate=p_mutate)
             self.modules_config[m_name]['outcome_size'] = outcome_size
             self.total_outcome_range += outcome_size
             self.interests[m_name] = []
@@ -43,13 +49,14 @@ class GEP(object):
                                           algorithm='ball_tree',
                                           weights='distance')
         self.knn_X = None # X = observed outcome
-        self.knn_Y = None # Y = produced policies' parameters
+        self.knn_Y = [] # Y = produced policies' parameters
 
     # returns policy parameters following and exploration process if no goal is provided
     # if a goal is provided, returns best parameter policy using NN exploitation
     def produce(self, normalized_goal=None, goal_range=None, bootstrap=False, context=None):
         if normalized_goal is not None:
-            
+            raise NotImplementedError
+            exit(0)
             # use main neirest neighbor model to find best policy
             subgoal_space = self.knn_X[:,goal_range]
             #print subgoal_space.shape
@@ -57,10 +64,18 @@ class GEP(object):
             return self.knn.predict(normalized_goal.reshape(1,-1))[0]
 
         if bootstrap:
-            # returns random policy parameters in range [-1,1]
-            self.current_policy = np.random.random(self.policy_nb_dims) * 2 - 1
-            return self.current_policy
-
+            if self.bootstrap_type == "random":
+                # choose sequence size
+                size = np.random.randint(self.seq_size) + 1
+                self.current_policy = []
+                # returns random policy parameters in range [-1,1]
+                weights = np.random.random(self.policy_nb_dims) * 2 - 1
+                for i in range(size):
+                    self.current_policy.append(weights)
+                return self.current_policy
+            else:
+                raise NotImplementedError
+                exit(0)
 
         if self.model_babbling_mode == "random":
             # random model babbling step
@@ -106,10 +121,9 @@ class GEP(object):
         # update main knn
         # add new policy outcome pair to database
         outcome = outcome.reshape(1,-1)
-        policy = self.current_policy.reshape(1,-1)
+        policy = self.current_policy
         if self.knn_X is None:
             self.knn_X = np.array(outcome)
-            self.knn_Y = np.array(policy)
         else:
             self.knn_X = np.vstack((self.knn_X,outcome))
-            self.knn_Y = np.vstack((self.knn_Y,policy))
+        self.knn_Y.append(policy)

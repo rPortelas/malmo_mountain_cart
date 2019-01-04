@@ -1,5 +1,28 @@
 import numpy as np
 
+class Sequential_NN(object):
+    def __init__(self, max_steps, seq_size, in_size, in_bounds, out_size, hidden_size, out_activation="tanh"):
+        self.max_steps = max_steps
+        self.steps_per_nn = int(max_steps / seq_size)
+        print('Initiating sequential NN, with {} steps per nn'.format(self.steps_per_nn))
+        self.NN = Simple_NN(in_size, in_bounds, out_size, hidden_size, out_activation)
+        self.w_list = None
+        self.step_counter = -1
+
+    def set_weights(self, w_list):
+        self.w_list = w_list
+        self.step_counter = 0
+
+    def forward(self, state):
+        assert(self.step_counter < self.max_steps)
+        w_idx = self.step_counter // self.steps_per_nn
+        #print(w_idx)
+        self.step_counter += 1
+        return self.NN.forward(state, self.w_list[w_idx])
+
+
+
+
 class Simple_NN(object):
     # simple 1 hidden layer neural network with relu then tanh activation
     def __init__(self, in_size, in_bounds, out_size, hidden_size, out_activation="tanh"):

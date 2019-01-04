@@ -8,7 +8,7 @@ import pickle
 import time
 import numpy as np
 from gep import GEP
-from utils.nn_policy import Simple_NN
+from utils.nn_policy import Sequential_NN
 import matplotlib.pyplot as plt
 from utils.plot_utils import *
 import collections
@@ -44,15 +44,14 @@ def load_gep(savefile_name, book_keeping_name):
         b_k = pickle.load(handle)
     return gep, starting_iteration, b_k
 
-def run_episode(policy_params):
+def run_episode(param_policy, nb_steps):
     out = malmo.reset()
     state = out['observation']
     # Loop until mission/episode ends:
-    done = False
-    while not done:
+    for i in range(nb_steps):
         # extract the world state that will be given to the agent's policy
-        actions = param_policy.forward(state.reshape(1,-1), policy_params)
-        out,_, done, _ = malmo.step(actions)
+        actions = param_policy.forward(state.reshape(1,-1))
+        out,_, _, _ = malmo.step(actions)
         state = out['observation']
     return get_outcome(state)
 
@@ -103,10 +102,16 @@ input_size = len(input_bounds)
 print('input_bounds: %s' % input_bounds) 
 hidden_layer_size = 64
 action_set_size = 3
-param_policy = Simple_NN(input_size, input_bounds, action_set_size , hidden_layer_size)
+param_policy = Sequential_NN(32,4,input_size, input_bounds, action_set_size , hidden_layer_size)
 total_policy_params = hidden_layer_size*input_size + hidden_layer_size*action_set_size
 
 # init IMGEP
+p_mutate = 0.5
+bootstrap_type = "random"
+max_steps = 32
+seq_size = 4
+steps_per_nn = int(max_steps / seq_size)
+
 full_outcome = input_names
 if distractors: full_outcome += distr_names
 full_outcome_bounds = b.get_bounds(full_outcome)
@@ -156,10 +161,15 @@ else:
 
         gep = GEP(config,
                   model_babbling_mode="active", 
-                  explo_noise=exploration_noise, 
+                  explo_noise=exploration_noise,
+                  p_mutate=p_mutate,
+                  bootstrap_type=bootstrap_type,
+                  max_steps=max_steps,
+                  seq_size=seq_size,
                   update_interest_step= interest_step)
     else: # F-RGB or RMB init
-        gep = GEP(config, model_babbling_mode="random", explo_noise=exploration_noise)
+        gep = GEP(config, model_babbling_mode="random", explo_noise=exploration_noise,p_mutate=p_mutate,
+                  bootstrap_type=bootstrap_type, max_steps=max_steps, seq_size=seq_size)
 
     # init boring book keeping
     b_k = dict()
@@ -181,6 +191,7 @@ else:
     b_k['interests'] = dict()
     b_k['runtimes'] = {'produce':[], 'run':[], 'perceive':[]}
     b_k['modules'] = {}
+    b_k['runs_steps'] = []
     for i in range(nb_blocks):
             b_k['end_block_'+str(i)] = []
 
@@ -189,15 +200,18 @@ print("launching {}".format(b_k['parameters']))
 port = int(args.server_port) if args.server_port else None
 # init malmo controller
 malmo = gym2.make('ExtendedMalmoMountainCart-v0')
-malmo.env.my_init(port=port, skip_step=4, tick_lengths=10)
+malmo.env.my_init(port=port, skip_step=4, tick_lengths=50)
 
 for i in range(starting_iteration,max_iterations):
     print("########### Iteration # %s ##########" % (i))
     # generate policy using gep
     prod_time_start = time.time()
     policy_params = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
+    param_policy.set_weights(policy_params)
     prod_time_end = time.time()
-    outcome = run_episode(policy_params)
+    nb_steps = len(policy_params) * steps_per_nn
+    #print("nb steps for episode: {}".format(nb_steps))
+    outcome = run_episode(param_policy, nb_steps)
     #print(outcome)
     if outcome[-1] != 291.5:
         with open("{}_policy_cart_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
@@ -211,6 +225,7 @@ for i in range(starting_iteration,max_iterations):
 
 
     # boring book keeping
+    b_k['runs_steps'].append(nb_steps)
     b_k['runtimes']['produce'].append(prod_time_end - prod_time_start)
     b_k['runtimes']['run'].append(run_ep_end - prod_time_end)
     b_k['runtimes']['perceive'].append(perceive_end - run_ep_end)
