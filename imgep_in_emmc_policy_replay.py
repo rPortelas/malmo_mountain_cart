@@ -31,7 +31,14 @@ def get_outcome(state):
         outcome += distractors_final_state
     return np.array(outcome)
 
-def run_episode(policy_params):
+def run_episode(policy_params, add_noise=False, noise=0.025):
+    print(policy_params[0])
+    if add_noise:
+        noised_policy = policy_params.copy()
+        noised_policy += np.random.normal(0, noise, len(policy_params))
+        noised_policy = np.clip(noised_policy, -1, 1)
+        policy_params = noised_policy
+    print(policy_params[0])
     out = malmo.reset()
     state = out['observation']
     # Loop until mission/episode ends:
@@ -101,12 +108,19 @@ total_policy_params = hidden_layer_size * input_size + hidden_layer_size * actio
 port = int(args.server_port) if args.server_port else None
 # init malmo controller
 malmo = gym2.make('ExtendedMalmoMountainCart-v0')
-malmo.env.my_init(port=port, skip_step=4, tick_lengths=15)
+malmo.env.my_init(port=port, skip_step=4, tick_lengths=25)
 
-with open("ttt_policy_cart_1546436123.8368607.pickle", 'rb') as handle:
+with open("emmccpu_amb_0_policy_cart_1546507987.0211735.pickle", 'rb') as handle:
     policy_params = pickle.load(handle)
-for i in range(0, max_iterations):
+outs=[]
+for i in range(0, 100):
+    time.sleep(0.5)
     print("########### Iteration # %s ##########" % (i))
-    outcome = run_episode(policy_params)
+    outcome = run_episode(policy_params, add_noise=True)
     print(outcome)
+    if outcome[-1] != 291.5:
+        outs.append(outcome[-1])
+print(outs)
+print(len(outs))
+
 exit(0)
