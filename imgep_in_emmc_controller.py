@@ -55,7 +55,9 @@ def run_episode(model):
     done = False
     while not done:
         # extract the world state that will be given to the agent's policy
-        actions = model.get_action(state.reshape(1, -1))
+        normalized_state = scale_vector(state, np.array(input_bounds))
+        print(normalized_state)
+        actions = model.get_action(normalized_state.reshape(1, -1))
         out, _, done, _ = malmo.step(actions[0])
         state = out['observation']
     return get_outcome(state)
