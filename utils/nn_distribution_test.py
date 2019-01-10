@@ -14,10 +14,10 @@ import collections
 
 
 # init neural network policy
-state_bounds = np.array([[-1.,1.]]*10)
+state_bounds = np.array([[-1.,1.]]*31)
 hidden_layer_size = 64
-state_size = 12
-action_set_size = 3
+state_size = 31
+action_set_size = 4
 model = Simple_NN(state_size, state_bounds, action_set_size , hidden_layer_size)
 policy_nb_dims = model.nb_w1_weights + model.nb_w2_weights
 
@@ -25,7 +25,7 @@ policy_nb_dims = model.nb_w1_weights + model.nb_w2_weights
 nb_iterations = 100000
 outputs = np.zeros((nb_iterations, action_set_size))
 
-temperature_param = [0.18] # 0.17 (or 0.12 when input=21) works great !
+temperature_param = [0.14] # 0.17 (or 0.12 when input=21) works great !
 for tmp in temperature_param:
     print("using tanh temperature of %s" % temperature_param)
     model.tmp_controller = tmp
@@ -36,11 +36,11 @@ for tmp in temperature_param:
         for i in range(nb_iterations//1000):
             # random input
             x = np.random.random(state_size) * 2 - 1
-            for j,v in enumerate(x[8:].tolist()):
-                if v < 0:
-                    x[8+j] = -1.
-                else:
-                    x[8+j] = 1.
+            # for j,v in enumerate(x[8:].tolist()):
+            #     if v < 0:
+            #         x[8+j] = -1.
+            #     else:
+            #         x[8+j] = 1.
 
             out = model.forward(x.reshape(1,-1),weights,scale=False)
             #print out
@@ -55,6 +55,8 @@ for tmp in temperature_param:
     plt.hist(outputs[:,1])
     plt.figure(3)
     plt.hist(outputs[:, 2])
+    plt.figure(4)
+    plt.hist(outputs[:, 3])
     plt.show(block=False)
     time.sleep(2.)
     plt.close(1)

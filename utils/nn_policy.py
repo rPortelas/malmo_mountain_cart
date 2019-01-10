@@ -14,6 +14,8 @@ class Simple_NN(object):
             self.tmp_controller = 0.21
         elif self.in_size == 12:
             self.tmp_controller = 0.18
+        elif self.in_size == 31:
+            self.tmp_controller = 0.14
         else:
             raise NotImplementedError
 
