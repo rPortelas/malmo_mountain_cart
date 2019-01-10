@@ -85,7 +85,7 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                     
                     <!-- Draw starting cage -->
                     <DrawCuboid x1="289" y1="4" z1="437" x2="293" y2="5" z2="437" type="bedrock"/>
-                    <DrawCuboid x1="290" y1="4" z1="435" x2="292" y2="4" z2="435" type="bedrock"/>
+                    <DrawCuboid x1="289" y1="4" z1="435" x2="293" y2="4" z2="435" type="bedrock"/>
                     <DrawBlock x="291" y="4" z="436" type="bedrock" />
 
                   

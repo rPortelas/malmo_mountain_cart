@@ -2,12 +2,16 @@ from learning_module import LearningModule
 import numpy as np
 from sklearn.neighbors import KNeighborsRegressor
 from utils.gep_utils import scale_vector, proportional_choice
+from utils.initialization_functions import he_uniform
 
 
 class GEP(object):
 
-    def __init__(self, config, model_babbling_mode="random", explo_noise=0.1, update_interest_step=5):
+    def __init__(self, layers, init_function_params, config, model_babbling_mode="random", explo_noise=0.1, update_interest_step=5):
         
+        self.layers = layers
+        self.init_function_params = init_function_params
+
         self.model_babbling_mode = model_babbling_mode
         self.explo_noise = explo_noise
 
@@ -57,8 +61,10 @@ class GEP(object):
             return self.knn.predict(normalized_goal.reshape(1,-1))[0]
 
         if bootstrap:
-            # returns random policy parameters in range [-1,1]
-            self.current_policy = np.random.random(self.policy_nb_dims) * 2 - 1
+            # returns random policy parameters in range [-1,1] using he_uniform
+            #self.current_policy = np.random.random(self.policy_nb_dims) * 2 - 1
+            rnd_weights, rnd_biases = he_uniform(self.layers, self.init_function_params)
+            self.current_policy = np.concatenate((rnd_weights, rnd_biases))
             return self.current_policy
 
 
