@@ -48,6 +48,8 @@ def load_gep(savefile_name, book_keeping_name):
     return gep, starting_iteration, b_k
 
 
+
+
 def run_episode(model):
     out = malmo.reset()
     state = out['observation']
@@ -169,7 +171,6 @@ if os.path.isfile(savefile_name):
     np.random.seed(b_k['parameters']['seed'])
 
 else:
-    starting_iteration = 0
     seed = np.random.randint(1000)
     np.random.seed(seed)
     if model_type == "active_modular":  # AMB init
@@ -185,28 +186,44 @@ else:
     else:  # F-RGB or RMB init
         gep = GEP(layers, params,config, model_babbling_mode="random", explo_noise=exploration_noise)
 
-    # init boring book keeping
-    b_k = dict()
-    b_k['parameters'] = {'model_type': model_type,
-                         'nb_bootstrap': nb_bootstrap,
-                         'seed': seed,
-                         'explo_noise': exploration_noise,
-                         'distractors': distractors}
-    if model_type == 'active_modular':
-        b_k['parameters']['update_interest_step'] = interest_step
-    b_k['end_agent_x'] = []
-    b_k['end_agent_z'] = []
-    b_k['end_pickaxe_x'] = []
-    b_k['end_pickaxe_z'] = []
-    b_k['end_shovel_x'] = []
-    b_k['end_shovel_z'] = []
-    b_k['end_cart_x'] = []
-    b_k['choosen_modules'] = []
-    b_k['interests'] = dict()
-    b_k['runtimes'] = {'produce': [], 'run': [], 'perceive': []}
-    b_k['modules'] = {}
-    for i in range(nb_blocks):
-        b_k['end_block_' + str(i)] = []
+    start_from_bootstrap = True
+    if start_from_bootstrap == True:
+        bt_filename = "emmc05_rnd_7_save.pickle"
+        bt_bk_filename = "emmc05_rnd_7_bk.pickle"
+        bt_gep, starting_iteration, b_k = load_gep(bt_filename, bt_bk_filename)
+        gep.knn_X = bt_gep.knn_X
+        gep.knn_Y = bt_gep.knn_Y
+        b_k['parameters'] = {'model_type': model_type,
+                             'nb_bootstrap': nb_bootstrap,
+                             'seed': seed,
+                             'explo_noise': exploration_noise,
+                             'distractors': distractors}
+        if model_type == 'active_modular':
+            b_k['parameters']['update_interest_step'] = interest_step
+    else:
+        starting_iteration = 0
+        # init boring book keeping
+        b_k = dict()
+        b_k['parameters'] = {'model_type': model_type,
+                             'nb_bootstrap': nb_bootstrap,
+                             'seed': seed,
+                             'explo_noise': exploration_noise,
+                             'distractors': distractors}
+        if model_type == 'active_modular':
+            b_k['parameters']['update_interest_step'] = interest_step
+        b_k['end_agent_x'] = []
+        b_k['end_agent_z'] = []
+        b_k['end_pickaxe_x'] = []
+        b_k['end_pickaxe_z'] = []
+        b_k['end_shovel_x'] = []
+        b_k['end_shovel_z'] = []
+        b_k['end_cart_x'] = []
+        b_k['choosen_modules'] = []
+        b_k['interests'] = dict()
+        b_k['runtimes'] = {'produce': [], 'run': [], 'perceive': []}
+        b_k['modules'] = {}
+        for i in range(nb_blocks):
+            b_k['end_block_' + str(i)] = []
 
 print("launching {}".format(b_k['parameters']))
 #####################################################################
@@ -223,10 +240,10 @@ for i in range(starting_iteration, max_iterations):
     prod_time_end = time.time()
     param_policy.set_parameters(policy_params)
     outcome = run_episode(param_policy)
-    # print(outcome)
-    # if outcome[-1] != 291.5:
-    #     with open("{}_policy_cart_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
-    #         pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    print(outcome)
+    if outcome[-1] != 291.5:
+        with open("{}_policy_cart_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
+            pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
     run_ep_end = time.time()
 
     # scale outcome dimensions to [-1,1]
