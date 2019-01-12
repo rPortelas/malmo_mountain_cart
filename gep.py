@@ -41,11 +41,11 @@ class GEP(object):
         #self.current_module = None
         self.current_policy = None
 
-        # init main knn, will be used for exploitation
-        self.knn = KNeighborsRegressor(n_neighbors=1,
-                                          metric='euclidean',
-                                          algorithm='ball_tree',
-                                          weights='distance')
+        # # init main knn, will be used for exploitation
+        # self.knn = KNeighborsRegressor(n_neighbors=1,
+        #                                   metric='euclidean',
+        #                                   algorithm='ball_tree',
+        #                                   weights='distance')
         self.knn_X = None # X = observed outcome
         self.knn_Y = None # Y = produced policies' parameters
 
@@ -53,7 +53,7 @@ class GEP(object):
     # if a goal is provided, returns best parameter policy using NN exploitation
     def produce(self, normalized_goal=None, goal_range=None, bootstrap=False, context=None):
         if normalized_goal is not None:
-            
+
             # use main neirest neighbor model to find best policy
             subgoal_space = self.knn_X[:,goal_range]
             #print subgoal_space.shape
@@ -61,12 +61,10 @@ class GEP(object):
             return self.knn.predict(normalized_goal.reshape(1,-1))[0]
 
         if bootstrap:
-            # returns random policy parameters in range [-1,1] using he_uniform
-            #self.current_policy = np.random.random(self.policy_nb_dims) * 2 - 1
+            # returns random policy parameters using he_uniform
             rnd_weights, rnd_biases = he_uniform(self.layers, self.init_function_params)
             self.current_policy = np.concatenate((rnd_weights, rnd_biases))
             return self.current_policy
-
 
         if self.model_babbling_mode == "random":
             # random model babbling step
@@ -86,36 +84,42 @@ class GEP(object):
             return NotImplementedError
 
         self.choosen_modules.append(module_name) # book keeping
-        module_outcome_range = self.modules_config[module_name]['outcome_range']
-        module_sub_outcome = self.knn_X[:,module_outcome_range]
+        #module_outcome_range = self.modules_config[module_name]['outcome_range']
+        #module_sub_outcome = self.knn_X[:,module_outcome_range]
         #print "choosen module: %s with range: %s" % (module_name, module_outcome_range)
         #print "sub_outcome data shape:"
         #print module_sub_outcome.shape
-        self.current_policy = self.modules[module_name].produce(module_sub_outcome,self.knn_Y,self.knn)
+        self.current_policy = self.modules[module_name].produce()
 
         return self.current_policy
 
     def perceive(self, outcome):
-        #assert(outcome.shape[0] == self.total_outcome_range)
-        if len(self.choosen_modules) != 0:
+        assert(outcome.shape[0] == self.total_outcome_range)
+        #add data to modules
+        for m_name,m in self.modules.items():
+                mod_sub_outcome = self.modules_config[m_name]['outcome_range']
+                #print("choosen module: %s with range: %s" % (m_name, mod_sub_outcome))
+                #print("sub_outcome data shape:")
+                #print(mod_sub_outcome.shape)
+                m.perceive(self.current_policy, np.take(outcome, mod_sub_outcome))
+                if self.model_babbling_mode == "active":
+                    # interests book-keeping
+                    self.interests[m_name].append(m.interest)
+
+        if len(self.choosen_modules) != 0: # if bootstrap finished
+            # update interests (or just add outcome if not active) for selected module
             # print(self.choosen_modules[-1])
             m_name = self.choosen_modules[-1]
             mod_sub_outcome = self.modules_config[m_name]['outcome_range']
-            self.modules[m_name].perceive(self.current_policy,
-                                          np.take(outcome, mod_sub_outcome))
-        if self.model_babbling_mode == "active":
-            # update interest module of choosen module if not bootstraping
-            # interests book-keeping
-            for m_name,m in self.modules.items():
-                self.interests[m_name].append(m.interest)
+            self.modules[m_name].update_interest(np.take(outcome, mod_sub_outcome))
 
         # update main knn
         # add new policy outcome pair to database
-        outcome = outcome.reshape(1,-1)
-        policy = self.current_policy.reshape(1,-1)
-        if self.knn_X is None:
-            self.knn_X = np.array(outcome)
-            self.knn_Y = np.array(policy)
-        else:
-            self.knn_X = np.vstack((self.knn_X,outcome))
-            self.knn_Y = np.vstack((self.knn_Y,policy))
+        #outcome = outcome.reshape(1,-1)
+        #policy = self.current_policy.reshape(1,-1)
+        #if self.knn_X is None:
+        #    self.knn_X = np.array(outcome)
+        #    self.knn_Y = np.array(policy)
+        #else:
+        #    self.knn_X = np.vstack((self.knn_X,outcome))
+        #    self.knn_Y = np.vstack((self.knn_Y,policy))

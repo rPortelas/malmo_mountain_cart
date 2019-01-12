@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.neighbors import NearestNeighbors
 from utils.gep_utils import scale_vector
+from utils.knn_variants import BufferedBalltree
 
 
 class LearningModule(object):
@@ -24,9 +25,12 @@ class LearningModule(object):
             self.update_interest_step = update_interest_step # 4 exploration for 1 exploitation
             self.counter = 0
 
+
+        self.knn = BufferedBalltree()
+
     # sample a goal in outcome space and find closest neighbor in (param,outcome) database
     # RETURN policy param with added gaussian noise
-    def produce(self, outcomes, policies, knn):
+    def produce(self): # TODO fix counter 
         # draw randow goal in bounded outcome space
         goal = np.random.random(self.o_size) * 2 - 1
         goal = goal.reshape(1,-1)
@@ -47,17 +51,24 @@ class LearningModule(object):
 
 
         # get closest outcome in database and retreive corresponding policy
-        knn.fit(outcomes, policies)
-        policy = knn.predict(goal)
+        policy = self.knn.predict(goal)
+        #print(len(policy))
+        #print(policy[0,:].shape)
         # add gaussian noise for exploration
         if add_noise:
             #print 'adding noise'
             policy += np.random.normal(0, self.explo_noise, self.policy_nb_dims)
             policy = np.clip(policy, -1, 1)
-        return policy[0]
 
-    def perceive(self, policy, outcome):
+        return policy
+
+    def perceive(self, policy, outcome): # must be called for each episode
         policy = policy.reshape(1,-1)
+        outcome = outcome.reshape(1,-1)
+        # add to knn
+        self.knn.add(outcome, policy)
+
+    def update_interest(self, outcome): # must be called only if module is selected
         outcome = outcome.reshape(1,-1)
         if self.babbling_mode == "active":
             # update interest, only if:
