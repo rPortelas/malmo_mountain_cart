@@ -107,8 +107,8 @@ b = config.get_env_bounds('arm_env')
 experiment_name = args.experiment_name if args.experiment_name else "experiment"
 savefile_name = experiment_name + "_save.pickle"
 book_keeping_file_name = experiment_name + "_bk.pickle"
-save_step = 1000
-save_all = True
+save_step = 50000
+save_all = False
 
 # init neural network policy
 input_names = state_names
