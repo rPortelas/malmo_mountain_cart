@@ -187,7 +187,7 @@ else:
     else:  # F-RGB or RMB init
         gep = GEP(layers, params,config, model_babbling_mode="random", explo_noise=exploration_noise)
 
-    start_from_bootstrap = True
+    start_from_bootstrap = False
     if start_from_bootstrap == True:
         bt_filename = "emmc05_rnd_7_save.pickle"
         bt_bk_filename = "emmc05_rnd_7_bk.pickle"
