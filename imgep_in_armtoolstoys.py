@@ -18,6 +18,7 @@ from utils.gep_utils import *
 import gym
 import gym_flowers
 import config
+#import cProfile
 
 
 def get_outcome(state):
@@ -25,9 +26,11 @@ def get_outcome(state):
     return np.array(outcome)
 
 
-def save_gep(gep, iteration, book_keeping, savefile_name, book_keeping_name):
-    with open(savefile_name, 'wb') as handle:
-        pickle.dump([gep, iteration], handle, protocol=pickle.HIGHEST_PROTOCOL)
+def save_gep(gep, iteration, book_keeping, savefile_name, book_keeping_name, save_all=False):
+    if save_all:
+        gep.prepare_pickling()
+        with open(savefile_name, 'wb') as handle:
+            pickle.dump([gep, iteration], handle, protocol=pickle.HIGHEST_PROTOCOL)
     with open(book_keeping_name, 'wb') as handle:
         pickle.dump(book_keeping, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -62,6 +65,8 @@ def get_n_params(model):
     return pp
 
 
+#cp = cProfile.Profile()
+#cp.enable()
 
 # define and parse argument values
 # more info here: https://stackoverflow.com/questions/5423381/checking-if-sys-argvx-is-defined
@@ -102,7 +107,8 @@ b = config.get_env_bounds('arm_env')
 experiment_name = args.experiment_name if args.experiment_name else "experiment"
 savefile_name = experiment_name + "_save.pickle"
 book_keeping_file_name = experiment_name + "_bk.pickle"
-save_step = 50000
+save_step = 1000
+save_all = True
 
 # init neural network policy
 input_names = state_names
@@ -221,6 +227,10 @@ for i in range(starting_iteration, max_iterations):
         b_k['modules'] = gep.modules
         if model_type == "active_modular":
             b_k['interests'] = gep.interests
-        save_gep(gep, i + 1, b_k, savefile_name, book_keeping_file_name)
+        save_gep(gep, i + 1, b_k, savefile_name, book_keeping_file_name, save_all)
 print("closing {}".format(b_k['parameters']))
+#cp.disable()
+#cp.dump_stats("test.cprof")
 exit(0)
+
+

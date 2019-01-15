@@ -46,19 +46,20 @@ class GEP(object):
         #                                   metric='euclidean',
         #                                   algorithm='ball_tree',
         #                                   weights='distance')
-        self.knn_X = None # X = observed outcome
-        self.knn_Y = None # Y = produced policies' parameters
+        #self.knn_X = None # X = observed outcome
+        #self.knn_Y = None # Y = produced policies' parameters
+        self.policies = []
 
     # returns policy parameters following and exploration process if no goal is provided
     # if a goal is provided, returns best parameter policy using NN exploitation
     def produce(self, normalized_goal=None, goal_range=None, bootstrap=False, context=None):
-        if normalized_goal is not None:
-
-            # use main neirest neighbor model to find best policy
-            subgoal_space = self.knn_X[:,goal_range]
-            #print subgoal_space.shape
-            self.knn.fit(subgoal_space, self.knn_Y)
-            return self.knn.predict(normalized_goal.reshape(1,-1))[0]
+        # if normalized_goal is not None:
+        #
+        #     # use main neirest neighbor model to find best policy
+        #     subgoal_space = self.knn_X[:,goal_range]
+        #     #print subgoal_space.shape
+        #     self.knn.fit(subgoal_space, self.knn_Y)
+        #     return self.knn.predict(normalized_goal.reshape(1,-1))[0]
 
         if bootstrap:
             # returns random policy parameters using he_uniform
@@ -89,7 +90,7 @@ class GEP(object):
         #print "choosen module: %s with range: %s" % (module_name, module_outcome_range)
         #print "sub_outcome data shape:"
         #print module_sub_outcome.shape
-        self.current_policy = self.modules[module_name].produce()
+        self.current_policy = self.modules[module_name].produce(self.policies)
 
         return self.current_policy
 
@@ -101,7 +102,7 @@ class GEP(object):
                 #print("choosen module: %s with range: %s" % (m_name, mod_sub_outcome))
                 #print("sub_outcome data shape:")
                 #print(mod_sub_outcome.shape)
-                m.perceive(self.current_policy, np.take(outcome, mod_sub_outcome))
+                m.perceive(np.take(outcome, mod_sub_outcome))
                 if self.model_babbling_mode == "active":
                     # interests book-keeping
                     self.interests[m_name].append(m.interest)
@@ -113,6 +114,10 @@ class GEP(object):
             mod_sub_outcome = self.modules_config[m_name]['outcome_range']
             self.modules[m_name].update_interest(np.take(outcome, mod_sub_outcome))
 
+        # store new policy
+        policy = self.current_policy
+        self.policies.append(policy)
+
         # update main knn
         # add new policy outcome pair to database
         #outcome = outcome.reshape(1,-1)
@@ -123,3 +128,9 @@ class GEP(object):
         #else:
         #    self.knn_X = np.vstack((self.knn_X,outcome))
         #    self.knn_Y = np.vstack((self.knn_Y,policy))
+
+    def prepare_pickling(self):
+        for m_name, m in self.modules.items():
+            m.knn.prepare_pickling()
+            if self.model_babbling_mode == "active":
+                m.interest_knn.prepare_pickling()

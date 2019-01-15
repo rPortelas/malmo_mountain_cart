@@ -34,6 +34,7 @@ def get_outcome(state):
 
 
 def save_gep(gep, iteration, book_keeping, savefile_name, book_keeping_name):
+    gep.prepare_pickling()
     with open(savefile_name, 'wb') as handle:
         pickle.dump([gep, iteration], handle, protocol=pickle.HIGHEST_PROTOCOL)
     with open(book_keeping_name, 'wb') as handle:
@@ -240,10 +241,10 @@ for i in range(starting_iteration, max_iterations):
     prod_time_end = time.time()
     param_policy.set_parameters(policy_params)
     outcome = run_episode(param_policy)
-    print(outcome)
-    if outcome[-1] != 291.5:
-        with open("{}_policy_cart_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
-            pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    #print(outcome)
+    # if outcome[-1] != 291.5:
+    #     with open("{}_policy_cart_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
+    #         pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
     run_ep_end = time.time()
 
     # scale outcome dimensions to [-1,1]
