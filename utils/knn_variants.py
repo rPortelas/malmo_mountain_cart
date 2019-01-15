@@ -61,7 +61,7 @@ class BufferedcKDTree(object):
             best_d_main, ind_main = self.knn.query(goal)
 
             if best_d_buffer <= best_d_main:
-                return best_d_buffer, ind_buf
+                return best_d_buffer, (ind_buf + len(self.knn_X))
             else:
                 return best_d_main, ind_main
 
