@@ -38,7 +38,7 @@ class BufferedcKDTree(object):
         self.knn = scipy.spatial.cKDTree(np.array(self.knn_X), balanced_tree=False, compact_nodes=False)
 
     def predict(self, goal):
-
+        #print("goal is {}".format(goal[0:3]))
         if len(self.knn_X) == 0:
             if not self.buffer_is_ready:
                 self.fit_buffer()
@@ -59,11 +59,30 @@ class BufferedcKDTree(object):
                 self.buffer_is_ready = True
             best_d_buffer, ind_buf = self.buffer_knn.query(goal)
             best_d_main, ind_main = self.knn.query(goal)
+            # print(best_d_buffer)
+            # print(ind_buf)
+            # print(self.buffer_knn_X[ind_buf][0:3])
+            # print(best_d_main)
+            # print(ind_main)
+            # print(self.knn_X[ind_main][0:3])
 
             if best_d_buffer <= best_d_main:
+                #print("best buf")
                 return best_d_buffer, (ind_buf + len(self.knn_X))
             else:
+                #print("best main")
                 return best_d_main, ind_main
+
+    def get_x(self, idx):
+        if len(self.knn_X) == 0:
+            return self.buffer_knn_X[idx]
+        elif len(self.buffer_knn_X) == 0:
+            return self.knn_X[idx]
+        else:
+            if idx >= len(self.knn_X):
+                return self.buffer_knn_X[idx - len(self.knn_X)]
+            else:
+                return self.knn_X[idx]
 
     def prepare_pickling(self):
         # cKDtree cannot be pickled

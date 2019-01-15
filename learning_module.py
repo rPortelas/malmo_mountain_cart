@@ -16,6 +16,7 @@ class LearningModule(object):
 
         self.generated_goals = []
         self.observed_outcomes = []
+        self.LOG = False
 
         if self.babbling_mode == "active":
             self.mean_rate = 100. # running mean window
@@ -27,6 +28,7 @@ class LearningModule(object):
 
 
         self.knn = BufferedcKDTree()
+        #self.tmp_outcomes = []
 
     # sample a goal in outcome space and find closest neighbor in (param,outcome) database
     # RETURN policy param with added gaussian noise
@@ -34,6 +36,7 @@ class LearningModule(object):
         # draw randow goal in bounded outcome space
         goal = np.random.random(self.o_size) * 2 - 1
         goal = goal
+        if self.LOG: print("goal is {} {}".format(goal[0:3], goal.shape))
         add_noise = True
 
         self.generated_goals.append(goal)
@@ -49,20 +52,30 @@ class LearningModule(object):
 
         # get closest outcome in database and retreive corresponding policy
         _, policy_idx = self.knn.predict(goal)
+        if self.LOG: print('closest reached outc is {}'.format(self.tmp_outcomes[policy_idx][0:3]))
         policy = policies[policy_idx]
 
         # add gaussian noise for exploration
         if add_noise:
-            #print 'adding noise'
+            #print("{}=={}".format(policy.shape, policy[200:210]))
+            if self.LOG: print('adding noise: {} on {}'.format(self.explo_noise, self.policy_nb_dims))
             policy += np.random.normal(0, self.explo_noise, self.policy_nb_dims)
             policy = np.clip(policy, -1, 1)
+            if self.LOG: print("{}=={}".format(policy.shape, policy[200:210]))
+            #print('done')
 
         return policy
 
     def perceive(self, outcome): # must be called for each episode
-        outcome = outcome
         # add to knn
         self.knn.add(outcome)
+        #self.tmp_outcomes.append(outcome)
+        #check if correctly organized
+        # for i in range(len(self.tmp_outcomes)):
+        #     knn_out = self.knn.get_x(i)
+        #     tmp_out = self.tmp_outcomes[i]
+        #     assert((knn_out == tmp_out).all())
+        #     print(i)
 
     def update_interest(self, outcome): # must be called only if module is selected
         if self.babbling_mode == "active":

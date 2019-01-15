@@ -21,11 +21,11 @@ class GEP(object):
 
         self.policy_nb_dims = config['policy_nb_dims']
         self.modules_config = config['modules']
-        print(explo_noise)
+        #print(explo_noise)
         # init learning modules
         self.modules = {}
-        print('MODULES:')
-        print(config['modules'])
+        #print('MODULES:')
+        #print(config['modules'])
         self.total_outcome_range = 0
         for m_name,m in self.modules_config.items():
             outcome_size = len(m['outcome_range'])
@@ -65,6 +65,7 @@ class GEP(object):
             # returns random policy parameters using he_uniform
             rnd_weights, rnd_biases = he_uniform(self.layers, self.init_function_params)
             self.current_policy = np.concatenate((rnd_weights, rnd_biases))
+            #print(self.current_policy.shape)
             return self.current_policy
 
         if self.model_babbling_mode == "random":
@@ -87,11 +88,8 @@ class GEP(object):
         self.choosen_modules.append(module_name) # book keeping
         #module_outcome_range = self.modules_config[module_name]['outcome_range']
         #module_sub_outcome = self.knn_X[:,module_outcome_range]
-        #print "choosen module: %s with range: %s" % (module_name, module_outcome_range)
-        #print "sub_outcome data shape:"
-        #print module_sub_outcome.shape
         self.current_policy = self.modules[module_name].produce(self.policies)
-
+        #print(self.current_policy.shape)
         return self.current_policy
 
     def perceive(self, outcome):
@@ -99,7 +97,7 @@ class GEP(object):
         #add data to modules
         for m_name,m in self.modules.items():
                 mod_sub_outcome = self.modules_config[m_name]['outcome_range']
-                #print("choosen module: %s with range: %s" % (m_name, mod_sub_outcome))
+                ##print("choosen module: %s with range: %s" % (m_name, mod_sub_outcome))
                 #print("sub_outcome data shape:")
                 #print(mod_sub_outcome.shape)
                 m.perceive(np.take(outcome, mod_sub_outcome))

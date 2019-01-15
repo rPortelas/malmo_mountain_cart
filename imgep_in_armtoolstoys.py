@@ -18,7 +18,7 @@ from utils.gep_utils import *
 import gym
 import gym_flowers
 import config
-#import cProfile
+import cProfile
 
 
 def get_outcome(state):
@@ -52,6 +52,7 @@ def run_episode(model):
         normalized_state = scale_vector(state, np.array(input_bounds))
         actions = model.get_action(normalized_state.reshape(1, -1))
         out, _, done, _ = arm_env.step(actions[0])
+        if render: arm_env.render()
         state = out['observation']
     return get_outcome(state)
 
@@ -65,8 +66,8 @@ def get_n_params(model):
     return pp
 
 
-#cp = cProfile.Profile()
-#cp.enable()
+cp = cProfile.Profile()
+cp.enable()
 
 # define and parse argument values
 # more info here: https://stackoverflow.com/questions/5423381/checking-if-sys-argvx-is-defined
@@ -205,7 +206,10 @@ for i in range(starting_iteration, max_iterations):
     #print(policy_params.shape)
     prod_time_end = time.time()
     param_policy.set_parameters(policy_params)
-    outcome = run_episode(param_policy)
+    if i > 2500:
+        outcome = run_episode(param_policy, render = True)
+    else:
+        outcome = run_episode(param_policy)
     run_ep_end = time.time()
 
     # scale outcome dimensions to [-1,1]
@@ -229,8 +233,8 @@ for i in range(starting_iteration, max_iterations):
             b_k['interests'] = gep.interests
         save_gep(gep, i + 1, b_k, savefile_name, book_keeping_file_name, save_all)
 print("closing {}".format(b_k['parameters']))
-#cp.disable()
-#cp.dump_stats("test.cprof")
+cp.disable()
+cp.dump_stats("test.cprof")
 exit(0)
 
 
