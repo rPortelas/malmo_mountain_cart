@@ -105,8 +105,8 @@ class LearningModule(object):
             # with s_g current goal and s observed outcome
             # s_g' closest previous goal and s' its observed outcome
             #print 'old interest: %s' % self.interest
-            dist_goal_old_outcome = np.linalg.norm(current_goal - closest_previous_goal_outcome)
-            dist_goal_cur_outcome = np.linalg.norm(current_goal - outcome)
+            dist_goal_old_outcome = np.linalg.norm(current_goal - closest_previous_goal_outcome) / self.o_size
+            dist_goal_cur_outcome = np.linalg.norm(current_goal - outcome) / self.o_size
             progress = dist_goal_old_outcome - dist_goal_cur_outcome
             self.progress = ((self.mean_rate-1)/self.mean_rate) * self.progress + (1/self.mean_rate) * progress
             self.interest = np.abs(self.progress)

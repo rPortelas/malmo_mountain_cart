@@ -52,7 +52,7 @@ def run_episode(model):
         normalized_state = scale_vector(state, np.array(input_bounds))
         actions = model.get_action(normalized_state.reshape(1, -1))
         out, _, done, _ = arm_env.step(actions[0])
-        if render: arm_env.render()
+        #if render: arm_env.render()
         state = out['observation']
     return get_outcome(state)
 
@@ -206,10 +206,10 @@ for i in range(starting_iteration, max_iterations):
     #print(policy_params.shape)
     prod_time_end = time.time()
     param_policy.set_parameters(policy_params)
-    if i > 2500:
-        outcome = run_episode(param_policy, render = True)
-    else:
-        outcome = run_episode(param_policy)
+    # if i > 2500:
+    #     outcome = run_episode(param_policy, render = True)
+    # else:
+    outcome = run_episode(param_policy)
     run_ep_end = time.time()
 
     # scale outcome dimensions to [-1,1]
