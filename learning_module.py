@@ -2,13 +2,13 @@ import numpy as np
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.neighbors import NearestNeighbors
 from utils.gep_utils import scale_vector
-from utils.knn_variants import BufferedcKDTree
+#from utils.knn_variants import BufferedcKDTree
+from utils.dataset import BufferedDataset
 
 
 class LearningModule(object):
     # outcome_bounds must be a 2d array with column 1 = mins and column 2 = maxs
-    def __init__(self, policy_nb_dims, outcome_size, babbling_mode, explo_noise=0.1, n_neighbors=1,
-                 interest_running_mean=200, update_interest_step=5):
+    def __init__(self, policy_nb_dims, outcome_size, babbling_mode, explo_noise=0.1, update_interest_step=5):
         self.policy_nb_dims = policy_nb_dims
         self.o_size = outcome_size
         self.explo_noise = explo_noise
@@ -22,12 +22,12 @@ class LearningModule(object):
             self.mean_rate = 100. # running mean window
             self.interest = 0
             self.progress = 0
-            self.interest_knn = BufferedcKDTree()
+            self.interest_knn = BufferedDataset(self.o_size, self.o_size, buffer_size=1000, lateness=0)
             self.update_interest_step = update_interest_step # 4 exploration for 1 exploitation
             self.counter = 0
 
 
-        self.knn = BufferedcKDTree()
+        self.knn = BufferedDataset(self.policy_nb_dims, self.o_size, buffer_size=1000, lateness=0)
         #self.tmp_outcomes = []
 
     # sample a goal in outcome space and find closest neighbor in (param,outcome) database
@@ -39,7 +39,6 @@ class LearningModule(object):
         if self.LOG: print("goal is {} {}".format(goal[0:3], goal.shape))
         add_noise = True
 
-        self.generated_goals.append(goal)
 
         if self.babbling_mode == "active":
             #print self.counter
@@ -48,12 +47,14 @@ class LearningModule(object):
                 add_noise = True
             elif (self.counter % self.update_interest_step) == 0: #exploitation step
                 add_noise = False
+                self.generated_goals.append(goal)
 
 
         # get closest outcome in database and retreive corresponding policy
-        _, policy_idx = self.knn.predict(goal)
+        _, policy_idx = self.knn.nn_y(goal)
         if self.LOG: print('closest reached outc is {}'.format(self.tmp_outcomes[policy_idx][0:3]))
-        policy = policies[policy_idx]
+        #policy = policies[policy_idx]
+        policy = self.knn.get_x(policy_idx[0])
 
         # add gaussian noise for exploration
         if add_noise:
@@ -66,9 +67,10 @@ class LearningModule(object):
 
         return policy
 
-    def perceive(self, outcome): # must be called for each episode
+    def perceive(self, policy, outcome): # must be called for each episode
         # add to knn
-        self.knn.add(outcome)
+        #self.knn.add(outcome)
+        self.knn.add_xy(policy, outcome)
         #self.tmp_outcomes.append(outcome)
         #check if correctly organized
         # for i in range(len(self.tmp_outcomes)):
@@ -82,38 +84,42 @@ class LearningModule(object):
             # update interest, only if:
             # - not in bootstrap phase since no goal is generated during this phase
             # - not in an exploration phase (update progress when exploiting for better accuracy)
-            if len(self.generated_goals) < 3 or (self.counter % self.update_interest_step) != 0:
-                self.interest_knn.add(self.generated_goals[-1])
-                self.observed_outcomes.append(outcome)
+            if len(self.generated_goals) < 3 and ((self.counter % self.update_interest_step) == 0):
+                #self.interest_knn.add(self.generated_goals[-1])
+                self.interest_knn.add_xy(outcome, self.generated_goals[-1])
+                #self.observed_outcomes.append(outcome)
                 return
-            self.counter = 0 # reset counter
-            #print 'updating interest'
-            #print 'update'gene
-            assert(len(self.generated_goals) == (len(self.observed_outcomes) + 1))
-            previous_goals = self.generated_goals[:-1]
-            current_goal = self.generated_goals[-1]
-            #print 'current_generated_goal: %s, with shape: %s' % (current_goal,current_goal.shape)
-            #print 'previous_generated_goal: %s, with shape: %s' % (previous_goals,previous_goals.shape)
-            # find closest previous goal to current goal
-            dist, idx = self.interest_knn.predict(current_goal)
-            closest_previous_goal = previous_goals[idx]
-            #print 'closest previous goal is index:%s, val: %s' % (idx[0], closest_previous_goal)
-            # retrieve old outcome corresponding to closest previous goal
-            closest_previous_goal_outcome = self.observed_outcomes[idx]
+            elif ((self.counter % self.update_interest_step) == 0):
+                self.counter = 0 # reset counter
+                #print 'updating interest'
+                #print 'update'gene
+                #assert(len(self.generated_goals) == (len(self.observed_outcomes) + 1))
+                #previous_goals = self.generated_goals[:-1]
+                current_goal = self.generated_goals[-1]
+                #print 'current_generated_goal: %s, with shape: %s' % (current_goal,current_goal.shape)
+                #print 'previous_generated_goal: %s, with shape: %s' % (previous_goals,previous_goals.shape)
+                # find closest previous goal to current goal
+                dist, idx = self.interest_knn.nn_y(current_goal)
+                #closest_previous_goal = previous_goals[idx]
+                closest_previous_goal = self.interest_knn.get_y(idx[0])
+                closest_previous_goal_outcome = self.interest_knn.get_x(idx[0])
+                #print 'closest previous goal is index:%s, val: %s' % (idx[0], closest_previous_goal)
+                # retrieve old outcome corresponding to closest previous goal
+                #closest_previous_goal_outcome = self.observed_outcomes[idx]
 
-            # compute Progress as dist(s_g,s') - dist(s_g,s)
-            # with s_g current goal and s observed outcome
-            # s_g' closest previous goal and s' its observed outcome
-            #print 'old interest: %s' % self.interest
-            dist_goal_old_outcome = np.linalg.norm(current_goal - closest_previous_goal_outcome) / self.o_size
-            dist_goal_cur_outcome = np.linalg.norm(current_goal - outcome) / self.o_size
-            progress = dist_goal_old_outcome - dist_goal_cur_outcome
-            self.progress = ((self.mean_rate-1)/self.mean_rate) * self.progress + (1/self.mean_rate) * progress
-            self.interest = np.abs(self.progress)
-            
-            #update observed outcomes
-            self.observed_outcomes.append(outcome)
-            self.interest_knn.add(self.generated_goals[-1])
-        else:
-            if len(self.generated_goals) != 0: #end of bt phase, goals are sampled
-                self.observed_outcomes.append(outcome)
+                # compute Progress as dist(s_g,s') - dist(s_g,s)
+                # with s_g current goal and s observed outcome
+                # s_g' closest previous goal and s' its observed outcome
+                #print 'old interest: %s' % self.interest
+                dist_goal_old_outcome = np.linalg.norm(current_goal - closest_previous_goal_outcome) / self.o_size
+                dist_goal_cur_outcome = np.linalg.norm(current_goal - outcome) / self.o_size
+                progress = dist_goal_old_outcome - dist_goal_cur_outcome
+                self.progress = ((self.mean_rate-1)/self.mean_rate) * self.progress + (1/self.mean_rate) * progress
+                self.interest = np.abs(self.progress)
+
+                #update observed outcomes
+                #self.observed_outcomes.append(outcome)
+                #self.interest_knn.add(self.generated_goals[-1])
+                self.interest_knn.add_xy(outcome, self.generated_goals[-1])
+            else:
+                pass

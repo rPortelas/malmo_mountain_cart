@@ -7,13 +7,14 @@ from utils.initialization_functions import he_uniform
 
 class GEP(object):
 
-    def __init__(self, layers, init_function_params, config, model_babbling_mode="random", explo_noise=0.1, update_interest_step=5):
+    def __init__(self, layers, init_function_params, config, model_babbling_mode="random", explo_noise=0.1, update_interest_step=5, random_motor=0.1):
         
         self.layers = layers
         self.init_function_params = init_function_params
 
         self.model_babbling_mode = model_babbling_mode
         self.explo_noise = explo_noise
+        self.random_motor = random_motor
 
         # book keeping
         self.choosen_modules = [] 
@@ -68,6 +69,13 @@ class GEP(object):
             #print(self.current_policy.shape)
             return self.current_policy
 
+        coin_toss = np.random.random()
+        if coin_toss < self.random_motor:
+            self.choosen_modules.append('random')
+            rnd_weights, rnd_biases = he_uniform(self.layers, self.init_function_params)
+            self.current_policy = np.concatenate((rnd_weights, rnd_biases))
+            return self.current_policy
+
         if self.model_babbling_mode == "random":
             # random model babbling step
             module_name = np.random.choice(list(self.modules))
@@ -77,7 +85,7 @@ class GEP(object):
             interests = np.zeros(len(mod_name_list))
             for i,(k,m) in enumerate(self.modules.items()):
                 interests[i] = m.interest
-            #print 'interests: %s' % interests
+            #print('interests: %s' % interests)
             # sample a module, proportionally to its interest, with 20% chance of random choice
             choosen_module_idx = proportional_choice(interests, eps=0.20)
             module_name = mod_name_list[choosen_module_idx]
@@ -85,6 +93,7 @@ class GEP(object):
         else:
             return NotImplementedError
 
+        #print("choosen module: %s with range: " % (module_name))
         self.choosen_modules.append(module_name) # book keeping
         #module_outcome_range = self.modules_config[module_name]['outcome_range']
         #module_sub_outcome = self.knn_X[:,module_outcome_range]
@@ -97,10 +106,10 @@ class GEP(object):
         #add data to modules
         for m_name,m in self.modules.items():
                 mod_sub_outcome = self.modules_config[m_name]['outcome_range']
-                ##print("choosen module: %s with range: %s" % (m_name, mod_sub_outcome))
+                #print("choosen module: %s with range: %s" % (m_name, mod_sub_outcome))
                 #print("sub_outcome data shape:")
                 #print(mod_sub_outcome.shape)
-                m.perceive(np.take(outcome, mod_sub_outcome))
+                m.perceive(self.current_policy, np.take(outcome, mod_sub_outcome))
                 if self.model_babbling_mode == "active":
                     # interests book-keeping
                     self.interests[m_name].append(m.interest)
@@ -109,8 +118,9 @@ class GEP(object):
             # update interests (or just add outcome if not active) for selected module
             # print(self.choosen_modules[-1])
             m_name = self.choosen_modules[-1]
-            mod_sub_outcome = self.modules_config[m_name]['outcome_range']
-            self.modules[m_name].update_interest(np.take(outcome, mod_sub_outcome))
+            if m_name is not 'random':
+                mod_sub_outcome = self.modules_config[m_name]['outcome_range']
+                self.modules[m_name].update_interest(np.take(outcome, mod_sub_outcome))
 
         # store new policy
         policy = self.current_policy
