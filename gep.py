@@ -139,6 +139,10 @@ class GEP(object):
 
     def prepare_pickling(self):
         for m_name, m in self.modules.items():
-            m.knn.prepare_pickling()
-            if self.model_babbling_mode == "active":
-                m.interest_knn.prepare_pickling()
+            m.knn.nn_ready = [False, False]
+            m.knn.kdtree = [None, None]
+            m.knn.buffer.nn_ready = [False, False]
+            m.knn.buffer.kdtree = [None, None]
+            # m.knn.prepare_pickling()
+            # if self.model_babbling_mode == "active":
+            #     m.interest_knn.prepare_pickling()
