@@ -7,13 +7,14 @@ from utils.initialization_functions import he_uniform
 
 class GEP(object):
 
-    def __init__(self, layers, init_function_params, config, model_babbling_mode="random", explo_noise=0.1, update_interest_step=5):
+    def __init__(self, layers, init_function_params, config, model_babbling_mode="random", explo_noise=0.1, update_interest_step=5, random_motor=0.1):
         
         self.layers = layers
         self.init_function_params = init_function_params
 
         self.model_babbling_mode = model_babbling_mode
         self.explo_noise = explo_noise
+        self.random_motor = random_motor
 
         # book keeping
         self.choosen_modules = [] 
@@ -61,12 +62,18 @@ class GEP(object):
             return self.knn.predict(normalized_goal.reshape(1,-1))[0]
 
         if bootstrap:
-            # returns random policy parameters in range [-1,1] using he_uniform
-            #self.current_policy = np.random.random(self.policy_nb_dims) * 2 - 1
+            # returns random policy parameters using he_uniform
+            rnd_weights, rnd_biases = he_uniform(self.layers, self.init_function_params)
+            self.current_policy = np.concatenate((rnd_weights, rnd_biases))
+            #print(self.current_policy.shape)
+            return self.current_policy
+
+        coin_toss = np.random.random()
+        if coin_toss < self.random_motor:
+            self.choosen_modules.append('random')
             rnd_weights, rnd_biases = he_uniform(self.layers, self.init_function_params)
             self.current_policy = np.concatenate((rnd_weights, rnd_biases))
             return self.current_policy
-
 
         if self.model_babbling_mode == "random":
             # random model babbling step
@@ -99,10 +106,12 @@ class GEP(object):
         #assert(outcome.shape[0] == self.total_outcome_range)
         if len(self.choosen_modules) != 0:
             # print(self.choosen_modules[-1])
+
             m_name = self.choosen_modules[-1]
-            mod_sub_outcome = self.modules_config[m_name]['outcome_range']
-            self.modules[m_name].perceive(self.current_policy,
-                                          np.take(outcome, mod_sub_outcome))
+            if m_name is not 'random':
+                mod_sub_outcome = self.modules_config[m_name]['outcome_range']
+                self.modules[m_name].perceive(self.current_policy,
+                                              np.take(outcome, mod_sub_outcome))
         if self.model_babbling_mode == "active":
             # update interest module of choosen module if not bootstraping
             # interests book-keeping

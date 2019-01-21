@@ -32,11 +32,7 @@ class LearningModule(object):
         goal = goal.reshape(1,-1)
         add_noise = True
 
-        if self.generated_goals is None:
-            self.generated_goals = np.array(goal)
-        else:
-            self.generated_goals = np.vstack((self.generated_goals, goal))
-
+        
         if self.babbling_mode == "active":
             #print self.counter
             self.counter += 1
@@ -44,6 +40,11 @@ class LearningModule(object):
                 add_noise = True
             elif (self.counter % self.update_interest_step) == 0: #exploitation step
                 add_noise = False
+                if self.generated_goals is None:
+                    self.generated_goals = np.array(goal)
+                else:
+                    self.generated_goals = np.vstack((self.generated_goals, goal))
+
 
 
         # get closest outcome in database and retreive corresponding policy
@@ -63,43 +64,42 @@ class LearningModule(object):
             # update interest, only if:
             # - not in bootstrap phase since no goal is generated during this phase
             # - not in an exploration phase (update progress when exploiting for better accuracy)
-            if self.generated_goals.shape[0] < 3 or (self.counter % self.update_interest_step) != 0:
+            if (self.generated_goals is not None) and self.generated_goals.shape[0] < 3 and (self.counter % self.update_interest_step) == 0:
                 if self.generated_goals.shape[0] == 1:
                     self.observed_outcomes = np.array(outcome)
                 else:
                     self.observed_outcomes = np.vstack((self.observed_outcomes, outcome))
                 return
-            self.counter = 0 # reset counter
-            #print 'updating interest'
-            #print 'update'gene
-            assert(self.generated_goals.shape[0] == (self.observed_outcomes.shape[0] + 1))
-            previous_goals = self.generated_goals[:-1,:]
-            current_goal = self.generated_goals[-1,:].reshape(1,-1)
-            #print 'current_generated_goal: %s, with shape: %s' % (current_goal,current_goal.shape)
-            #print 'previous_generated_goal: %s, with shape: %s' % (previous_goals,previous_goals.shape)
-            # find closest previous goal to current goal
-            self.interest_knn.fit(previous_goals, self.observed_outcomes)
-            dist, idx = self.interest_knn.kneighbors(current_goal)
-            closest_previous_goal = previous_goals[idx[0]]
-            #print 'closest previous goal is index:%s, val: %s' % (idx[0], closest_previous_goal)
-            # retrieve old outcome corresponding to closest previous goal
-            closest_previous_goal_outcome = self.observed_outcomes[idx[0],:]
+            elif (self.counter % self.update_interest_step) == 0:
+                self.counter = 0 # reset counter
+                #print 'updating interest'
+                #print 'update'gene
+                assert(self.generated_goals.shape[0] == (self.observed_outcomes.shape[0] + 1))
+                previous_goals = self.generated_goals[:-1,:]
+                current_goal = self.generated_goals[-1,:].reshape(1,-1)
+                #print 'current_generated_goal: %s, with shape: %s' % (current_goal,current_goal.shape)
+                #print 'previous_generated_goal: %s, with shape: %s' % (previous_goals,previous_goals.shape)
+                # find closest previous goal to current goal
+                self.interest_knn.fit(previous_goals, self.observed_outcomes)
+                dist, idx = self.interest_knn.kneighbors(current_goal)
+                closest_previous_goal = previous_goals[idx[0]]
+                #print 'closest previous goal is index:%s, val: %s' % (idx[0], closest_previous_goal)
+                # retrieve old outcome corresponding to closest previous goal
+                closest_previous_goal_outcome = self.observed_outcomes[idx[0],:]
 
-            # compute Progress as dist(s_g,s') - dist(s_g,s)
-            # with s_g current goal and s observed outcome
-            # s_g' closest previous goal and s' its observed outcome
-            #print 'old interest: %s' % self.interest
-            dist_goal_old_outcome = np.linalg.norm(current_goal - closest_previous_goal_outcome)
-            dist_goal_cur_outcome = np.linalg.norm(current_goal - outcome)
-            progress = dist_goal_old_outcome - dist_goal_cur_outcome
-            self.progress = ((self.mean_rate-1)/self.mean_rate) * self.progress + (1/self.mean_rate) * progress
-            self.interest = np.abs(self.progress)
-            
-            #update observed outcomes
-            self.observed_outcomes = np.vstack((self.observed_outcomes, outcome))
+                # compute Progress as dist(s_g,s') - dist(s_g,s)
+                # with s_g current goal and s observed outcome
+                # s_g' closest previous goal and s' its observed outcome
+                #print 'old interest: %s' % self.interest
+                dist_goal_old_outcome = np.linalg.norm(current_goal - closest_previous_goal_outcome) / self.o_size
+                dist_goal_cur_outcome = np.linalg.norm(current_goal - outcome) / self.o_size
+                progress = dist_goal_old_outcome - dist_goal_cur_outcome
+                self.progress = ((self.mean_rate-1)/self.mean_rate) * self.progress + (1/self.mean_rate) * progress
+                self.interest = np.abs(self.progress)
+                
+                #update observed outcomes
+                self.observed_outcomes = np.vstack((self.observed_outcomes, outcome))
+            else:
+                pass
         else:
-            if self.generated_goals.shape[0] != 0: #end of bt phase, goals are sampled
-                if self.generated_goals.shape[0] == 1:
-                    self.observed_outcomes = np.array(outcome)
-                else:
-                    self.observed_outcomes = np.vstack((self.observed_outcomes, outcome))
+            pass

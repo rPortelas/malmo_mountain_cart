@@ -186,7 +186,7 @@ else:
     else:  # F-RGB or RMB init
         gep = GEP(layers, params,config, model_babbling_mode="random", explo_noise=exploration_noise)
 
-    start_from_bootstrap = True
+    start_from_bootstrap = False
     if start_from_bootstrap == True:
         bt_filename = "emmc05_rnd_7_save.pickle"
         bt_bk_filename = "emmc05_rnd_7_bk.pickle"
@@ -230,7 +230,7 @@ print("launching {}".format(b_k['parameters']))
 port = int(args.server_port) if args.server_port else None
 # init malmo controller
 malmo = gym2.make('ExtendedMalmoMountainCart-v0')
-malmo.env.my_init(port=port, skip_step=4, tick_lengths=10)
+malmo.env.my_init(port=port, skip_step=4, tick_lengths=15)
 
 for i in range(starting_iteration, max_iterations):
     print("########### Iteration # %s ##########" % (i))
@@ -240,7 +240,7 @@ for i in range(starting_iteration, max_iterations):
     prod_time_end = time.time()
     param_policy.set_parameters(policy_params)
     outcome = run_episode(param_policy)
-    print(outcome)
+    #print(outcome)
     if outcome[-1] != 291.5:
         with open("{}_policy_cart_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
             pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
