@@ -13,9 +13,9 @@ EMMC_B.add('cart_x', [285, 297])
 
 ARM_B = Bounds()
 
-ARM_B.add('hand_x', [-1,1])
-ARM_B.add('hand_y', [-1,1])
-ARM_B.add('gripper', [-1,1])
+ARM_B.add('hand_x', [-1.,1.])
+ARM_B.add('hand_y', [-1.,1.])
+ARM_B.add('gripper', [-1.,1.])
 ARM_B.add('stick1_x', [-1.5,1.5])
 ARM_B.add('stick1_y', [-1.5,1.5])
 ARM_B.add('stick2_x', [-1.5,1.5])

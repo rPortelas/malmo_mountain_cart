@@ -41,7 +41,7 @@ def run_episode(model, distractors):
         normalized_state = scale_vector(get_state(state, distractors), np.array(input_bounds))
         actions = model.get_action(normalized_state.reshape(1, -1))
         out, _, done, _ = arm_env.step(actions[0])
-        #arm_env.render()
+        arm_env.render()
         state = out['observation']
     return get_outcome(state, distractors)
 
@@ -89,29 +89,34 @@ print('nbparams:    {}'.format(total_policy_params))
 # init arm_env controller
 arm_env = env=gym.make('ArmToolsToys-v0')
 
-with open("tmpuuuu_policy_stick1_1547753244.1490777.pickle", 'rb') as handle:
+with open("armlean_rmb_0_policy_grasp_1547821398.8323324.pickle", 'rb') as handle:
     policy_params = pickle.load(handle)
-outs=[]
-add_noise = True
-noise = 0.005
-for i in range(0, 100):
-    #print(policy_params[0])
-    if add_noise:
-        noised_policy = policy_params.copy()
-        noised_policy += np.random.normal(0, noise, len(policy_params))
-        noised_policy = np.clip(noised_policy, -1, 1)
-        policy_p = noised_policy
-    else:
-        policy_p = policy_params
-    #print(policy_params[0])
 
-    param_policy.set_parameters(policy_p)
-    outcome = run_episode(param_policy, distractors)
-    a = round(outcome[3], 2)
-    b = round(outcome[4], 2)
-    if [a, b] != [round(-1.10355339, 2), round(0.60355339, 2)]:
-        outs.append(1)
-print(sum(outs))
+add_noise = False
+noise = 0.002
+for i in range(20):
+    outs = []
+    for i in range(0, 100):
+        #print(policy_params[0])
+        if add_noise:
+            noised_policy = policy_params.copy()
+            noised_policy += np.random.normal(0, noise, len(policy_params))
+            noised_policy = np.clip(noised_policy, -1, 1)
+            policy_p = noised_policy
+        else:
+            policy_p = policy_params
+        #print(policy_params[0])
+
+        param_policy.set_parameters(policy_p)
+        outcome = run_episode(param_policy, distractors)
+        # a = round(outcome[3], 2)
+        # b = round(outcome[4], 2)
+        # if [a, b] != [round(-1.10355339, 2), round(0.60355339, 2)]:
+        #     outs.append(1)
+        grasp_objs = outcome[-4:]
+        if grasp_objs.tolist() != [-0.3, 1.1, 0.3, 1.1]:
+            outs.append(1)
+    print(sum(outs))
 #cp.disable()
 #cp.dump_stats("test.cprof")
 exit(0)

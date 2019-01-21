@@ -7,7 +7,7 @@ from utils.initialization_functions import he_uniform
 
 class GEP(object):
 
-    def __init__(self, layers, init_function_params, config, model_babbling_mode="random", explo_noise=0.1, update_interest_step=5, random_motor=0.1):
+    def __init__(self, layers, init_function_params, config, model_babbling_mode="random", explo_noise=0.1, update_interest_step=5, random_motor=0.1, interest_mean_rate=100.):
         
         self.layers = layers
         self.init_function_params = init_function_params
@@ -34,11 +34,12 @@ class GEP(object):
                                                   outcome_size, 
                                                   model_babbling_mode, 
                                                   explo_noise=explo_noise,
-                                                  update_interest_step=update_interest_step)
+                                                  update_interest_step=update_interest_step,
+                                                  mean_rate=interest_mean_rate)
             self.modules_config[m_name]['outcome_size'] = outcome_size
             self.total_outcome_range += outcome_size
             self.interests[m_name] = []
-        print(self.total_outcome_range)
+            print(outcome_size)
         #self.current_module = None
         self.current_policy = None
 
@@ -109,7 +110,7 @@ class GEP(object):
                 #print("choosen module: %s with range: %s" % (m_name, mod_sub_outcome))
                 #print("sub_outcome data shape:")
                 #print(mod_sub_outcome.shape)
-                m.perceive(self.current_policy, np.take(outcome, mod_sub_outcome))
+                m.perceive(len(self.policies), np.take(outcome, mod_sub_outcome))
                 if self.model_babbling_mode == "active":
                     # interests book-keeping
                     self.interests[m_name].append(m.interest)
@@ -125,17 +126,6 @@ class GEP(object):
         # store new policy
         policy = self.current_policy
         self.policies.append(policy)
-
-        # update main knn
-        # add new policy outcome pair to database
-        #outcome = outcome.reshape(1,-1)
-        #policy = self.current_policy.reshape(1,-1)
-        #if self.knn_X is None:
-        #    self.knn_X = np.array(outcome)
-        #    self.knn_Y = np.array(policy)
-        #else:
-        #    self.knn_X = np.vstack((self.knn_X,outcome))
-        #    self.knn_Y = np.vstack((self.knn_Y,policy))
 
     def prepare_pickling(self):
         for m_name, m in self.modules.items():

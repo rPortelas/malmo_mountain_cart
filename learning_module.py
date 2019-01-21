@@ -8,7 +8,7 @@ from utils.dataset import BufferedDataset
 
 class LearningModule(object):
     # outcome_bounds must be a 2d array with column 1 = mins and column 2 = maxs
-    def __init__(self, policy_nb_dims, outcome_size, babbling_mode, explo_noise=0.1, update_interest_step=5):
+    def __init__(self, policy_nb_dims, outcome_size, babbling_mode, explo_noise=0.1, update_interest_step=5, mean_rate=100.):
         self.policy_nb_dims = policy_nb_dims
         self.o_size = outcome_size
         self.explo_noise = explo_noise
@@ -19,15 +19,15 @@ class LearningModule(object):
         self.LOG = False
 
         if self.babbling_mode == "active":
-            self.mean_rate = 100. # running mean window
+            self.mean_rate = mean_rate # running mean window
             self.interest = 0
             self.progress = 0
-            self.interest_knn = BufferedDataset(self.o_size, self.o_size, buffer_size=1000, lateness=0)
+            self.interest_knn = BufferedDataset(self.o_size, self.o_size, buffer_size=200, lateness=0)
             self.update_interest_step = update_interest_step # 4 exploration for 1 exploitation
             self.counter = 0
 
 
-        self.knn = BufferedDataset(self.policy_nb_dims, self.o_size, buffer_size=1000, lateness=0)
+        self.knn = BufferedDataset(1, self.o_size, buffer_size=1000, lateness=0) #use index instead of policies
         #self.tmp_outcomes = []
 
     # sample a goal in outcome space and find closest neighbor in (param,outcome) database
@@ -54,7 +54,10 @@ class LearningModule(object):
         _, policy_idx = self.knn.nn_y(goal)
         if self.LOG: print('closest reached outc is {}'.format(self.tmp_outcomes[policy_idx][0:3]))
         #policy = policies[policy_idx]
-        policy = self.knn.get_x(policy_idx[0])
+        policy_knn_idx = self.knn.get_x(policy_idx[0])
+        assert(policy_idx[0] == policy_knn_idx)
+        policy = policies[policy_idx[0]]
+
 
         # add gaussian noise for exploration
         if add_noise:
@@ -67,10 +70,10 @@ class LearningModule(object):
 
         return policy
 
-    def perceive(self, policy, outcome): # must be called for each episode
+    def perceive(self, policy_idx, outcome): # must be called for each episode
         # add to knn
         #self.knn.add(outcome)
-        self.knn.add_xy(policy, outcome)
+        self.knn.add_xy(policy_idx, outcome)
         #self.tmp_outcomes.append(outcome)
         #check if correctly organized
         # for i in range(len(self.tmp_outcomes)):
