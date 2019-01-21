@@ -1,7 +1,8 @@
 import numpy as np
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.neighbors import NearestNeighbors
+#from sklearn.neighbors import KNeighborsRegressor
+#from sklearn.neighbors import NearestNeighbors
 from utils.gep_utils import scale_vector
+import scipy.spatial
 
 
 class LearningModule(object):
@@ -20,13 +21,14 @@ class LearningModule(object):
             self.mean_rate = 100. # running mean window
             self.interest = 0
             self.progress = 0
-            self.interest_knn = NearestNeighbors(n_neighbors=1, metric='euclidean', algorithm='ball_tree')
+            #self.interest_knn = NearestNeighbors(n_neighbors=1, metric='euclidean', algorithm='ball_tree')
+            #self.interest_knn = NearestNeighbors(n_neighbors=1, metric='euclidean', algorithm='ball_tree')
             self.update_interest_step = update_interest_step # 4 exploration for 1 exploitation
             self.counter = 0
 
     # sample a goal in outcome space and find closest neighbor in (param,outcome) database
     # RETURN policy param with added gaussian noise
-    def produce(self, outcomes, policies, knn):
+    def produce(self, outcomes, policies):
         # draw randow goal in bounded outcome space
         goal = np.random.random(self.o_size) * 2 - 1
         goal = goal.reshape(1,-1)
@@ -48,8 +50,11 @@ class LearningModule(object):
 
 
         # get closest outcome in database and retreive corresponding policy
-        knn.fit(outcomes, policies)
-        policy = knn.predict(goal)
+        #knn.fit(outcomes, policies)
+        #policy = knn.predict(goal)
+        knn = scipy.spatial.cKDTree(outcomes, balanced_tree=False, compact_nodes=False)
+        dist, ind = knn.query(goal, k=1, distance_upper_bound=np.inf, eps=0.0, p=2)
+        policy = policies[ind]
         # add gaussian noise for exploration
         if add_noise:
             #print 'adding noise'
@@ -80,12 +85,18 @@ class LearningModule(object):
                 #print 'current_generated_goal: %s, with shape: %s' % (current_goal,current_goal.shape)
                 #print 'previous_generated_goal: %s, with shape: %s' % (previous_goals,previous_goals.shape)
                 # find closest previous goal to current goal
-                self.interest_knn.fit(previous_goals, self.observed_outcomes)
-                dist, idx = self.interest_knn.kneighbors(current_goal)
-                closest_previous_goal = previous_goals[idx[0]]
+
+                #self.interest_knn.fit(previous_goals, self.observed_outcomes)
+                #dist, idx = self.interest_knn.kneighbors(current_goal)
+                #closest_previous_goal = previous_goals[idx[0]]
+                #closest_previous_goal_outcome = self.observed_outcomes[idx[0],:]
+                interest_knn = scipy.spatial.cKDTree(previous_goals, balanced_tree=False, compact_nodes=False)
+                dist, idx = interest_knn.query(current_goal, k=1, distance_upper_bound=np.inf, eps=0.0, p=2)
+                closest_previous_goal = previous_goals[idx]
+                
                 #print 'closest previous goal is index:%s, val: %s' % (idx[0], closest_previous_goal)
                 # retrieve old outcome corresponding to closest previous goal
-                closest_previous_goal_outcome = self.observed_outcomes[idx[0],:]
+                closest_previous_goal_outcome = self.observed_outcomes[idx,:]
 
                 # compute Progress as dist(s_g,s') - dist(s_g,s)
                 # with s_g current goal and s observed outcome

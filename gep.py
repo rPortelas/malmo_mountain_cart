@@ -1,8 +1,9 @@
 from learning_module import LearningModule
 import numpy as np
-from sklearn.neighbors import KNeighborsRegressor
+#from sklearn.neighbors import KNeighborsRegressor
 from utils.gep_utils import scale_vector, proportional_choice
 from utils.initialization_functions import he_uniform
+
 
 
 class GEP(object):
@@ -43,23 +44,23 @@ class GEP(object):
         self.current_policy = None
 
         # init main knn, will be used for exploitation
-        self.knn = KNeighborsRegressor(n_neighbors=1,
-                                          metric='euclidean',
-                                          algorithm='ball_tree',
-                                          weights='distance')
+        #self.knn = KNeighborsRegressor(n_neighbors=1,
+        #                                  metric='euclidean',
+        #                                  algorithm='ball_tree',
+        #                                  weights='distance')
         self.knn_X = None # X = observed outcome
         self.knn_Y = None # Y = produced policies' parameters
 
     # returns policy parameters following and exploration process if no goal is provided
     # if a goal is provided, returns best parameter policy using NN exploitation
     def produce(self, normalized_goal=None, goal_range=None, bootstrap=False, context=None):
-        if normalized_goal is not None:
-            
-            # use main neirest neighbor model to find best policy
-            subgoal_space = self.knn_X[:,goal_range]
-            #print subgoal_space.shape
-            self.knn.fit(subgoal_space, self.knn_Y)
-            return self.knn.predict(normalized_goal.reshape(1,-1))[0]
+        #if normalized_goal is not None:
+        #    
+        #    # use main neirest neighbor model to find best policy
+        #    subgoal_space = self.knn_X[:,goal_range]
+        #    #print subgoal_space.shape
+        #    self.knn.fit(subgoal_space, self.knn_Y)
+        #    return self.knn.predict(normalized_goal.reshape(1,-1))[0]
 
         if bootstrap:
             # returns random policy parameters using he_uniform
@@ -98,7 +99,7 @@ class GEP(object):
         #print "choosen module: %s with range: %s" % (module_name, module_outcome_range)
         #print "sub_outcome data shape:"
         #print module_sub_outcome.shape
-        self.current_policy = self.modules[module_name].produce(module_sub_outcome,self.knn_Y,self.knn)
+        self.current_policy = self.modules[module_name].produce(module_sub_outcome,self.knn_Y)
 
         return self.current_policy
 
