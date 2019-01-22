@@ -310,6 +310,9 @@ for i in range(starting_iteration, max_iterations):
         for out in input_names:
             b_k['end_'+out].append(states[-1][input_names.index(out)])
 
+b_k['choosen_modules'] = gep.choosen_modules
+if model_type == "active_modular":
+    b_k['interests'] = gep.interests
 save_gep(gep, i + 1, b_k, savefile_name, book_keeping_file_name, save_all)
 print("closing {}".format(b_k['parameters']))
 #cp.disable()
