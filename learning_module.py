@@ -2,14 +2,17 @@ import numpy as np
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.neighbors import NearestNeighbors
 from utils.gep_utils import scale_vector
+from utils.gep_utils import get_random_policy
 #from utils.knn_variants import BufferedcKDTree
 from utils.dataset import BufferedDataset
 
 
 class LearningModule(object):
     # outcome_bounds must be a 2d array with column 1 = mins and column 2 = maxs
-    def __init__(self, policy_nb_dims, outcome_size, babbling_mode, explo_noise=0.1, update_interest_step=5, mean_rate=100.):
+    def __init__(self, policy_nb_dims, layers, init_function_params, outcome_size, babbling_mode, explo_noise=0.1, update_interest_step=5, mean_rate=100.):
         self.policy_nb_dims = policy_nb_dims
+        self.layers = layers
+        self.init_function_params = init_function_params
         self.o_size = outcome_size
         self.explo_noise = explo_noise
         self.babbling_mode = babbling_mode
@@ -32,7 +35,7 @@ class LearningModule(object):
 
     # sample a goal in outcome space and find closest neighbor in (param,outcome) database
     # RETURN policy param with added gaussian noise
-    def produce(self, policies):
+    def produce(self, policies, logboy=False):
         # draw randow goal in bounded outcome space
         goal = np.random.random(self.o_size) * 2 - 1
         goal = goal
@@ -52,22 +55,30 @@ class LearningModule(object):
 
         # get closest outcome in database and retreive corresponding policy
         _, policy_idx = self.knn.nn_y(goal)
+
+        #if logboy: print("nb:{} val:{}".format(policy_idx, policies[policy_idx[0]][155]))
         if self.LOG: print('closest reached outc is {}'.format(self.tmp_outcomes[policy_idx][0:3]))
         #policy = policies[policy_idx]
         policy_knn_idx = self.knn.get_x(policy_idx[0])
+        if logboy: print(policy_knn_idx)
         assert(policy_idx[0] == policy_knn_idx)
-        policy = policies[policy_idx[0]]
+        policy = policies[policy_idx[0]].copy()
 
 
         # add gaussian noise for exploration
         if add_noise:
-            #print("{}=={}".format(policy.shape, policy[200:210]))
-            if self.LOG: print('adding noise: {} on {}'.format(self.explo_noise, self.policy_nb_dims))
-            policy += np.random.normal(0, self.explo_noise, self.policy_nb_dims)
-            policy = np.clip(policy, -1, 1)
-            if self.LOG: print("{}=={}".format(policy.shape, policy[200:210]))
-            #print('done')
-
+            if policy_idx[0] == 0:  # the first ever seen is the best == we found nothing, revert to random motor
+                if logboy: print("{} reveeeeert".format(policy_idx))
+                policy = get_random_policy(self.layers, self.init_function_params)
+            else:
+                if logboy: print("{} old".format(policy_idx))
+                #print("{}=={}".format(policy.shape, policy[200:210]))
+                if self.LOG: print('adding noise: {} on {}'.format(self.explo_noise, self.policy_nb_dims))
+                policy += np.random.normal(0, self.explo_noise, self.policy_nb_dims)
+                policy = np.clip(policy, -1, 1)
+                if self.LOG: print("{}=={}".format(policy.shape, policy[200:210]))
+                #print('done')
+        #if logboy: print("before: {}, after: {}, ({})".format(policies[policy_idx[0]][155], policy[155], self.explo_noise))
         return policy
 
     def perceive(self, policy_idx, outcome): # must be called for each episode

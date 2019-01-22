@@ -46,6 +46,8 @@ def get_state(state, distractors):
 
 
 def save_gep(gep, iteration, book_keeping, savefile_name, book_keeping_name, save_all=False):
+    if not os.path.exists(exp_directory + '/' + experiment_name):
+        os.makedirs(exp_directory + '/' + experiment_name)
     if save_all:
         gep.prepare_pickling()
         with open(savefile_name, 'wb') as handle:
@@ -92,7 +94,7 @@ def get_n_params(model):
 
 # define and parse argument values
 # more info here: https://stackoverflow.com/questions/5423381/checking-if-sys-argvx-is-defined
-arg_names = ['command', 'experiment_name', 'model_type', 'nb_iters', 'nb_bootstrap', 'explo_noise', 'distractors', 'trajectories', 'interest_step']
+arg_names = ['command', 'experiment_name', 'trial_nb', 'model_type', 'nb_iters', 'nb_bootstrap', 'explo_noise', 'distractors', 'trajectories', 'interest_step']
 args = dict(zip(arg_names, sys.argv))
 Arg_list = collections.namedtuple('Arg_list', arg_names)
 args = Arg_list(*(args.get(arg, None) for arg in arg_names))
@@ -101,7 +103,8 @@ args = Arg_list(*(args.get(arg, None) for arg in arg_names))
 exploration_noise = float(args.explo_noise) if args.explo_noise else 0.05
 nb_bootstrap = int(args.nb_bootstrap) if args.nb_bootstrap else 1000
 max_iterations = int(args.nb_iters) if args.nb_iters else 20000
-# possible models: ["random_modular", "random_flat", "active_modular"]
+trial_nb = args.trial_nb if args.trial_nb else 0
+# possible models: ["random_modular", "random_flat", "active_modular", "random"]
 model_type = args.model_type if args.model_type else "random_modular"
 if args.distractors:
     if args.distractors == 'True':
@@ -137,13 +140,15 @@ else:
                    'static1_x','static1_y', 'static2_x','static2_y', 'static3_x','static3_y', 'static4_x','static4_y']
 b = config.get_env_bounds('arm_env')
 
+exp_directory = 'arm_run_saves'
+if not os.path.exists(exp_directory):
+    os.makedirs(exp_directory)
 experiment_name = args.experiment_name if args.experiment_name else "experiment"
-savefile_name = experiment_name + "_save.pickle"
-book_keeping_file_name = experiment_name + "_bk.pickle"
+savefile_name = exp_directory + '/' + experiment_name + '/' + model_type + '_' + trial_nb +"_save.pickle"
+book_keeping_file_name = exp_directory + '/'+ experiment_name + '/' + model_type + '_' + trial_nb +"_bk.pickle"
 save_step = 50000
 save_all = False
 nb_traj_steps = 5
-print('hh')
 print(trajectories)
 print(distractors)
 
@@ -174,7 +179,7 @@ else:
 full_outcome_bounds = b.get_bounds(full_outcome)
 
 
-if model_type == "random_flat":
+if (model_type == "random_flat") or (model_type == "random"):
     outcome1 = full_outcome
     config = {'policy_nb_dims': total_policy_params,
               'modules': {'mod1': {'outcome_range': np.array([full_outcome.index(var) for var in outcome1])}}}
@@ -305,13 +310,7 @@ for i in range(starting_iteration, max_iterations):
         for out in input_names:
             b_k['end_'+out].append(states[-1][input_names.index(out)])
 
-    if ((i + 1) % save_step) == 0:
-        print("saving gep")
-        b_k['choosen_modules'] = gep.choosen_modules
-        #b_k['modules'] = gep.modules
-        if model_type == "active_modular":
-            b_k['interests'] = gep.interests
-        save_gep(gep, i + 1, b_k, savefile_name, book_keeping_file_name, save_all)
+save_gep(gep, i + 1, b_k, savefile_name, book_keeping_file_name, save_all)
 print("closing {}".format(b_k['parameters']))
 #cp.disable()
 #cp.dump_stats("test.cprof")

@@ -1,5 +1,6 @@
 import numpy as np
 from collections import OrderedDict
+from utils.initialization_functions import he_uniform
 
 # scale numpy 1d array to [-1:1] given its bounds
 # bounds must be of the form [[min1,max1],[min2,max2],...]
@@ -19,6 +20,13 @@ def proportional_choice(v, eps=0.):
     else:
         probas = np.array(v) / np.sum(v)
         return np.where(np.random.multinomial(1, probas) == 1)[0][0]
+
+def get_random_policy(layers, init_function_params):
+    rnd_weights, rnd_biases = he_uniform(layers, init_function_params)
+    current_policy = np.concatenate((rnd_weights, rnd_biases))
+    return current_policy
+
+
 
 class Bounds(object):
     def __init__(self):

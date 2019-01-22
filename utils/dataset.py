@@ -428,7 +428,7 @@ class BufferedDataset(Dataset):
         if self.buffer.size > 0:
             buffer_dists, buffer_idxes = self.buffer._nn(side, v, k, radius, eps, p)
             buffer_idxes = [i + self.size for i in buffer_idxes]
-            if dists[0] < buffer_dists:
+            if dists[0] <= buffer_dists:
                 return dists, idxes
             else:
                 return buffer_dists, buffer_idxes

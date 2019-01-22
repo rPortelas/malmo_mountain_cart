@@ -1,8 +1,7 @@
 from learning_module import LearningModule
 import numpy as np
 from sklearn.neighbors import KNeighborsRegressor
-from utils.gep_utils import scale_vector, proportional_choice
-from utils.initialization_functions import he_uniform
+from utils.gep_utils import scale_vector, proportional_choice, get_random_policy
 
 
 class GEP(object):
@@ -30,7 +29,9 @@ class GEP(object):
         self.total_outcome_range = 0
         for m_name,m in self.modules_config.items():
             outcome_size = len(m['outcome_range'])
-            self.modules[m_name] = LearningModule(self.policy_nb_dims, 
+            self.modules[m_name] = LearningModule(self.policy_nb_dims,
+                                                  layers,
+                                                  init_function_params,
                                                   outcome_size, 
                                                   model_babbling_mode, 
                                                   explo_noise=explo_noise,
@@ -65,16 +66,14 @@ class GEP(object):
 
         if bootstrap:
             # returns random policy parameters using he_uniform
-            rnd_weights, rnd_biases = he_uniform(self.layers, self.init_function_params)
-            self.current_policy = np.concatenate((rnd_weights, rnd_biases))
+            self.current_policy = get_random_policy(self.layers, self.init_function_params)
             #print(self.current_policy.shape)
             return self.current_policy
 
         coin_toss = np.random.random()
         if coin_toss < self.random_motor:
             self.choosen_modules.append('random')
-            rnd_weights, rnd_biases = he_uniform(self.layers, self.init_function_params)
-            self.current_policy = np.concatenate((rnd_weights, rnd_biases))
+            self.current_policy = get_random_policy(self.layers, self.init_function_params)
             return self.current_policy
 
         if self.model_babbling_mode == "random":
@@ -98,7 +97,11 @@ class GEP(object):
         self.choosen_modules.append(module_name) # book keeping
         #module_outcome_range = self.modules_config[module_name]['outcome_range']
         #module_sub_outcome = self.knn_X[:,module_outcome_range]
-        self.current_policy = self.modules[module_name].produce(self.policies)
+        # if module_name == 'stick1':
+        #     logboy=True
+        # else:
+        logboy=False
+        self.current_policy = self.modules[module_name].produce(self.policies, logboy=logboy)
         #print(self.current_policy.shape)
         return self.current_policy
 
