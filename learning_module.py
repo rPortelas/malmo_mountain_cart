@@ -57,7 +57,7 @@ class LearningModule(object):
         _, policy_idx = self.knn.nn_y(goal)
 
         #if logboy: print("nb:{} val:{}".format(policy_idx, policies[policy_idx[0]][155]))
-        if self.LOG: print('closest reached outc is {}'.format(self.tmp_outcomes[policy_idx][0:3]))
+
         #policy = policies[policy_idx]
         policy_knn_idx = self.knn.get_x(policy_idx[0])
         if logboy: print(policy_knn_idx)
@@ -67,16 +67,20 @@ class LearningModule(object):
 
         # add gaussian noise for exploration
         if add_noise:
+
             if policy_idx[0] == 0:  # the first ever seen is the best == we found nothing, revert to random motor
                 if logboy: print("{} reveeeeert".format(policy_idx))
                 policy = get_random_policy(self.layers, self.init_function_params)
             else:
                 if logboy: print("{} old".format(policy_idx))
+                if self.LOG: print('adding noise: {} on {}'.format(self.explo_noise, policy[0][200]))
+                gaussian_noise = np.random.normal(0, self.explo_noise, self.policy_nb_dims)
+                for i in range(len(policy)):
+                    if self.LOG: print("before {}:{}".format(i,policy[i][200]))
+                    policy[i] += gaussian_noise
+                    policy[i] = np.clip(policy[i], -1, 1)
                 #print("{}=={}".format(policy.shape, policy[200:210]))
-                if self.LOG: print('adding noise: {} on {}'.format(self.explo_noise, self.policy_nb_dims))
-                policy += np.random.normal(0, self.explo_noise, self.policy_nb_dims)
-                policy = np.clip(policy, -1, 1)
-                if self.LOG: print("{}=={}".format(policy.shape, policy[200:210]))
+                    if self.LOG: print("after {}=={}".format(policy[i].shape, policy[i][200]))
                 #print('done')
         #if logboy: print("before: {}, after: {}, ({})".format(policies[policy_idx[0]][155], policy[155], self.explo_noise))
         return policy

@@ -21,10 +21,18 @@ def proportional_choice(v, eps=0.):
         probas = np.array(v) / np.sum(v)
         return np.where(np.random.multinomial(1, probas) == 1)[0][0]
 
+# def get_random_policy(layers, init_function_params):
+#     rnd_weights, rnd_biases = he_uniform(layers, init_function_params)
+#     current_policy = np.concatenate((rnd_weights, rnd_biases))
+#     return current_policy
+
 def get_random_policy(layers, init_function_params):
     rnd_weights, rnd_biases = he_uniform(layers, init_function_params)
     current_policy = np.concatenate((rnd_weights, rnd_biases))
-    return current_policy
+    policy = []
+    for i in range(init_function_params['size_sequential_nn']):
+        policy.append(current_policy.copy())
+    return policy
 
 
 

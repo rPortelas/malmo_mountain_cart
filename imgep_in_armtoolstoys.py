@@ -63,20 +63,26 @@ def load_gep(savefile_name, book_keeping_name):
         b_k = pickle.load(handle)
     return gep, starting_iteration, b_k
 
-def run_episode(model, distractors, trajectories=False, nb_traj_steps=None):
+def run_episode(model, policy_params, distractors, trajectories=False, nb_traj_steps=None, max_step=50, focus=None):
     out = arm_env.reset()
     state = get_state(out['observation'], distractors)
     # Loop until mission/episode ends:
     done = False
     states = [state]
+    steps_per_nn = int(max_step / len(policy_params))
+    #print("steps per nn {}".format(steps_per_nn))
     while not done:
-        # extract the world state that will be given to the agent's policy
-        normalized_state = scale_vector(state, np.array(input_bounds))
-        actions = model.get_action(normalized_state.reshape(1, -1))
-        out, _, done, _ = arm_env.step(actions[0])
-        #if render: arm_env.render()
-        state = get_state(out['observation'], distractors)
-        states.append(state)
+        for nn_params in policy_params:
+            model.set_parameters(nn_params)
+            for i in range(steps_per_nn):
+                # extract the world state that will be given to the agent's policy
+                normalized_state = scale_vector(state, np.array(input_bounds))
+                actions = model.get_action(normalized_state.reshape(1, -1))
+                out, _, done, _ = arm_env.step(actions[0])
+                #if render: arm_env.render()
+                state = get_state(out['observation'], distractors)
+                states.append(state)
+    assert(done)
     return get_outcome(states, distractors, trajectories, nb_traj_steps), states
 
 def get_n_params(model):
@@ -153,6 +159,7 @@ print(trajectories)
 print(distractors)
 
 # init neural network policy
+size_sequential_nn = 5
 input_names = state_names
 input_bounds = b.get_bounds(input_names)
 input_size = len(input_bounds)
@@ -160,7 +167,7 @@ print('input_bounds: %s' % input_bounds)
 layers = [64]
 action_set_size = 4
 params = {'layers': layers, 'activation_function':'relu', 'max_a':1.,
-          'dims':{'s':input_size,'a':action_set_size},'bias':True}
+          'dims':{'s':input_size,'a':action_set_size},'bias':True, 'size_sequential_nn':size_sequential_nn}
 param_policy = PolicyNN(params)
 total_policy_params = get_n_params(param_policy)
 print('nbparams:    {}'.format(total_policy_params))
@@ -272,14 +279,14 @@ for i in range(starting_iteration, max_iterations):
     if (i%1000) == 0: print("{}: ########### Iteration # {} ##########".format(model_type, i))
     # generate policy using gep
     prod_time_start = time.time()
-    policy_params = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
+    policy_params, focus = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
     #print(policy_params.shape)
     prod_time_end = time.time()
-    param_policy.set_parameters(policy_params)
+    #param_policy.set_parameters(policy_params)
     # if i > 2500:
     #     outcome = run_episode(param_policy, render = True)
     # else:
-    outcome, states = run_episode(param_policy, distractors, trajectories=trajectories, nb_traj_steps=nb_traj_steps)
+    outcome, states = run_episode(param_policy, policy_params, distractors, trajectories=trajectories, nb_traj_steps=nb_traj_steps, focus=focus)
 
     # a = round(outcome[3],2)
     # b = round(outcome[4],2)

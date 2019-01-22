@@ -41,40 +41,25 @@ class GEP(object):
             self.total_outcome_range += outcome_size
             self.interests[m_name] = []
             print(outcome_size)
-        #self.current_module = None
-        self.current_policy = None
 
-        # # init main knn, will be used for exploitation
-        # self.knn = KNeighborsRegressor(n_neighbors=1,
-        #                                   metric='euclidean',
-        #                                   algorithm='ball_tree',
-        #                                   weights='distance')
-        #self.knn_X = None # X = observed outcome
-        #self.knn_Y = None # Y = produced policies' parameters
+        self.current_policy = None
         self.policies = []
 
     # returns policy parameters following and exploration process if no goal is provided
     # if a goal is provided, returns best parameter policy using NN exploitation
     def produce(self, normalized_goal=None, goal_range=None, bootstrap=False, context=None):
-        # if normalized_goal is not None:
-        #
-        #     # use main neirest neighbor model to find best policy
-        #     subgoal_space = self.knn_X[:,goal_range]
-        #     #print subgoal_space.shape
-        #     self.knn.fit(subgoal_space, self.knn_Y)
-        #     return self.knn.predict(normalized_goal.reshape(1,-1))[0]
 
         if bootstrap:
             # returns random policy parameters using he_uniform
             self.current_policy = get_random_policy(self.layers, self.init_function_params)
             #print(self.current_policy.shape)
-            return self.current_policy
+            return self.current_policy, None
 
         coin_toss = np.random.random()
         if coin_toss < self.random_motor:
             self.choosen_modules.append('random')
             self.current_policy = get_random_policy(self.layers, self.init_function_params)
-            return self.current_policy
+            return self.current_policy, None
 
         if self.model_babbling_mode == "random":
             # random model babbling step
@@ -95,7 +80,7 @@ class GEP(object):
 
         #print("choosen module: %s with range: " % (module_name))
         self.choosen_modules.append(module_name) # book keeping
-        #module_outcome_range = self.modules_config[module_name]['outcome_range']
+        module_outcome_range = self.modules_config[module_name]['outcome_range']
         #module_sub_outcome = self.knn_X[:,module_outcome_range]
         # if module_name == 'stick1':
         #     logboy=True
@@ -103,7 +88,7 @@ class GEP(object):
         logboy=False
         self.current_policy = self.modules[module_name].produce(self.policies, logboy=logboy)
         #print(self.current_policy.shape)
-        return self.current_policy
+        return self.current_policy, module_outcome_range
 
     def perceive(self, outcome):
         assert(outcome.shape[0] == self.total_outcome_range)
