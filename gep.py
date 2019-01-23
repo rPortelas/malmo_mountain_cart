@@ -81,7 +81,6 @@ class GEP(object):
         #print("choosen module: %s with range: " % (module_name))
         self.choosen_modules.append(module_name) # book keeping
         module_outcome_range = self.modules_config[module_name]['outcome_range']
-        #module_sub_outcome = self.knn_X[:,module_outcome_range]
         # if module_name == 'stick1':
         #     logboy=True
         # else:

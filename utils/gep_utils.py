@@ -27,10 +27,10 @@ def proportional_choice(v, eps=0.):
 #     return current_policy
 
 def get_random_policy(layers, init_function_params):
-    rnd_weights, rnd_biases = he_uniform(layers, init_function_params)
-    current_policy = np.concatenate((rnd_weights, rnd_biases))
     policy = []
     for i in range(init_function_params['size_sequential_nn']):
+        rnd_weights, rnd_biases = he_uniform(layers, init_function_params)
+        current_policy = np.concatenate((rnd_weights, rnd_biases))
         policy.append(current_policy.copy())
     return policy
 

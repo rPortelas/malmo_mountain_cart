@@ -75,9 +75,9 @@ class LearningModule(object):
             else:
                 #if logboy: print("{} old".format(policy_idx))
                 if self.LOG: print('adding noise: {} on {}'.format(self.explo_noise, policy[0][200]))
-                gaussian_noise = np.random.normal(0, self.explo_noise, self.policy_nb_dims)
                 for i in range(len(policy)):
                     if self.LOG: print("before {}:{}".format(i,policy[i][200]))
+                    gaussian_noise = np.random.normal(0, self.explo_noise, self.policy_nb_dims)
                     policy[i] += gaussian_noise
                     policy[i] = np.clip(policy[i], -1, 1)
                 #print("{}=={}".format(policy.shape, policy[200:210]))
