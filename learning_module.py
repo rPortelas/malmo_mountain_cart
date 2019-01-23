@@ -5,6 +5,7 @@ from utils.gep_utils import scale_vector
 from utils.gep_utils import get_random_policy
 #from utils.knn_variants import BufferedcKDTree
 from utils.dataset import BufferedDataset
+import copy
 
 
 class LearningModule(object):
@@ -62,7 +63,7 @@ class LearningModule(object):
         policy_knn_idx = self.knn.get_x(policy_idx[0])
         if logboy: print(policy_knn_idx)
         assert(policy_idx[0] == policy_knn_idx)
-        policy = policies[policy_idx[0]].copy()
+        policy = copy.deepcopy(policies[policy_idx[0]])
 
 
         # add gaussian noise for exploration
@@ -72,7 +73,7 @@ class LearningModule(object):
                 if logboy: print("{} reveeeeert".format(policy_idx))
                 policy = get_random_policy(self.layers, self.init_function_params)
             else:
-                if logboy: print("{} old".format(policy_idx))
+                #if logboy: print("{} old".format(policy_idx))
                 if self.LOG: print('adding noise: {} on {}'.format(self.explo_noise, policy[0][200]))
                 gaussian_noise = np.random.normal(0, self.explo_noise, self.policy_nb_dims)
                 for i in range(len(policy)):
@@ -82,7 +83,7 @@ class LearningModule(object):
                 #print("{}=={}".format(policy.shape, policy[200:210]))
                     if self.LOG: print("after {}=={}".format(policy[i].shape, policy[i][200]))
                 #print('done')
-        #if logboy: print("before: {}, after: {}, ({})".format(policies[policy_idx[0]][155], policy[155], self.explo_noise))
+        if logboy: print("noise: {} {}: before: {}, after: {}, ({})".format(add_noise, self.counter, policies[policy_idx[0]][0][155], policy[0][155], self.explo_noise))
         return policy
 
     def perceive(self, policy_idx, outcome): # must be called for each episode
@@ -105,6 +106,8 @@ class LearningModule(object):
             if len(self.generated_goals) < 3 and ((self.counter % self.update_interest_step) == 0):
                 #self.interest_knn.add(self.generated_goals[-1])
                 self.interest_knn.add_xy(outcome, self.generated_goals[-1])
+                if ((self.counter % self.update_interest_step) == 0):
+                    self.counter = 0  # reset counter
                 #self.observed_outcomes.append(outcome)
                 return
             elif ((self.counter % self.update_interest_step) == 0):
