@@ -64,7 +64,7 @@ def load_gep(savefile_name, book_keeping_name):
     return gep, starting_iteration, b_k
 
 def run_episode(model, policy_params, explo_noise, distractors, trajectories=False, nb_traj_steps=None, max_step=50, focus_range=None, add_noise=False):
-    out = arm_env.reset()
+    out = env.reset()
     state = get_state(out['observation'], distractors)
     if add_noise:
         #print(state)
@@ -86,8 +86,8 @@ def run_episode(model, policy_params, explo_noise, distractors, trajectories=Fal
                 # extract the world state that will be given to the agent's policy
                 normalized_state = scale_vector(state, np.array(input_bounds))
                 actions = model.get_action(normalized_state.reshape(1, -1))
-                out, _, done, _ = arm_env.step(actions[0])
-                #if render: arm_env.render()
+                out, _, done, _ = env.step(actions[0])
+                #if render: env.render()
                 state = get_state(out['observation'], distractors)
                 states.append(state)
     assert(done)
@@ -281,39 +281,16 @@ else:
 print("launching {}".format(b_k['parameters']))
 #####################################################################
 # init arm_env controller
-arm_env = env=gym.make('ArmToolsToys-v0')
-#arm_env.env.my_init(port=port, skip_step=4, tick_lengths=10)
+env = gym.make('ArmToolsToys-v0')
+#env.env.my_init(port=port, skip_step=4, tick_lengths=10)
 for i in range(starting_iteration, max_iterations):
     if (i%1000) == 0: print("{}: ########### Iteration # {} ##########".format(model_type, i))
     # generate policy using gep
     prod_time_start = time.time()
     policy_params, focus, add_noise = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
-    # print('hh')
-    # print(policy_params[0][10])
-    # print('hhh')
-    # print(policy_params[1][10])
     prod_time_end = time.time()
     outcome, states = run_episode(param_policy, policy_params, exploration_noise, distractors,
                                   trajectories=trajectories, nb_traj_steps=nb_traj_steps, focus_range=focus, add_noise=add_noise)
-    # if add_noise:
-    #     if len(focus) == 3 and (focus == np.array([0,1,2])).all():
-    #         print('hoho')
-    #         print(policy_params[0][10])
-    #         print(policy_params[1][10])
-    #         exit(0)
-
-
-    # a = round(outcome[3],2)
-    # b = round(outcome[4],2)
-    # if [a,b] != [round(-1.10355339,2), round(0.60355339,2)]:
-    #     print('hello')
-    #     with open("{}_policy_stick1_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
-    #        pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    # grasp_objs = outcome[-4:]
-    # if grasp_objs.tolist() != [-0.3,1.1,0.3,1.1]:
-    #     print('hello')
-    #     with open("{}_policy_grasp_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
-    #        pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
     run_ep_end = time.time()
     # scale outcome dimensions to [-1,1]
     scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
@@ -337,8 +314,6 @@ if model_type == "active_modular":
     b_k['interests'] = gep.interests
 save_gep(gep, i + 1, b_k, savefile_name, book_keeping_file_name, save_all)
 print("closing {}".format(b_k['parameters']))
-#cp.disable()
-#cp.dump_stats("test.cprof")
 exit(0)
 
 
