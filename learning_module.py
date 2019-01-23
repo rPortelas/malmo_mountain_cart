@@ -73,30 +73,24 @@ class LearningModule(object):
                 if logboy: print("{} reveeeeert".format(policy_idx))
                 policy = get_random_policy(self.layers, self.init_function_params)
             else:
+                pass
                 #if logboy: print("{} old".format(policy_idx))
-                if self.LOG: print('adding noise: {} on {}'.format(self.explo_noise, policy[0][200]))
-                for i in range(len(policy)):
-                    if self.LOG: print("before {}:{}".format(i,policy[i][200]))
-                    gaussian_noise = np.random.normal(0, self.explo_noise, self.policy_nb_dims)
-                    policy[i] += gaussian_noise
-                    policy[i] = np.clip(policy[i], -1, 1)
-                #print("{}=={}".format(policy.shape, policy[200:210]))
-                    if self.LOG: print("after {}=={}".format(policy[i].shape, policy[i][200]))
-                #print('done')
+                # if self.LOG: print('adding noise: {} on {}'.format(self.explo_noise, policy[0][200]))
+                # for i in range(len(policy)):
+                #     if self.LOG: print("before {}:{}".format(i,policy[i][200]))
+                #     gaussian_noise = np.random.normal(0, self.explo_noise, self.policy_nb_dims)
+                #     policy[i] += gaussian_noise
+                #     policy[i] = np.clip(policy[i], -1, 1)
+                # #print("{}=={}".format(policy.shape, policy[200:210]))
+                #     if self.LOG: print("after {}=={}".format(policy[i].shape, policy[i][200]))
+                # #print('done')
         if logboy: print("noise: {} {}: before: {}, after: {}, ({})".format(add_noise, self.counter, policies[policy_idx[0]][0][155], policy[0][155], self.explo_noise))
-        return policy
+        return policy, add_noise
 
     def perceive(self, policy_idx, outcome): # must be called for each episode
         # add to knn
-        #self.knn.add(outcome)
         self.knn.add_xy(policy_idx, outcome)
-        #self.tmp_outcomes.append(outcome)
-        #check if correctly organized
-        # for i in range(len(self.tmp_outcomes)):
-        #     knn_out = self.knn.get_x(i)
-        #     tmp_out = self.tmp_outcomes[i]
-        #     assert((knn_out == tmp_out).all())
-        #     print(i)
+
 
     def update_interest(self, outcome): # must be called only if module is selected
         if self.babbling_mode == "active":

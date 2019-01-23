@@ -42,24 +42,24 @@ class GEP(object):
             self.interests[m_name] = []
             print(outcome_size)
 
-        self.current_policy = None
+        #self.current_policy = None
         self.policies = []
 
     # returns policy parameters following and exploration process if no goal is provided
     # if a goal is provided, returns best parameter policy using NN exploitation
     def produce(self, normalized_goal=None, goal_range=None, bootstrap=False, context=None):
-
+        add_noise = True
         if bootstrap:
             # returns random policy parameters using he_uniform
-            self.current_policy = get_random_policy(self.layers, self.init_function_params)
+            current_policy = get_random_policy(self.layers, self.init_function_params)
             #print(self.current_policy.shape)
-            return self.current_policy, None
+            return current_policy, None, False
 
         coin_toss = np.random.random()
         if coin_toss < self.random_motor:
             self.choosen_modules.append('random')
-            self.current_policy = get_random_policy(self.layers, self.init_function_params)
-            return self.current_policy, None
+            current_policy = get_random_policy(self.layers, self.init_function_params)
+            return current_policy, None, False
 
         if self.model_babbling_mode == "random":
             # random model babbling step
@@ -85,11 +85,11 @@ class GEP(object):
         #     logboy=True
         # else:
         logboy=False
-        self.current_policy = self.modules[module_name].produce(self.policies, logboy=logboy)
+        current_policy, add_noise = self.modules[module_name].produce(self.policies, logboy=logboy)
         #print(self.current_policy.shape)
-        return self.current_policy, module_outcome_range
+        return current_policy, module_outcome_range, add_noise
 
-    def perceive(self, outcome):
+    def perceive(self, outcome, policy):
         assert(outcome.shape[0] == self.total_outcome_range)
         #add data to modules
         for m_name,m in self.modules.items():
@@ -111,7 +111,7 @@ class GEP(object):
                 self.modules[m_name].update_interest(np.take(outcome, mod_sub_outcome))
 
         # store new policy
-        policy = self.current_policy
+        #policy = self.current_policy
         self.policies.append(policy)
 
     def prepare_pickling(self):

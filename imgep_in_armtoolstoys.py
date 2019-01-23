@@ -63,9 +63,13 @@ def load_gep(savefile_name, book_keeping_name):
         b_k = pickle.load(handle)
     return gep, starting_iteration, b_k
 
-def run_episode(model, policy_params, distractors, trajectories=False, nb_traj_steps=None, max_step=50, focus=None):
+def run_episode(model, policy_params, explo_noise, distractors, trajectories=False, nb_traj_steps=None, max_step=50, focus_range=None, add_noise=False):
     out = arm_env.reset()
     state = get_state(out['observation'], distractors)
+    if add_noise:
+        #print(state)
+        init_focus_state = np.array([state[i] for i in focus_range])
+        #print(init_focus_state)
     # Loop until mission/episode ends:
     done = False
     states = [state]
@@ -73,6 +77,10 @@ def run_episode(model, policy_params, distractors, trajectories=False, nb_traj_s
     #print("steps per nn {}".format(steps_per_nn))
     while not done:
         for nn_params in policy_params:
+            if add_noise:
+                if not ([state[i] for i in focus_range] == init_focus_state).all():
+                    #object of interest moved during previous neural net, lets add noise for the following nets
+                    nn_params += np.random.normal(0, explo_noise, len(nn_params))
             model.set_parameters(nn_params)
             for i in range(steps_per_nn):
                 # extract the world state that will be given to the agent's policy
@@ -279,14 +287,21 @@ for i in range(starting_iteration, max_iterations):
     if (i%1000) == 0: print("{}: ########### Iteration # {} ##########".format(model_type, i))
     # generate policy using gep
     prod_time_start = time.time()
-    policy_params, focus = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
-    #print(policy_params.shape)
+    policy_params, focus, add_noise = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
+    # print('hh')
+    # print(policy_params[0][10])
+    # print('hhh')
+    # print(policy_params[1][10])
     prod_time_end = time.time()
-    #param_policy.set_parameters(policy_params)
-    # if i > 2500:
-    #     outcome = run_episode(param_policy, render = True)
-    # else:
-    outcome, states = run_episode(param_policy, policy_params, distractors, trajectories=trajectories, nb_traj_steps=nb_traj_steps, focus=focus)
+    outcome, states = run_episode(param_policy, policy_params, exploration_noise, distractors,
+                                  trajectories=trajectories, nb_traj_steps=nb_traj_steps, focus_range=focus, add_noise=add_noise)
+    # if add_noise:
+    #     if len(focus) == 3 and (focus == np.array([0,1,2])).all():
+    #         print('hoho')
+    #         print(policy_params[0][10])
+    #         print(policy_params[1][10])
+    #         exit(0)
+
 
     # a = round(outcome[3],2)
     # b = round(outcome[4],2)
@@ -302,7 +317,7 @@ for i in range(starting_iteration, max_iterations):
     run_ep_end = time.time()
     # scale outcome dimensions to [-1,1]
     scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
-    gep.perceive(scaled_outcome)
+    gep.perceive(scaled_outcome, policy_params)
     perceive_end = time.time()
 
     # boring book keeping
