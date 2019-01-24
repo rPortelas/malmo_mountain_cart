@@ -205,7 +205,7 @@ else:
     seed = np.random.randint(1000)
     np.random.seed(seed)
     if model_type == "active_modular":  # AMB init
-        interest_mean_rate=200.
+        interest_mean_rate=100.
         # active modules must perform an exploitation step periodically to compute interest for each modules
         interest_step = int(args.interest_step) if args.interest_step else 5
 
@@ -265,7 +265,7 @@ print("launching {}".format(b_k['parameters']))
 port = int(args.server_port) if args.server_port else None
 # init env controller
 env = gym2.make('ExtendedMalmoMountainCart-v0')
-env.env.my_init(port=port, skip_step=4, tick_lengths=5)
+env.env.my_init(port=port, skip_step=4, tick_lengths=10)
 
 for i in range(starting_iteration, max_iterations):
     print("########### Iteration # %s ##########" % (i))
@@ -275,13 +275,14 @@ for i in range(starting_iteration, max_iterations):
     prod_time_end = time.time()
     outcome = run_episode(param_policy, policy_params, exploration_noise, focus_range=focus, add_noise=add_noise)
     run_ep_end = time.time()
+    #print(outcome)
     # scale outcome dimensions to [-1,1]
     scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
     gep.perceive(scaled_outcome, policy_params)
     perceive_end = time.time()
-    if outcome[-1] != 291.5:
-        with open("{}_gepexplore_p_cart_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
-            pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    # if outcome[-1] != 291.5:
+    #     with open("{}_gepexplore_p_cart_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
+    #         pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     # boring book keeping
     b_k['runtimes']['produce'].append(prod_time_end - prod_time_start)

@@ -2,7 +2,7 @@ from utils.gep_utils import Bounds
 
 EMMC_B = Bounds()
 EMMC_B.add('agent_x', [288.3, 294.7])
-EMMC_B.add('agent_z', [433.3, 443.7])
+EMMC_B.add('agent_z', [432.3, 443.7])
 EMMC_B.add('pickaxe_x', [288.3, 294.7])
 EMMC_B.add('pickaxe_z', [433.3, 443.7])
 EMMC_B.add('shovel_x', [288.3, 294.7])

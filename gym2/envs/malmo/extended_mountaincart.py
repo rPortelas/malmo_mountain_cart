@@ -47,20 +47,20 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                     <DrawCuboid x1="285" y1="3" z1="431" x2="302" y2="3" z2="446" type="bedrock" />
                     
                     <!-- Draw arena long side -->
-                    <DrawCuboid x1="287" y1="4" z1="432" x2="295" y2="6" z2="445" type="air"/>
-                    <DrawCuboid x1="287" y1="4" z1="432" x2="295" y2="6" z2="445" type="bedrock"/>
-                    <DrawCuboid x1="289" y1="4" z1="433" x2="293" y2="6" z2="443" type="air"/>
-                    <DrawCuboid x1="288" y1="4" z1="433" x2="294" y2="6" z2="439" type="air"/>
+                    <DrawCuboid x1="287" y1="4" z1="431" x2="295" y2="6" z2="445" type="air"/>
+                    <DrawCuboid x1="287" y1="4" z1="431" x2="295" y2="6" z2="445" type="bedrock"/>
+                    <DrawCuboid x1="289" y1="4" z1="432" x2="293" y2="6" z2="443" type="air"/>
+                    <DrawCuboid x1="288" y1="4" z1="432" x2="294" y2="6" z2="439" type="air"/>
                     
                     <!-- Draw arena width side -->
                     <DrawCuboid x1="289" y1="6" z1="445" x2="293" y2="6" z2="445" type="air"/>
                     <DrawCuboid x1="297" y1="6" z1="445" x2="285" y2="9" z2="445" type="bedrock"/> 
                     
                     <!-- Draw diamond blocks -->
-                    <DrawCuboid x1="290" y1="5" z1="441" x2="292" y2="5" z2="441" type="coal_ore"/>
+                    <DrawCuboid x1="290" y1="5" z1="441" x2="292" y2="5" z2="441" type="diamond_ore"/>
                     <!-- fill row -->
-                     <DrawBlock x="293" y="5" z="441" type="coal_ore" />
-                      <DrawBlock x="289" y="5" z="441" type="coal_ore" />
+                     <DrawBlock x="293" y="5" z="441" type="diamond_ore" />
+                      <DrawBlock x="289" y="5" z="441" type="diamond_ore" />
                      <!-- obsidian used as markers to detect diamond line -->
                     <DrawBlock x="294" y="5" z="441" type="obsidian" />
                     
@@ -83,14 +83,26 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                     
                     <DrawEntity x="291.5" y="7" z="443" type="MinecartRideable"/>
                     
-                    <!-- Draw starting cage -->
+                    <!-- Draw tools cage -->
                     <DrawCuboid x1="289" y1="4" z1="437" x2="293" y2="5" z2="437" type="bedrock"/>
                     <DrawCuboid x1="289" y1="4" z1="435" x2="293" y2="4" z2="435" type="bedrock"/>
                     <DrawBlock x="291" y="4" z="436" type="bedrock" />
+                    
+                     <!-- Draw starting cage -->
+                    <!--<DrawCuboid x1="289" y1="4" z1="435" x2="289" y2="4" z2="433" type="bedrock"/>-->
+                    <!--<DrawCuboid x1="293" y1="4" z1="435" x2="293" y2="4" z2="433" type="bedrock"/>-->
+                    <!--<DrawBlock x="291" y="4" z="436" type="bedrock" />-->
+                    <DrawBlock x="292" y="4" z="434" type="bedrock" />
+                    <DrawBlock x="292" y="4" z="433" type="bedrock" />
+                    <DrawBlock x="290" y="4" z="434" type="bedrock" />
+                    <DrawBlock x="290" y="4" z="433" type="bedrock" />
+                    <DrawBlock x="288" y="4" z="433" type="bedrock" />
+                    <DrawBlock x="294" y="4" z="433" type="bedrock" />
+                    
 
                   
                     <!-- Draw tools -->
-                    <DrawItem x="''' + str(PICKAXE_POS[0]) + '''" y="4" z="'''+ str(PICKAXE_POS[1]) + '''" type="golden_pickaxe"/>
+                    <DrawItem x="''' + str(PICKAXE_POS[0]) + '''" y="4" z="'''+ str(PICKAXE_POS[1]) + '''" type="diamond_pickaxe"/>
                     <DrawItem x="''' + str(D_TOOL_POS[0]) + '''" y="4" z="'''+ str(D_TOOL_POS[1]) + '''" type="diamond_shovel"/>
 
                   </DrawingDecorator>
@@ -108,8 +120,8 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                 <AgentHandlers>
                   <ObservationFromGrid>
                       <Grid name="grid">
-                        <min x="-6" y="1" z="-4"/>
-                        <max x="6" y="1" z="8"/>
+                        <min x="-7" y="1" z="-4"/>
+                        <max x="7" y="1" z="10"/>
                       </Grid>
                   </ObservationFromGrid>
                   <ObservationFromNearbyEntities>
@@ -120,8 +132,8 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                   <MissionQuitCommands/>
                   <AgentQuitFromReachingCommandQuota total="''' + str((3 * total_allowed_actions)+1) + '''"/>
                   <VideoProducer>
-                    <Width>400</Width>
-                    <Height>300</Height>
+                    <Width>40</Width>
+                    <Height>30</Height>
                   </VideoProducer>
                 </AgentHandlers>
 
@@ -272,7 +284,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
         if self.current_step <= 2:
             # avoid using grid observation in (unstable) mission starting part
             return [-1., -1., -1., -1., -1.]
-        grid = np.array(obs['grid']).reshape(13, 13)
+        grid = np.array(obs['grid']).reshape(15, 15)
         marker_pos = np.argwhere(grid == 'obsidian')
         if len(marker_pos) == 0:
             agent = obs['entities'][0]
@@ -282,7 +294,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
             return [-1., -1., -1., -1., -1.]
         start_x, start_y = marker_pos[0][0], marker_pos[0][1]
         diamond_blocks = grid[start_x,start_y-5:start_y]
-        return [-1. if v=='coal_ore' else 1. for v in diamond_blocks]
+        return [-1. if v=='diamond_ore' else 1. for v in diamond_blocks]
 
     def get_state(self, obs):
         #print(obs)
@@ -293,7 +305,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
         pickaxe_pos = None
         shovel_pos = None
         for e in obs['entities']:
-            if e['name'] == 'golden_pickaxe':
+            if e['name'] == 'diamond_pickaxe':
                 pickaxe_pos = [e['x'], e['z']]
             if e['name'] == 'diamond_shovel':
                 shovel_pos = [e['x'], e['z']]
