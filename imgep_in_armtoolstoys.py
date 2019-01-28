@@ -193,6 +193,8 @@ else:
     full_outcome = input_names
 full_outcome_bounds = b.get_bounds(full_outcome)
 
+#motor_states = config.get_motor_states('arm_env')
+#motor_range = np.[full_outcome.index(motor_name) for motor_name in motor_states]
 
 if (model_type == "random_flat") or (model_type == "random"):
     outcome1 = full_outcome

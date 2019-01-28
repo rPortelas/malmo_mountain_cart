@@ -55,6 +55,7 @@ def load_gep(savefile_name, book_keeping_name):
 #     out = malmo.reset()
 #     state = out['observation']
 #     # Loop until mission/episode ends:
+#     # Loop until mission/episode ends
 #     done = False
 #     while not done:
 #         # extract the world state that will be given to the agent's policy
@@ -63,7 +64,7 @@ def load_gep(savefile_name, book_keeping_name):
 #         out, _, done, _ = malmo.step(actions[0])
 #         state = out['observation']
 #     return get_outcome(state)
-def run_episode(model, policy_params, explo_noise, max_step=32, focus_range=None, add_noise=False):
+def run_episode(model, policy_params, explo_noise, max_step=40, focus_range=None, add_noise=False):
     out = env.reset()
     state = out['observation']
     if add_noise:
@@ -146,7 +147,7 @@ book_keeping_file_name = experiment_name + "_bk.pickle"
 save_step = 1000
 
 # init neural network policy
-size_sequential_nn = 4
+size_sequential_nn = 5
 input_names = state_names
 input_bounds = b.get_bounds(input_names)
 input_size = len(input_bounds)
@@ -265,7 +266,7 @@ print("launching {}".format(b_k['parameters']))
 port = int(args.server_port) if args.server_port else None
 # init env controller
 env = gym2.make('ExtendedMalmoMountainCart-v0')
-env.env.my_init(port=port, skip_step=4, tick_lengths=10)
+env.env.my_init(port=port, skip_step=4, tick_lengths=50, desired_mission_time=10)
 
 for i in range(starting_iteration, max_iterations):
     print("########### Iteration # %s ##########" % (i))
@@ -275,14 +276,14 @@ for i in range(starting_iteration, max_iterations):
     prod_time_end = time.time()
     outcome = run_episode(param_policy, policy_params, exploration_noise, focus_range=focus, add_noise=add_noise)
     run_ep_end = time.time()
-    #print(outcome)
+    #print(outcome[-6:-1])
     # scale outcome dimensions to [-1,1]
     scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
     gep.perceive(scaled_outcome, policy_params)
     perceive_end = time.time()
-    # if outcome[-1] != 291.5:
-    #     with open("{}_gepexplore_p_cart_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
-    #         pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    if not (outcome[-6:-1] == [-1.,-1.,-1.,-1.,-1.]).all():
+        with open("{}_gepexplore_p_block_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
+            pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     # boring book keeping
     b_k['runtimes']['produce'].append(prod_time_end - prod_time_start)
@@ -295,6 +296,7 @@ for i in range(starting_iteration, max_iterations):
     b_k['end_shovel_x'].append(outcome[full_outcome.index('shovel_x')])
     b_k['end_shovel_z'].append(outcome[full_outcome.index('shovel_z')])
     b_k['end_cart_x'].append(outcome[full_outcome.index('cart_x')])
+
     for k in range(nb_blocks):
         b_k['end_block_' + str(k)].append(outcome[full_outcome.index('block_' + str(k))])
 
