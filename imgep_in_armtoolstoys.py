@@ -21,20 +21,17 @@ import config
 #import cProfile
 
 
-def get_outcome(states, distractors, trajectories=False, nb_traj_steps=None):
+def get_outcome(states, distractors, nb_traj_steps):
     #print(len(states))
-    if not trajectories:
-        return states[-1]
-    else:
-        step_size = len(states)//nb_traj_steps
-        steps = np.arange(step_size,len(states),step_size)
-        outcome = []
-        start = 0
-        for idx in objects_idx:
-            for step in steps:
-                s = states[step].tolist()
-                outcome += s[idx[0]:idx[1]]
-        return outcome
+    step_size = (len(states)-1)//nb_traj_steps
+    steps = np.arange(step_size,len(states),step_size)
+    outcome = []
+    start = 0
+    for idx in objects_idx:
+        for step in steps:
+            s = states[step].tolist()
+            outcome += s[idx[0]:idx[1]]
+    return outcome
 
 
 def get_state(state, distractors):
@@ -63,7 +60,7 @@ def load_gep(savefile_name, book_keeping_name):
         b_k = pickle.load(handle)
     return gep, starting_iteration, b_k
 
-def run_episode(model, policy_params, explo_noise, distractors, trajectories=False, nb_traj_steps=None, max_step=50, focus_range=None, add_noise=False):
+def run_episode(model, policy_params, explo_noise, distractors, nb_traj_steps, max_step=50, focus_range=None, add_noise=False):
     out = env.reset()
     state = get_state(out['observation'], distractors)
     if add_noise:
@@ -91,7 +88,7 @@ def run_episode(model, policy_params, explo_noise, distractors, trajectories=Fal
                 state = get_state(out['observation'], distractors)
                 states.append(state)
     assert(done)
-    return get_outcome(states, distractors, trajectories, nb_traj_steps), states
+    return get_outcome(states, distractors, nb_traj_steps), states
 
 def get_n_params(model):
     pp=0
@@ -108,7 +105,7 @@ def get_n_params(model):
 
 # define and parse argument values
 # more info here: https://stackoverflow.com/questions/5423381/checking-if-sys-argvx-is-defined
-arg_names = ['command', 'experiment_name', 'trial_nb', 'model_type', 'nb_iters', 'nb_bootstrap', 'explo_noise', 'distractors', 'trajectories', 'interest_step']
+arg_names = ['command', 'experiment_name', 'trial_nb', 'model_type', 'nb_iters', 'nb_bootstrap', 'explo_noise', 'distractors', 'trajectories', 'composite_nn', 'interest_step']
 args = dict(zip(arg_names, sys.argv))
 Arg_list = collections.namedtuple('Arg_list', arg_names)
 args = Arg_list(*(args.get(arg, None) for arg in arg_names))
@@ -118,8 +115,7 @@ exploration_noise = float(args.explo_noise) if args.explo_noise else 0.05
 nb_bootstrap = int(args.nb_bootstrap) if args.nb_bootstrap else 1000
 max_iterations = int(args.nb_iters) if args.nb_iters else 20000
 trial_nb = args.trial_nb if args.trial_nb else 0
-# possible models: ["random_modular", "random_flat", "active_modular", "random"]
-model_type = args.model_type if args.model_type else "random_modular"
+model_type = args.model_type if args.model_type else "random_modular" #random_modular,random_flat,active_modular,random
 if args.distractors:
     if args.distractors == 'True':
         distractors = True
@@ -162,7 +158,10 @@ savefile_name = exp_directory + '/' + experiment_name + '/' + model_type + '_' +
 book_keeping_file_name = exp_directory + '/'+ experiment_name + '/' + model_type + '_' + trial_nb +"_bk.pickle"
 save_step = 50000
 save_all = False
-nb_traj_steps = 5
+if trajectories:
+    nb_traj_steps = 5
+else:
+    nb_traj_steps = 1
 print(trajectories)
 print(distractors)
 
@@ -181,20 +180,15 @@ total_policy_params = get_n_params(param_policy)
 print('nbparams:    {}'.format(total_policy_params))
 
 # init IMGEP
-if trajectories and distractors:
-    raise NotImplementedError
-if trajectories:
+if not distractors:
     objects = [['hand_x', 'hand_y', 'gripper'],['stick1_x', 'stick1_y'],['stick2_x', 'stick2_y'],['magnet1_x', 'magnet1_y'],['scratch1_x', 'scratch1_y']]
     objects_idx = [[0,3],[3,5],[5,7],[7,9],[9,11]]
     full_outcome = []
     for obj in objects:
         full_outcome += obj * nb_traj_steps
 else:
-    full_outcome = input_names
+    raise NotImplementedError
 full_outcome_bounds = b.get_bounds(full_outcome)
-
-#motor_states = config.get_motor_states('arm_env')
-#motor_range = np.[full_outcome.index(motor_name) for motor_name in motor_states]
 
 if (model_type == "random_flat") or (model_type == "random"):
     outcome1 = full_outcome
@@ -202,39 +196,35 @@ if (model_type == "random_flat") or (model_type == "random"):
               'modules': {'mod1': {'outcome_range': np.array([full_outcome.index(var) for var in outcome1])}}}
 elif (model_type == "random_modular") or (args.model_type == "active_modular"):
     if not distractors:
-        if not trajectories:
-            config = {'policy_nb_dims': total_policy_params,
-                      'modules': {
-                          'hand': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[0:3]])},
-                          'stick1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[3:5]])},
-                          'stick2': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[5:7]])},
-                          'magnet1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[7:9]])},
-                          'scratch1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[9:11]])}}}
-        else:
-            config = {'policy_nb_dims': total_policy_params,
-                      'modules': {
-                          'hand': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[0:15]])},
-                          'stick1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[15:25]])},
-                          'stick2': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[25:35]])},
-                          'magnet1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[35:45]])},
-                          'scratch1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[45:55]])}}}
+        nb_t = nb_traj_steps
+        config = {'policy_nb_dims': total_policy_params}
+        config['modules'] = {}
+        for names,inds in zip(objects, objects_idx):
+            mod_name = names[0][:-2]
+            start_idx = inds[0] * nb_traj_steps
+            end_idx = inds[-1] * nb_traj_steps
+            config['modules'][mod_name] = {}
+            config['modules'][mod_name]['outcome_range'] = np.arange(start_idx, end_idx, 1)
+            config['modules'][mod_name]['focus_state_range'] = np.arange(inds[0], inds[-1], 1)
+
     else:
-        config = {'policy_nb_dims': total_policy_params,
-                  'modules': {'hand': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[0:3]])},
-                              'stick1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[3:5]])},
-                              'stick2': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[5:7]])},
-                              'magnet1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[7:9]])},
-                              'magnet2': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[9:11]])},
-                              'magnet3': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[11:13]])},
-                              'scratch1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[13:15]])},
-                              'scratch2': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[15:17]])},
-                              'scratch3': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[17:19]])},
-                              'cat': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[19:21]])},
-                              'dog': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[21:23]])},
-                              'static1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[23:25]])},
-                              'static2': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[25:27]])},
-                              'static3': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[27:29]])},
-                              'static4': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[29:31]])}}}
+        pass
+        # config = {'policy_nb_dims': total_policy_params,
+        #           'modules': {'hand': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[0:3]])},
+        #                       'stick1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[3:5]])},
+        #                       'stick2': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[5:7]])},
+        #                       'magnet1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[7:9]])},
+        #                       'magnet2': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[9:11]])},
+        #                       'magnet3': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[11:13]])},
+        #                       'scratch1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[13:15]])},
+        #                       'scratch2': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[15:17]])},
+        #                       'scratch3': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[17:19]])},
+        #                       'cat': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[19:21]])},
+        #                       'dog': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[21:23]])},
+        #                       'static1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[23:25]])},
+        #                       'static2': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[25:27]])},
+        #                       'static3': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[27:29]])},
+        #                       'static4': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[29:31]])}}}
 
     if model_type == "active_modular": model_babbling_mode = "active"
 else:
@@ -291,8 +281,7 @@ for i in range(starting_iteration, max_iterations):
     prod_time_start = time.time()
     policy_params, focus, add_noise = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
     prod_time_end = time.time()
-    outcome, states = run_episode(param_policy, policy_params, exploration_noise, distractors,
-                                  trajectories=trajectories, nb_traj_steps=nb_traj_steps, focus_range=focus, add_noise=add_noise)
+    outcome, states = run_episode(param_policy, policy_params, exploration_noise, distractors, nb_traj_steps, focus_range=focus, add_noise=add_noise)
     run_ep_end = time.time()
     # scale outcome dimensions to [-1,1]
     scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
@@ -304,12 +293,8 @@ for i in range(starting_iteration, max_iterations):
     b_k['runtimes']['run'].append(run_ep_end - prod_time_end)
     b_k['runtimes']['perceive'].append(perceive_end - run_ep_end)
     #print(b_k['runtimes']['produce'][-1])
-    if not trajectories:
-        for out in input_names:
-            b_k['end_'+out].append(outcome[full_outcome.index(out)])
-    else:
-        for out in input_names:
-            b_k['end_'+out].append(states[-1][input_names.index(out)])
+    for out in input_names:
+        b_k['end_'+out].append(states[-1][input_names.index(out)])
 
 b_k['choosen_modules'] = gep.choosen_modules
 if model_type == "active_modular":

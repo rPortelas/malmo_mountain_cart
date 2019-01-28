@@ -80,7 +80,7 @@ class GEP(object):
 
         #print("choosen module: %s with range: " % (module_name))
         self.choosen_modules.append(module_name) # book keeping
-        module_outcome_range = self.modules_config[module_name]['outcome_range']
+        module_outcome_range = self.modules_config[module_name]['focus_state_range']
         # if module_name == 'stick1':
         #     logboy=True
         # else:
