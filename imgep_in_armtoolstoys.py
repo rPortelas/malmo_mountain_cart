@@ -193,7 +193,8 @@ full_outcome_bounds = b.get_bounds(full_outcome)
 if (model_type == "random_flat") or (model_type == "random"):
     outcome1 = full_outcome
     config = {'policy_nb_dims': total_policy_params,
-              'modules': {'mod1': {'outcome_range': np.array([full_outcome.index(var) for var in outcome1])}}}
+              'modules': {'mod1': {'outcome_range': np.arange(0,len(full_outcome),1),
+                                   'focus_state_range': np.arange(0,len(full_outcome),1)//nb_traj_steps}}}
 elif (model_type == "random_modular") or (args.model_type == "active_modular"):
     if not distractors:
         nb_t = nb_traj_steps
