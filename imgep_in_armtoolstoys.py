@@ -60,7 +60,7 @@ def load_gep(savefile_name, book_keeping_name):
         b_k = pickle.load(handle)
     return gep, starting_iteration, b_k
 
-def run_episode(model, policy_params, explo_noise, distractors, nb_traj_steps, max_step=50, focus_range=None, add_noise=False):
+def run_episode(model_type, model, policy_params, explo_noise, distractors, nb_traj_steps, size_sequential_nn, max_step=50, focus_range=None, add_noise=False):
     out = env.reset()
     state = get_state(out['observation'], distractors)
     if add_noise:
@@ -75,7 +75,7 @@ def run_episode(model, policy_params, explo_noise, distractors, nb_traj_steps, m
     while not done:
         for nn_params in policy_params:
             if add_noise:
-                if not ([state[i] for i in focus_range] == init_focus_state).all():
+                if (not ([state[i] for i in focus_range] == init_focus_state).all()) or (size_sequential_nn == 1) or (model_type == 'random_flat'):
                     #object of interest moved during previous neural net, lets add noise for the following nets
                     nn_params += np.random.normal(0, explo_noise, len(nn_params))
             model.set_parameters(nn_params)
@@ -84,7 +84,7 @@ def run_episode(model, policy_params, explo_noise, distractors, nb_traj_steps, m
                 normalized_state = scale_vector(state, np.array(input_bounds))
                 actions = model.get_action(normalized_state.reshape(1, -1))
                 out, _, done, _ = env.step(actions[0])
-                #if render: env.render()
+                #env.render()
                 state = get_state(out['observation'], distractors)
                 states.append(state)
     assert(done)
@@ -138,6 +138,17 @@ if args.trajectories:
 else:
     trajectories = False
 
+if args.composite_nn:
+    if args.composite_nn == 'True':
+        composite_nn = True
+    elif args.composite_nn == 'False':
+        composite_nn = False
+    else:
+        print('composite_nn option not recognized, choose True or False')
+        raise NameError
+else:
+    composite_nn = True
+
 # define variable's bounds for policy input and outcome
 if not distractors:
     state_names = ['hand_x', 'hand_y', 'gripper', 'stick1_x', 'stick1_y', 'stick2_x', 'stick2_y',
@@ -166,7 +177,10 @@ print(trajectories)
 print(distractors)
 
 # init neural network policy
-size_sequential_nn = 5
+if composite_nn:
+    size_sequential_nn = 5
+else:
+    size_sequential_nn = 1
 input_names = state_names
 input_bounds = b.get_bounds(input_names)
 input_size = len(input_bounds)
@@ -210,22 +224,6 @@ elif (model_type == "random_modular") or (args.model_type == "active_modular"):
 
     else:
         pass
-        # config = {'policy_nb_dims': total_policy_params,
-        #           'modules': {'hand': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[0:3]])},
-        #                       'stick1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[3:5]])},
-        #                       'stick2': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[5:7]])},
-        #                       'magnet1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[7:9]])},
-        #                       'magnet2': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[9:11]])},
-        #                       'magnet3': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[11:13]])},
-        #                       'scratch1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[13:15]])},
-        #                       'scratch2': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[15:17]])},
-        #                       'scratch3': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[17:19]])},
-        #                       'cat': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[19:21]])},
-        #                       'dog': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[21:23]])},
-        #                       'static1': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[23:25]])},
-        #                       'static2': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[25:27]])},
-        #                       'static3': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[27:29]])},
-        #                       'static4': {'outcome_range': np.array([full_outcome.index(var) for var in full_outcome[29:31]])}}}
 
     if model_type == "active_modular": model_babbling_mode = "active"
 else:
@@ -282,7 +280,7 @@ for i in range(starting_iteration, max_iterations):
     prod_time_start = time.time()
     policy_params, focus, add_noise = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
     prod_time_end = time.time()
-    outcome, states = run_episode(param_policy, policy_params, exploration_noise, distractors, nb_traj_steps, focus_range=focus, add_noise=add_noise)
+    outcome, states = run_episode(model_type, param_policy, policy_params, exploration_noise, distractors, nb_traj_steps, size_sequential_nn, focus_range=focus, add_noise=add_noise)
     run_ep_end = time.time()
     # scale outcome dimensions to [-1,1]
     scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
