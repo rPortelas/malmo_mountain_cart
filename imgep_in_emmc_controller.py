@@ -19,19 +19,21 @@ from utils.neural_network import PolicyNN
 import gym2
 import config
 
+def get_outcome(states, distractors, nb_traj_steps):
+    #print(len(states))
+    step_size = (len(states)-1)//nb_traj_steps
+    steps = np.arange(step_size,len(states),step_size)
+    outcome = []
+    start = 0
+    for idx in objects_idx:
+        for step in steps:
+            s = states[step].tolist()
+            outcome += s[idx[0]:idx[1]]
+    return outcome
 
-def get_outcome(state):
-    outcome = state.tolist()
-    if distractors:
-        # add 2 moving and 2 fixed distractors to the outcome space
-        fixed_distractor1 = [-0.7, 0.3, 0.5]
-        fixed_distractor2 = [0.1, 0.2, -0.5]
-        moving_distractor1 = np.random.random(3) * 2 - 1
-        moving_distractor2 = np.random.random(3) * 2 - 1
-        distractors_final_state = fixed_distractor1 + moving_distractor1.tolist() + fixed_distractor2 + moving_distractor2.tolist()
-        outcome += distractors_final_state
-    return np.array(outcome)
 
+def get_state(state, distractors):
+    return np.array(state)
 
 def save_gep(gep, iteration, book_keeping, savefile_name, book_keeping_name):
     gep.prepare_pickling()
@@ -64,22 +66,23 @@ def load_gep(savefile_name, book_keeping_name):
 #         out, _, done, _ = malmo.step(actions[0])
 #         state = out['observation']
 #     return get_outcome(state)
-def run_episode(model, policy_params, explo_noise, max_step=40, focus_range=None, add_noise=False):
+
+def run_episode(model_type, model, policy_params, explo_noise, distractors, nb_traj_steps, size_sequential_nn, max_step=40, focus_range=None, add_noise=False):
     out = env.reset()
-    state = out['observation']
+    state = get_state(out['observation'], distractors)
     if add_noise:
         #print(state)
         init_focus_state = np.array([state[i] for i in focus_range])
         #print(init_focus_state)
     # Loop until mission/episode ends:
     done = False
+    states = [state]
     steps_per_nn = int(max_step / len(policy_params))
     #print("steps per nn {}".format(steps_per_nn))
     while not done:
-
         for nn_params in policy_params:
             if add_noise:
-                if not ([state[i] for i in focus_range] == init_focus_state).all():
+                if (not ([state[i] for i in focus_range] == init_focus_state).all()) or (size_sequential_nn == 1) or (model_type == 'random_flat'):
                     #object of interest moved during previous neural net, lets add noise for the following nets
                     nn_params += np.random.normal(0, explo_noise, len(nn_params))
             model.set_parameters(nn_params)
@@ -88,10 +91,11 @@ def run_episode(model, policy_params, explo_noise, max_step=40, focus_range=None
                 normalized_state = scale_vector(state, np.array(input_bounds))
                 actions = model.get_action(normalized_state.reshape(1, -1))
                 out, _, done, _ = env.step(actions[0])
-                #if render: env.render()
-                state = out['observation']
+                #env.render()
+                state = get_state(out['observation'], distractors)
+                states.append(state)
     assert(done)
-    return get_outcome(state)
+    return get_outcome(states, distractors, nb_traj_steps), states
 
 
 def get_n_params(model):
@@ -106,7 +110,7 @@ def get_n_params(model):
 # define and parse argument values
 # more info here: https://stackoverflow.com/questions/5423381/checking-if-sys-argvx-is-defined
 arg_names = ['command', 'experiment_name', 'model_type', 'nb_iters', 'nb_bootstrap', 'explo_noise', 'server_port',
-             'distractors', 'interest_step']
+             'distractors', 'trajectories', 'interest_step']
 args = dict(zip(arg_names, sys.argv))
 Arg_list = collections.namedtuple('Arg_list', arg_names)
 args = Arg_list(*(args.get(arg, None) for arg in arg_names))
@@ -131,6 +135,22 @@ if args.distractors:
 else:
     distractors = False
 
+if args.trajectories:
+    if args.trajectories == 'True':
+        trajectories = True
+    elif args.trajectories == 'False':
+        trajectories = False
+    else:
+        print('trajectory option not recognized, choose True or False')
+        raise NameError
+else:
+    trajectories = False
+
+if trajectories:
+    nb_traj_steps = 5
+else:
+    nb_traj_steps = 1
+
 # environment-related init
 nb_blocks = 5
 # define variable's bounds for policy input and outcome
@@ -148,6 +168,7 @@ save_step = 1000
 
 # init neural network policy
 size_sequential_nn = 5
+
 input_names = state_names
 input_bounds = b.get_bounds(input_names)
 input_size = len(input_bounds)
@@ -161,41 +182,39 @@ total_policy_params = get_n_params(param_policy)
 
 # init IMGEP
 full_outcome = input_names
-if distractors: full_outcome += distr_names
+if distractors:
+    raise NotImplementedError
+objects, objects_idx = config.get_objects('emmc_env')
+full_outcome = []
+for obj in objects:
+    full_outcome += obj * nb_traj_steps
 full_outcome_bounds = b.get_bounds(full_outcome)
 
-if model_type == "random_flat":
+if (model_type == "random_flat") or (model_type == "random"):
     outcome1 = full_outcome
     config = {'policy_nb_dims': total_policy_params,
-              'modules': {'mod1': {'outcome_range': np.array([full_outcome.index(var) for var in outcome1])}}}
+              'modules': {'mod1': {'outcome_range': np.arange(0,len(full_outcome),1),
+                                   'focus_state_range': np.arange(0,len(full_outcome),1)//nb_traj_steps}}}
 elif (model_type == "random_modular") or (args.model_type == "active_modular"):
-    agent_xz = full_outcome[:2]
-    pickaxe_xz = full_outcome[2:4]
-    shovel_xz = full_outcome[4:6]
-    blocks = full_outcome[6:11]
-    cart_x = [full_outcome[11]]
-    config = {'policy_nb_dims': total_policy_params,
-              'modules': {'agent_end_pos': {'outcome_range': np.array([full_outcome.index(var) for var in agent_xz])},
-                          'pickaxe_end_pos': {'outcome_range': np.array([full_outcome.index(var) for var in pickaxe_xz])},
-                          'shovel_end_pos': {'outcome_range': np.array([full_outcome.index(var) for var in shovel_xz])},
-                          'mined_blocks': {'outcome_range': np.array([full_outcome.index(var) for var in blocks])},
-                          'cart_end_pos': {'outcome_range': np.array([full_outcome.index(var) for var in cart_x])}}}
-    if distractors:
-        fixed_distr_outcomes = ['fixed_distr_x', 'fixed_distr_y', 'fixed_distr_z']
-        moving_distr_outcomes = ['moving_distr_x', 'moving_distr_y', 'moving_distr_z']
-        config['modules']['fixed_dist_final_pos1'] = {
-            'outcome_range': np.array([full_outcome.index(var + '1') for var in fixed_distr_outcomes])}
-        config['modules']['moving_dist_final_pos1'] = {
-            'outcome_range': np.array([full_outcome.index(var + '2') for var in moving_distr_outcomes])}
-        config['modules']['fixed_dist_final_pos2'] = {
-            'outcome_range': np.array([full_outcome.index(var + '1') for var in fixed_distr_outcomes])}
-        config['modules']['moving_dist_final_pos2'] = {
-            'outcome_range': np.array([full_outcome.index(var + '2') for var in moving_distr_outcomes])}
+    if not distractors:
+        nb_t = nb_traj_steps
+        config = {'policy_nb_dims': total_policy_params}
+        config['modules'] = {}
+        for names,inds in zip(objects, objects_idx):
+            mod_name = names[0][:-2]
+            start_idx = inds[0] * nb_traj_steps
+            end_idx = inds[-1] * nb_traj_steps
+            config['modules'][mod_name] = {}
+            config['modules'][mod_name]['outcome_range'] = np.arange(start_idx, end_idx, 1)
+            config['modules'][mod_name]['focus_state_range'] = np.arange(inds[0], inds[-1], 1)
+
+    else:
+        pass
 
     if model_type == "active_modular": model_babbling_mode = "active"
 else:
     raise NotImplementedError
-
+print(config)
 # if a gep save exist, load gep, init it otherwise
 if os.path.isfile(savefile_name):
     gep, starting_iteration, b_k = load_gep(savefile_name, book_keeping_file_name)
@@ -274,31 +293,24 @@ for i in range(starting_iteration, max_iterations):
     prod_time_start = time.time()
     policy_params, focus, add_noise = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
     prod_time_end = time.time()
-    outcome = run_episode(param_policy, policy_params, exploration_noise, focus_range=focus, add_noise=add_noise)
+    outcome, states = run_episode(model_type, param_policy, policy_params, exploration_noise, False, nb_traj_steps, size_sequential_nn, focus_range=focus, add_noise=add_noise)
     run_ep_end = time.time()
     #print(outcome[-6:-1])
     # scale outcome dimensions to [-1,1]
     scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
     gep.perceive(scaled_outcome, policy_params)
     perceive_end = time.time()
-    if not (outcome[-6:-1] == [-1.,-1.,-1.,-1.,-1.]).all():
-        with open("{}_gepexplore_p_block_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
+    if not outcome[-1] == 291.5:
+        with open("{}_gepexplore_p_cart2_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
             pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     # boring book keeping
     b_k['runtimes']['produce'].append(prod_time_end - prod_time_start)
     b_k['runtimes']['run'].append(run_ep_end - prod_time_end)
     b_k['runtimes']['perceive'].append(perceive_end - run_ep_end)
-    b_k['end_agent_x'].append(outcome[full_outcome.index('agent_x')])
-    b_k['end_agent_z'].append(outcome[full_outcome.index('agent_z')])
-    b_k['end_pickaxe_x'].append(outcome[full_outcome.index('pickaxe_x')])
-    b_k['end_pickaxe_z'].append(outcome[full_outcome.index('pickaxe_z')])
-    b_k['end_shovel_x'].append(outcome[full_outcome.index('shovel_x')])
-    b_k['end_shovel_z'].append(outcome[full_outcome.index('shovel_z')])
-    b_k['end_cart_x'].append(outcome[full_outcome.index('cart_x')])
-
-    for k in range(nb_blocks):
-        b_k['end_block_' + str(k)].append(outcome[full_outcome.index('block_' + str(k))])
+    #print(b_k['runtimes']['produce'][-1])
+    for out in input_names:
+        b_k['end_'+out].append(states[-1][input_names.index(out)])
 
     if ((i + 1) % save_step) == 0:
         print("saving gep")

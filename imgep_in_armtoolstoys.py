@@ -60,6 +60,17 @@ def load_gep(savefile_name, book_keeping_name):
         b_k = pickle.load(handle)
     return gep, starting_iteration, b_k
 
+
+
+def get_n_params(model):
+    pp=0
+    for p in list(model.parameters()):
+        nn=1
+        for s in list(p.size()):
+            nn = nn*s
+        pp += nn
+    return pp
+
 def run_episode(model_type, model, policy_params, explo_noise, distractors, nb_traj_steps, size_sequential_nn, max_step=50, focus_range=None, add_noise=False):
     out = env.reset()
     state = get_state(out['observation'], distractors)
@@ -89,15 +100,6 @@ def run_episode(model_type, model, policy_params, explo_noise, distractors, nb_t
                 states.append(state)
     assert(done)
     return get_outcome(states, distractors, nb_traj_steps), states
-
-def get_n_params(model):
-    pp=0
-    for p in list(model.parameters()):
-        nn=1
-        for s in list(p.size()):
-            nn = nn*s
-        pp += nn
-    return pp
 
 
 #cp = cProfile.Profile()
@@ -195,8 +197,7 @@ print('nbparams:    {}'.format(total_policy_params))
 
 # init IMGEP
 if not distractors:
-    objects = [['hand_x', 'hand_y', 'gripper'],['stick1_x', 'stick1_y'],['stick2_x', 'stick2_y'],['magnet1_x', 'magnet1_y'],['scratch1_x', 'scratch1_y']]
-    objects_idx = [[0,3],[3,5],[5,7],[7,9],[9,11]]
+    objects, objects_idx = config.get_objects('arm_env')
     full_outcome = []
     for obj in objects:
         full_outcome += obj * nb_traj_steps

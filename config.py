@@ -12,6 +12,12 @@ for i in range(5):
     EMMC_B.add('block_' + str(i), [-1, 1])
 EMMC_B.add('cart_x', [285, 297])
 EMMC_B_motor_states = ['agent_x', 'agent_z']
+EMMC_OBJECTS = [['agent_x', 'agent_z'],
+                ['pickaxe_x', 'pickaxe_z'],
+                ['shovel_x', 'shovel_z'],
+                ['block_' + str(i) for i in range(5)],
+                ['cart_x']]
+EMMC_OBJECTS_IDX = [[0,2],[2,4],[4,6],[6,11],[11,12]]
 
 
 
@@ -49,7 +55,12 @@ ARM_B.add('static3_x',[-1.5,1.5])
 ARM_B.add('static3_y',[-1.5,1.5])
 ARM_B.add('static4_x',[-1.5,1.5])
 ARM_B.add('static4_y',[-1.5,1.5])
-ARM_B_motor_states = ['hand_x', 'hand_y','gripper']
+ARM_OBJECTS = [['hand_x', 'hand_y', 'gripper'],
+               ['stick1_x', 'stick1_y'],
+               ['stick2_x', 'stick2_y'],
+               ['magnet1_x', 'magnet1_y'],
+               ['scratch1_x', 'scratch1_y']]
+ARM_OBJECTS_IDX = [[0,3],[3,5],[5,7],[7,9],[9,11]]
 
 
 
@@ -61,11 +72,13 @@ def get_env_bounds(name):
     else:
         print('UNKNOWN ENV')
 
-def get_motor_states(name):
+def get_objects(name):
     if name == 'emmc_env':
-        return EMMC_B_motor_states
+        return EMMC_OBJECTS, EMMC_OBJECTS_IDX
     elif name == 'arm_env':
-        return ARM_B_motor_states
+        return ARM_OBJECTS, ARM_OBJECTS_IDX
     else:
         print('UNKNOWN ENV')
+
+
 
