@@ -91,6 +91,7 @@ def run_episode(model_type, model, policy_params, explo_noise, distractors, nb_t
                 if (not ([state[i] for i in focus_range] == init_focus_state).all()) or (size_sequential_nn == 1) or (model_type == 'random_flat'):
                     #object of interest moved during previous neural net, lets add noise for the following nets
                     policy_params[nn_idx] += np.random.normal(0, explo_noise, len(policy_params[nn_idx]))
+                    policy_params[nn_idx] = np.clip(policy_params[nn_idx], -1, 1)
                     #policy_params[nn_idx] = get_random_nn(layers, params)
             model.set_parameters(policy_params[nn_idx])
             for i in range(steps_per_nn):
