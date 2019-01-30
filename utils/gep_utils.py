@@ -26,12 +26,15 @@ def proportional_choice(v, eps=0.):
 #     current_policy = np.concatenate((rnd_weights, rnd_biases))
 #     return current_policy
 
+def get_random_nn(layers, init_function_params):
+    rnd_weights, rnd_biases = he_uniform(layers, init_function_params)
+    return np.concatenate((rnd_weights, rnd_biases))
+
+
 def get_random_policy(layers, init_function_params):
     policy = []
     for i in range(init_function_params['size_sequential_nn']):
-        rnd_weights, rnd_biases = he_uniform(layers, init_function_params)
-        current_policy = np.concatenate((rnd_weights, rnd_biases))
-        policy.append(current_policy.copy())
+        policy.append(get_random_nn(layers, init_function_params).copy())
     return policy
 
 
@@ -47,3 +50,24 @@ class Bounds(object):
 
     def get_bounds(self, name_list):
         return [self.bounds[n] for n in name_list]
+
+
+class Distractors(object):
+    def __init__(self, nb_distractors=2, noise=0.1):
+        self.nb_ds = nb_distractors
+        self.noise = noise
+        self.ds = None
+
+    def reset(self):
+        self.ds = np.random.rand(self.nb_ds)
+
+    def step(self):
+        self.ds += np.random.normal(0, self.noise,len(self.ds))
+        self.ds = np.clip(self.ds,-1.,1.)
+
+    def get(self):
+        return self.ds.copy()
+
+
+
+

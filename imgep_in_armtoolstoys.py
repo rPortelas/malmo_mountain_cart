@@ -35,10 +35,11 @@ def get_outcome(states, distractors, nb_traj_steps):
 
 
 def get_state(state, distractors):
+    s = state[0:9] + state[13:15]
     if distractors:
-        s = state
-    else:
-        s = state[0:9] + state[13:15]
+        Distractor_simulator.step()
+        d_arr = Distractor_simulator.get()
+        s = np.array(s + d_arr.tolist())
     return np.array(s)
 
 
@@ -72,6 +73,7 @@ def get_n_params(model):
     return pp
 
 def run_episode(model_type, model, policy_params, explo_noise, distractors, nb_traj_steps, size_sequential_nn, max_step=50, focus_range=None, add_noise=False):
+    if distractors: Distractor_simulator.reset()
     out = env.reset()
     state = get_state(out['observation'], distractors)
     if add_noise:
@@ -84,12 +86,13 @@ def run_episode(model_type, model, policy_params, explo_noise, distractors, nb_t
     steps_per_nn = int(max_step / len(policy_params))
     #print("steps per nn {}".format(steps_per_nn))
     while not done:
-        for nn_params in policy_params:
+        for nn_idx in range(len(policy_params)):
             if add_noise:
                 if (not ([state[i] for i in focus_range] == init_focus_state).all()) or (size_sequential_nn == 1) or (model_type == 'random_flat'):
                     #object of interest moved during previous neural net, lets add noise for the following nets
-                    nn_params += np.random.normal(0, explo_noise, len(nn_params))
-            model.set_parameters(nn_params)
+                    #nn_params += np.random.normal(0, explo_noise, len(nn_params))
+                    policy_params[nn_idx] = get_random_nn(layers, params)
+            model.set_parameters(policy_params[nn_idx])
             for i in range(steps_per_nn):
                 # extract the world state that will be given to the agent's policy
                 normalized_state = scale_vector(state, np.array(input_bounds))
@@ -152,15 +155,15 @@ else:
     composite_nn = True
 
 # define variable's bounds for policy input and outcome
-if not distractors:
-    state_names = ['hand_x', 'hand_y', 'gripper', 'stick1_x', 'stick1_y', 'stick2_x', 'stick2_y',
-     'magnet1_x', 'magnet1_y', 'scratch1_x', 'scratch1_y']
-else:
-    state_names = ['hand_x', 'hand_y', 'gripper', 'stick1_x', 'stick1_y', 'stick2_x', 'stick2_y',
-                   'magnet1_x', 'magnet1_y', 'magnet2_x', 'magnet2_y', 'magnet3_x', 'magnet3_y',
-                   'scratch1_x', 'scratch1_y', 'scratch2_x', 'scratch2_y', 'scratch3_x', 'scratch3_y',
-                   'cat_x', 'cat_y', 'dog_x','dog_y',
-                   'static1_x','static1_y', 'static2_x','static2_y', 'static3_x','static3_y', 'static4_x','static4_y']
+state_names = ['hand_x', 'hand_y', 'gripper', 'stick1_x', 'stick1_y', 'stick2_x', 'stick2_y',
+ 'magnet1_x', 'magnet1_y', 'scratch1_x', 'scratch1_y']
+if distractors:
+    nb_distractors = 1
+    Distractor_simulator = Distractors(nb_distractors=nb_distractors, noise=0.1)
+    for i in range(nb_distractors):
+        state_names.append('dist'+str(i)+'_x')
+        state_names.append('dist'+str(i)+'_y')
+
 b = config.get_env_bounds('arm_env')
 
 exp_directory = 'arm_run_saves'
@@ -185,6 +188,9 @@ else:
     size_sequential_nn = 1
 input_names = state_names
 input_bounds = b.get_bounds(input_names)
+if distractors:
+    for i in range(nb_distractors):
+        input_bounds.append([-1.,1.])
 input_size = len(input_bounds)
 print('input_bounds: %s' % input_bounds)
 layers = [64]
@@ -196,13 +202,17 @@ total_policy_params = get_n_params(param_policy)
 print('nbparams:    {}'.format(total_policy_params))
 
 # init IMGEP
-if not distractors:
-    objects, objects_idx = config.get_objects('arm_env')
-    full_outcome = []
-    for obj in objects:
-        full_outcome += obj * nb_traj_steps
-else:
-    raise NotImplementedError
+objects, objects_idx = config.get_objects('arm_env')
+if distractors:
+    for i in range(nb_distractors):
+        objects.append(['dist'+str(i)+'_x', 'dist'+str(i)+'_y'])
+        prev_idx = objects_idx[-1][1]
+        objects_idx.append(prev_idx, prev_idx + 2)
+full_outcome = []
+print(objects)
+print(objects_idx)
+for obj in objects:
+    full_outcome += obj * nb_traj_steps
 full_outcome_bounds = b.get_bounds(full_outcome)
 
 if (model_type == "random_flat") or (model_type == "random"):
@@ -259,7 +269,9 @@ else:
                          'nb_bootstrap': nb_bootstrap,
                          'seed': seed,
                          'explo_noise': exploration_noise,
-                         'distractors': distractors}
+                         'distractors': distractors,
+                         'trajectories': trajectories,
+                         'composite_nn': composite_nn}
     if model_type == 'active_modular':
         b_k['parameters']['update_interest_step'] = interest_step
 
@@ -269,6 +281,7 @@ else:
     b_k['interests'] = dict()
     b_k['runtimes'] = {'produce': [], 'run': [], 'perceive': []}
     b_k['modules'] = {}
+    b_k['states'] = []
 
 print("launching {}".format(b_k['parameters']))
 #####################################################################
@@ -295,6 +308,7 @@ for i in range(starting_iteration, max_iterations):
     #print(b_k['runtimes']['produce'][-1])
     for out in input_names:
         b_k['end_'+out].append(states[-1][input_names.index(out)])
+    b_k['states'].append(states)
 
 b_k['choosen_modules'] = gep.choosen_modules
 if model_type == "active_modular":
