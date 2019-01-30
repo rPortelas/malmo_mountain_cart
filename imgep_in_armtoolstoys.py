@@ -281,7 +281,7 @@ else:
     b_k['interests'] = dict()
     b_k['runtimes'] = {'produce': [], 'run': [], 'perceive': []}
     b_k['modules'] = {}
-    b_k['states'] = []
+    #b_k['states'] = []
 
 print("launching {}".format(b_k['parameters']))
 #####################################################################
@@ -308,7 +308,7 @@ for i in range(starting_iteration, max_iterations):
     #print(b_k['runtimes']['produce'][-1])
     for out in input_names:
         b_k['end_'+out].append(states[-1][input_names.index(out)])
-    b_k['states'].append(states)
+    #b_k['states'].append(states)
 
 b_k['choosen_modules'] = gep.choosen_modules
 if model_type == "active_modular":
