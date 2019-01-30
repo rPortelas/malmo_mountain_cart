@@ -17,7 +17,7 @@ from utils.gep_utils import *
 #import gym2
 import gym
 import gym_flowers
-import config
+import config as conf
 #import cProfile
 
 
@@ -90,8 +90,8 @@ def run_episode(model_type, model, policy_params, explo_noise, distractors, nb_t
             if add_noise:
                 if (not ([state[i] for i in focus_range] == init_focus_state).all()) or (size_sequential_nn == 1) or (model_type == 'random_flat'):
                     #object of interest moved during previous neural net, lets add noise for the following nets
-                    #nn_params += np.random.normal(0, explo_noise, len(nn_params))
-                    policy_params[nn_idx] = get_random_nn(layers, params)
+                    policy_params[nn_idx] += np.random.normal(0, explo_noise, len(policy_params[nn_idx]))
+                    #policy_params[nn_idx] = get_random_nn(layers, params)
             model.set_parameters(policy_params[nn_idx])
             for i in range(steps_per_nn):
                 # extract the world state that will be given to the agent's policy
@@ -158,13 +158,13 @@ else:
 state_names = ['hand_x', 'hand_y', 'gripper', 'stick1_x', 'stick1_y', 'stick2_x', 'stick2_y',
  'magnet1_x', 'magnet1_y', 'scratch1_x', 'scratch1_y']
 if distractors:
-    nb_distractors = 1
-    Distractor_simulator = Distractors(nb_distractors=nb_distractors, noise=0.1)
+    nb_distractors = 4
+    Distractor_simulator = Distractors(nb_distractors=nb_distractors, noise=0.0)
     for i in range(nb_distractors):
         state_names.append('dist'+str(i)+'_x')
         state_names.append('dist'+str(i)+'_y')
 
-b = config.get_env_bounds('arm_env')
+b = conf.get_env_bounds('arm_env')
 
 exp_directory = 'arm_run_saves'
 if not os.path.exists(exp_directory):
@@ -188,9 +188,6 @@ else:
     size_sequential_nn = 1
 input_names = state_names
 input_bounds = b.get_bounds(input_names)
-if distractors:
-    for i in range(nb_distractors):
-        input_bounds.append([-1.,1.])
 input_size = len(input_bounds)
 print('input_bounds: %s' % input_bounds)
 layers = [64]
@@ -202,12 +199,12 @@ total_policy_params = get_n_params(param_policy)
 print('nbparams:    {}'.format(total_policy_params))
 
 # init IMGEP
-objects, objects_idx = config.get_objects('arm_env')
+objects, objects_idx = conf.get_objects('arm_env')
 if distractors:
     for i in range(nb_distractors):
         objects.append(['dist'+str(i)+'_x', 'dist'+str(i)+'_y'])
         prev_idx = objects_idx[-1][1]
-        objects_idx.append(prev_idx, prev_idx + 2)
+        objects_idx.append([prev_idx, prev_idx + 2])
 full_outcome = []
 print(objects)
 print(objects_idx)
@@ -221,20 +218,16 @@ if (model_type == "random_flat") or (model_type == "random"):
               'modules': {'mod1': {'outcome_range': np.arange(0,len(full_outcome),1),
                                    'focus_state_range': np.arange(0,len(full_outcome),1)//nb_traj_steps}}}
 elif (model_type == "random_modular") or (args.model_type == "active_modular"):
-    if not distractors:
-        nb_t = nb_traj_steps
-        config = {'policy_nb_dims': total_policy_params}
-        config['modules'] = {}
-        for names,inds in zip(objects, objects_idx):
-            mod_name = names[0][:-2]
-            start_idx = inds[0] * nb_traj_steps
-            end_idx = inds[-1] * nb_traj_steps
-            config['modules'][mod_name] = {}
-            config['modules'][mod_name]['outcome_range'] = np.arange(start_idx, end_idx, 1)
-            config['modules'][mod_name]['focus_state_range'] = np.arange(inds[0], inds[-1], 1)
-
-    else:
-        pass
+    nb_t = nb_traj_steps
+    config = {'policy_nb_dims': total_policy_params}
+    config['modules'] = {}
+    for names,inds in zip(objects, objects_idx):
+        mod_name = names[0][:-2]
+        start_idx = inds[0] * nb_traj_steps
+        end_idx = inds[-1] * nb_traj_steps
+        config['modules'][mod_name] = {}
+        config['modules'][mod_name]['outcome_range'] = np.arange(start_idx, end_idx, 1)
+        config['modules'][mod_name]['focus_state_range'] = np.arange(inds[0], inds[-1], 1)
 
     if model_type == "active_modular": model_babbling_mode = "active"
 else:
@@ -300,6 +293,7 @@ for i in range(starting_iteration, max_iterations):
     scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
     gep.perceive(scaled_outcome, policy_params)
     perceive_end = time.time()
+    #print(states)
 
     # boring book keeping
     b_k['runtimes']['produce'].append(prod_time_end - prod_time_start)

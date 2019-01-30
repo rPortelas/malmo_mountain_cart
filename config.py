@@ -55,6 +55,9 @@ ARM_B.add('static3_x',[-1.5,1.5])
 ARM_B.add('static3_y',[-1.5,1.5])
 ARM_B.add('static4_x',[-1.5,1.5])
 ARM_B.add('static4_y',[-1.5,1.5])
+for i in range(5):
+    ARM_B.add('dist' + str(i) + '_x', [-1., 1.])
+    ARM_B.add('dist' + str(i) + '_y', [-1., 1.])
 ARM_OBJECTS = [['hand_x', 'hand_y', 'gripper'],
                ['stick1_x', 'stick1_y'],
                ['stick2_x', 'stick2_y'],

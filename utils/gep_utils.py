@@ -53,17 +53,21 @@ class Bounds(object):
 
 
 class Distractors(object):
+    # simulated 2D distractors
     def __init__(self, nb_distractors=2, noise=0.1):
         self.nb_ds = nb_distractors
         self.noise = noise
         self.ds = None
+        self.ds_init_pos = np.array([ 0.56648395,  0.80756918,  0.56636724, -0.87816455, -0.39411959,
+       -0.45646142, -0.19641268, -0.85268152, -0.46967348, -0.48310248])
 
     def reset(self):
-        self.ds = np.random.rand(self.nb_ds)
+        self.ds = self.ds_init_pos[0:self.nb_ds*2]
 
     def step(self):
         self.ds += np.random.normal(0, self.noise,len(self.ds))
         self.ds = np.clip(self.ds,-1.,1.)
+        return self.ds.copy()
 
     def get(self):
         return self.ds.copy()

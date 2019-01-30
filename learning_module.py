@@ -72,6 +72,7 @@ class LearningModule(object):
             if policy_idx[0] == 0:  # the first ever seen is the best == we found nothing, revert to random motor
                 if logboy: print("{} reveeeeert".format(policy_idx))
                 policy = get_random_policy(self.layers, self.init_function_params)
+                add_noise = False
             else:
                 pass
                 #if logboy: print("{} old".format(policy_idx))
