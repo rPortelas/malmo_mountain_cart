@@ -80,12 +80,14 @@ def run_episode(model_type, model, policy_params, explo_noise, distractors, nb_t
     steps_per_nn = int(max_step / len(policy_params))
     #print("steps per nn {}".format(steps_per_nn))
     while not done:
-        for nn_params in policy_params:
+        for nn_idx in range(len(policy_params)):
             if add_noise:
                 if (not ([state[i] for i in focus_range] == init_focus_state).all()) or (size_sequential_nn == 1) or (model_type == 'random_flat'):
                     #object of interest moved during previous neural net, lets add noise for the following nets
-                    nn_params += np.random.normal(0, explo_noise, len(nn_params))
-            model.set_parameters(nn_params)
+                    policy_params[nn_idx] += np.random.normal(0, explo_noise, len(policy_params[nn_idx]))
+                    policy_params[nn_idx] = np.clip(policy_params[nn_idx], -1, 1)
+                    #policy_params[nn_idx] = get_random_nn(layers, params)
+            model.set_parameters(policy_params[nn_idx])
             for i in range(steps_per_nn):
                 # extract the world state that will be given to the agent's policy
                 normalized_state = scale_vector(state, np.array(input_bounds))
@@ -285,7 +287,7 @@ print("launching {}".format(b_k['parameters']))
 port = int(args.server_port) if args.server_port else None
 # init env controller
 env = gym2.make('ExtendedMalmoMountainCart-v0')
-env.env.my_init(port=port, skip_step=4, tick_lengths=50, desired_mission_time=10)
+env.env.my_init(port=port, skip_step=4, tick_lengths=25, desired_mission_time=10)
 
 for i in range(starting_iteration, max_iterations):
     print("########### Iteration # %s ##########" % (i))

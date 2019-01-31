@@ -48,9 +48,9 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                     
                     <!-- Draw arena long side -->
                     <DrawCuboid x1="287" y1="4" z1="431" x2="295" y2="6" z2="445" type="air"/>
-                    <DrawCuboid x1="287" y1="4" z1="431" x2="295" y2="6" z2="445" type="bedrock"/>
-                    <DrawCuboid x1="289" y1="4" z1="432" x2="293" y2="6" z2="443" type="air"/>
-                    <DrawCuboid x1="288" y1="4" z1="432" x2="294" y2="6" z2="439" type="air"/>
+                    <DrawCuboid x1="287" y1="4" z1="430" x2="295" y2="6" z2="445" type="bedrock"/>
+                    <DrawCuboid x1="289" y1="4" z1="431" x2="293" y2="6" z2="443" type="air"/>
+                    <DrawCuboid x1="288" y1="4" z1="431" x2="294" y2="6" z2="439" type="air"/>
                     
                     <!-- Draw arena width side -->
                     <DrawCuboid x1="289" y1="6" z1="445" x2="293" y2="6" z2="445" type="air"/>
@@ -92,12 +92,23 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                     <!--<DrawCuboid x1="289" y1="4" z1="435" x2="289" y2="4" z2="433" type="bedrock"/>-->
                     <!--<DrawCuboid x1="293" y1="4" z1="435" x2="293" y2="4" z2="433" type="bedrock"/>-->
                     <!--<DrawBlock x="291" y="4" z="436" type="bedrock" />-->
-                    <DrawBlock x="292" y="4" z="434" type="bedrock" />
-                    <DrawBlock x="292" y="4" z="433" type="bedrock" />
-                    <DrawBlock x="290" y="4" z="434" type="bedrock" />
-                    <DrawBlock x="290" y="4" z="433" type="bedrock" />
-                    <DrawBlock x="288" y="4" z="433" type="bedrock" />
-                    <DrawBlock x="294" y="4" z="433" type="bedrock" />
+                    <DrawBlock x="292" y="3" z="434" type="air" />
+                    <DrawBlock x="293" y="3" z="434" type="air" />
+                    <DrawBlock x="292" y="3" z="433" type="air" />
+                    <DrawBlock x="292" y="3" z="432" type="air" />
+                    <DrawBlock x="290" y="3" z="434" type="air" />
+                    <DrawBlock x="289" y="3" z="434" type="air" />
+                    <DrawBlock x="290" y="3" z="433" type="air" />
+                    <DrawBlock x="290" y="3" z="432" type="air" />
+                    <DrawBlock x="288" y="3" z="432" type="air" />
+                    <DrawBlock x="288" y="3" z="431" type="air" />
+                    <DrawBlock x="294" y="3" z="431" type="air" />
+                    <DrawBlock x="294" y="3" z="432" type="air" />
+                    
+                    <!-- Draw holes -->
+                    <DrawBlock x="294" y="3" z="439" type="air" />
+                    <DrawBlock x="288" y="3" z="439" type="air" />
+                    
                     
 
                   
@@ -114,7 +125,7 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
               <AgentSection mode="Survival">
                 <Name>FlowersBot</Name>
                 <AgentStart>
-                  <Placement x="291.5" y="4.2" z="433.5" yaw="0"/>
+                  <Placement x="291.5" y="4.2" z="432.5" yaw="0"/>
                   <Inventory></Inventory>
                 </AgentStart>
                 <AgentHandlers>
@@ -266,10 +277,13 @@ class ExtendedMalmoMountainCart(gym2.Env):
 
         time.sleep(self.mission_start_sleep) #dirty to way to wait for server stability
 
+
         world_state = self.get_world_state(first_state=True)
         obvsText = world_state.observations[-1].text
         observation = json.loads(obvsText)  # observation comes in as a JSON string...
         self.current_step = 0
+
+        self.last_block_state = [-1., -1., -1., -1., -1.]
 
         #self.desired_goal = self.sample_goal()
         state = self.get_state(observation)
@@ -278,23 +292,25 @@ class ExtendedMalmoMountainCart(gym2.Env):
         obs = dict(observation=state,
                    achieved_goal=state,
                    desired_goal=None)
+
         return obs
 
     def extract_block_state(self, obs):
         if self.current_step <= 2:
             # avoid using grid observation in (unstable) mission starting part
-            return [-1., -1., -1., -1., -1.]
+            return self.last_block_state
         grid = np.array(obs['grid']).reshape(15, 15)
         marker_pos = np.argwhere(grid == 'obsidian')
         if len(marker_pos) == 0:
             agent = obs['entities'][0]
             assert (agent['name'] == 'FlowersBot')
             agent_pos = [agent['x'], agent['y'], agent['z']]
-            print('WARNING obsidian marker not detected !!! grid: {}, step: {}, agent_pos: {}'.format(grid, self.current_step, agent_pos))
-            return [-1., -1., -1., -1., -1.]
+            #print('WARNING obsidian marker not detected !!! grid: {}, step: {}, agent_pos: {}'.format(grid, self.current_step, agent_pos))
+            return self.last_block_state
         start_x, start_y = marker_pos[0][0], marker_pos[0][1]
         diamond_blocks = grid[start_x,start_y-5:start_y]
-        return [-1. if v=='diamond_ore' else 1. for v in diamond_blocks]
+        self.last_block_state = [-1. if v=='diamond_ore' else 1. for v in diamond_blocks]
+        return self.last_block_state
 
     def get_state(self, obs):
         #print(obs)

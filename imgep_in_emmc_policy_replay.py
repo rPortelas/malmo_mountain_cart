@@ -18,6 +18,7 @@ from utils.gep_utils import *
 import gym2
 import config
 from utils.neural_network import PolicyNN
+import copy
 
 
 def get_outcome(state):
@@ -47,7 +48,6 @@ def run_episode(model, policy_params, explo_noise, max_step=40, focus_range=None
 
         for nn_params in policy_params:
             if add_noise:
-                if not ([state[i] for i in focus_range] == init_focus_state).all():
                     #print("noise")
                     #object of interest moved during previous neural net, lets add noise for the following nets
                     nn_params += np.random.normal(0, explo_noise, len(nn_params))
@@ -134,16 +134,17 @@ total_policy_params = get_n_params(param_policy)
 port = int(args.server_port) if args.server_port else None
 # init malmo controller
 env = gym2.make('ExtendedMalmoMountainCart-v0')
-env.env.my_init(port=port, skip_step=4, tick_lengths=15, desired_mission_time=10)
+env.env.my_init(port=port, skip_step=4, tick_lengths=50, desired_mission_time=10)
 
-with open("emmcgepexplolong_f_rgb_0_gepexplore_p_block_1548740237.9670396.pickle", 'rb') as handle:
+with open("emmcseqlongfnt_f_rgb_2_gepexplore_p_cart2_1548775242.143981.pickle", 'rb') as handle:
     policy_params = pickle.load(handle)
 outs=[]
-exploration_noise = 0.0
+exploration_noise = 0.3
 for i in range(0, 100):
     time.sleep(0.5)
     print("########### Iteration # %s ##########" % (i))
-    outcome = run_episode(param_policy, policy_params, exploration_noise, focus_range=np.arange(0,12,1), add_noise=True)
+    print(policy_params[0][0])
+    outcome = run_episode(param_policy, copy.deepcopy(policy_params), exploration_noise, focus_range=np.arange(0,12,1), add_noise=True)
     print(outcome)
     if not (outcome[-6:-1] == [-1., -1., -1., -1., -1.]).all():
         outs.append(outcome[-6:-1])
