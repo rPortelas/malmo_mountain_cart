@@ -131,8 +131,8 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                 <AgentHandlers>
                   <ObservationFromGrid>
                       <Grid name="grid">
-                        <min x="-7" y="1" z="-4"/>
-                        <max x="7" y="1" z="10"/>
+                        <min x="-4" y="1" z="1"/>
+                        <max x="5" y="1" z="3"/>
                       </Grid>
                   </ObservationFromGrid>
                   <ObservationFromNearbyEntities>
@@ -165,7 +165,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
         self.total_allowed_actions = int((20 / (skip_step + 1)) * desired_mission_time)
         self._sparse = sparse
         self._reward_mixing = reward_mixing
-        self.mission_start_sleep = 0.2
+        self.mission_start_sleep = 0.1
         self.mission_xml = get_MMC_environment(tick_lengths, self.total_allowed_actions)
         # Create default Malmo objects:
         self.agent_host = MalmoPython.AgentHost()
@@ -299,7 +299,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
         if self.current_step <= 2:
             # avoid using grid observation in (unstable) mission starting part
             return self.last_block_state
-        grid = np.array(obs['grid']).reshape(15, 15)
+        grid = np.array(obs['grid']).reshape(3,10)
         marker_pos = np.argwhere(grid == 'obsidian')
         if len(marker_pos) == 0:
             agent = obs['entities'][0]
@@ -309,7 +309,10 @@ class ExtendedMalmoMountainCart(gym2.Env):
             return self.last_block_state
         start_x, start_y = marker_pos[0][0], marker_pos[0][1]
         diamond_blocks = grid[start_x,start_y-5:start_y]
-        self.last_block_state = [-1. if v=='diamond_ore' else 1. for v in diamond_blocks]
+        block_state = [-1. if v=='diamond_ore' else 1. for v in diamond_blocks]
+        if not len(block_state) == 5: #not in front of diamond yet
+            return self.last_block_state
+        self.last_block_state = block_state
         return self.last_block_state
 
     def get_state(self, obs):
