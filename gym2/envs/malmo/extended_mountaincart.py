@@ -296,7 +296,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
         return obs
 
     def extract_block_state(self, obs):
-        if self.current_step <= 2:
+        if self.current_step <= 5:
             # avoid using grid observation in (unstable) mission starting part
             return self.last_block_state
         grid = np.array(obs['grid']).reshape(3,10)

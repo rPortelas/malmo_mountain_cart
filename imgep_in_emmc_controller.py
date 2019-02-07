@@ -17,7 +17,7 @@ from utils.gep_utils import *
 from utils.neural_network import PolicyNN
 # from malmo_controller import MalmoController
 import gym2
-import config
+import config as conf
 
 def get_outcome(states, distractors, nb_traj_steps):
     #print(len(states))
@@ -33,7 +33,12 @@ def get_outcome(states, distractors, nb_traj_steps):
 
 
 def get_state(state, distractors):
-    return np.array(state)
+    s = state
+    if distractors:
+        Distractor_simulator.step()
+        d_arr = Distractor_simulator.get()
+        s = np.array(s.tolist() + d_arr.tolist())
+    return np.array(s)
 
 def save_gep(gep, iteration, book_keeping, savefile_name, book_keeping_name):
     gep.prepare_pickling()
@@ -68,6 +73,7 @@ def load_gep(savefile_name, book_keeping_name):
 #     return get_outcome(state)
 
 def run_episode(model_type, model, policy_params, explo_noise, distractors, nb_traj_steps, size_sequential_nn, max_step=40, focus_range=None, add_noise=False):
+    if distractors: Distractor_simulator.reset()
     out = env.reset()
     state = get_state(out['observation'], distractors)
     if add_noise:
@@ -125,10 +131,6 @@ model_type = args.model_type if args.model_type else "random_modular"
 if args.distractors:
     if args.distractors == 'True':
         distractors = True
-        distr_names = ['fixed_distr_x1', 'fixed_distr_y1', 'fixed_distr_z1', 'moving_distr_x1', 'moving_distr_y1',
-                       'moving_distr_z1',
-                       'fixed_distr_x2', 'fixed_distr_y2', 'fixed_distr_z2', 'moving_distr_x2', 'moving_distr_y2',
-                       'moving_distr_z2']
     elif args.distractors == 'False':
         distractors = False
     else:
@@ -158,10 +160,15 @@ nb_blocks = 5
 # define variable's bounds for policy input and outcome
 state_names = ['agent_x', 'agent_z', 'pickaxe_x', 'pickaxe_z', 'shovel_x', 'shovel_z'] + \
               ['block_' + str(i) for i in range(nb_blocks)] + ['cart_x']
-b = config.get_env_bounds('emmc_env')
+
 if distractors:
-    for d_name in distr_names:
-        b.add(d_name, [-1, 1])
+    nb_distractors = 3
+    Distractor_simulator = Distractors(nb_distractors=nb_distractors, noise=0.0) # fixed distractors
+    for i in range(nb_distractors):
+        state_names.append('dist'+str(i)+'_x')
+        state_names.append('dist'+str(i)+'_y')
+
+b = conf.get_env_bounds('emmc_env')
 
 experiment_name = args.experiment_name if args.experiment_name else "experiment"
 savefile_name = experiment_name + "_save.pickle"
@@ -184,9 +191,12 @@ total_policy_params = get_n_params(param_policy)
 
 # init IMGEP
 full_outcome = input_names
+objects, objects_idx = conf.get_objects('emmc_env')
 if distractors:
-    raise NotImplementedError
-objects, objects_idx = config.get_objects('emmc_env')
+    for i in range(nb_distractors):
+        objects.append(['dist'+str(i)+'_x', 'dist'+str(i)+'_y'])
+        prev_idx = objects_idx[-1][1]
+        objects_idx.append([prev_idx, prev_idx + 2])
 full_outcome = []
 for obj in objects:
     full_outcome += obj * nb_traj_steps
@@ -198,21 +208,16 @@ if (model_type == "random_flat") or (model_type == "random"):
               'modules': {'mod1': {'outcome_range': np.arange(0,len(full_outcome),1),
                                    'focus_state_range': np.arange(0,len(full_outcome),1)//nb_traj_steps}}}
 elif (model_type == "random_modular") or (args.model_type == "active_modular"):
-    if not distractors:
-        nb_t = nb_traj_steps
-        config = {'policy_nb_dims': total_policy_params}
-        config['modules'] = {}
-        for names,inds in zip(objects, objects_idx):
-            mod_name = names[0][:-2]
-            start_idx = inds[0] * nb_traj_steps
-            end_idx = inds[-1] * nb_traj_steps
-            config['modules'][mod_name] = {}
-            config['modules'][mod_name]['outcome_range'] = np.arange(start_idx, end_idx, 1)
-            config['modules'][mod_name]['focus_state_range'] = np.arange(inds[0], inds[-1], 1)
-
-    else:
-        pass
-
+    nb_t = nb_traj_steps
+    config = {'policy_nb_dims': total_policy_params}
+    config['modules'] = {}
+    for names,inds in zip(objects, objects_idx):
+        mod_name = names[0][:-2]
+        start_idx = inds[0] * nb_traj_steps
+        end_idx = inds[-1] * nb_traj_steps
+        config['modules'][mod_name] = {}
+        config['modules'][mod_name]['outcome_range'] = np.arange(start_idx, end_idx, 1)
+        config['modules'][mod_name]['focus_state_range'] = np.arange(inds[0], inds[-1], 1)
     if model_type == "active_modular": model_babbling_mode = "active"
 else:
     raise NotImplementedError
@@ -241,53 +246,34 @@ else:
     else:  # F-RGB or RMB init
         gep = GEP(layers, params, config, model_babbling_mode="random", explo_noise=exploration_noise)
 
-    start_from_bootstrap = False
-    if start_from_bootstrap == True:
-        bt_filename = "emmc05_riuyiusave.pickle"
-        bt_bk_filename = "emmc05_iuyiuy_bk.pickle"
-        bt_gep, starting_iteration, b_k = load_gep(bt_filename, bt_bk_filename)
-        gep.knn_X = bt_gep.knn_X
-        gep.knn_Y = bt_gep.knn_Y
-        b_k['parameters'] = {'model_type': model_type,
-                             'nb_bootstrap': nb_bootstrap,
-                             'seed': seed,
-                             'explo_noise': exploration_noise,
-                             'distractors': distractors}
-        if model_type == 'active_modular':
-            b_k['parameters']['update_interest_step'] = interest_step
-    else:
-        starting_iteration = 0
-        # init boring book keeping
-        b_k = dict()
-        b_k['parameters'] = {'model_type': model_type,
-                             'nb_bootstrap': nb_bootstrap,
-                             'seed': seed,
-                             'explo_noise': exploration_noise,
-                             'distractors': distractors,
-                             'size_sequential_nn': size_sequential_nn}
-        if model_type == 'active_modular':
-            b_k['parameters']['update_interest_step'] = interest_step
-            b_k['parameters']['interest_mean_rate'] = interest_mean_rate
-        b_k['end_agent_x'] = []
-        b_k['end_agent_z'] = []
-        b_k['end_pickaxe_x'] = []
-        b_k['end_pickaxe_z'] = []
-        b_k['end_shovel_x'] = []
-        b_k['end_shovel_z'] = []
-        b_k['end_cart_x'] = []
-        b_k['choosen_modules'] = []
-        b_k['interests'] = dict()
-        b_k['runtimes'] = {'produce': [], 'run': [], 'perceive': []}
-        b_k['modules'] = {}
-        for i in range(nb_blocks):
-            b_k['end_block_' + str(i)] = []
+    starting_iteration = 0
+    # init boring book keeping
+    b_k = dict()
+    b_k['parameters'] = {'model_type': model_type,
+                         'nb_bootstrap': nb_bootstrap,
+                         'seed': seed,
+                         'explo_noise': exploration_noise,
+                         'distractors': distractors,
+                         'trajectories': trajectories,
+                         'size_sequential_nn': size_sequential_nn}
+    if model_type == 'active_modular':
+        b_k['parameters']['update_interest_step'] = interest_step
+        b_k['parameters']['interest_mean_rate'] = interest_mean_rate
+
+    b_k['choosen_modules'] = []
+    b_k['interests'] = dict()
+    b_k['runtimes'] = {'produce': [], 'run': [], 'perceive': []}
+    b_k['modules'] = {}
+
+    for out in input_names:
+        b_k['end_'+out] = []
 
 print("launching {}".format(b_k['parameters']))
 #####################################################################
 port = int(args.server_port) if args.server_port else None
 # init env controller
 env = gym2.make('ExtendedMalmoMountainCart-v0')
-env.env.my_init(port=port, skip_step=4, tick_lengths=25, desired_mission_time=10)
+env.env.my_init(port=port, skip_step=4, tick_lengths=15, desired_mission_time=10)
 
 for i in range(starting_iteration, max_iterations):
     print("########### Iteration # %s ##########" % (i))
@@ -295,16 +281,15 @@ for i in range(starting_iteration, max_iterations):
     prod_time_start = time.time()
     policy_params, focus, add_noise = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
     prod_time_end = time.time()
-    outcome, states = run_episode(model_type, param_policy, policy_params, exploration_noise, False, nb_traj_steps, size_sequential_nn, focus_range=focus, add_noise=add_noise)
+    outcome, states = run_episode(model_type, param_policy, policy_params, exploration_noise, distractors, nb_traj_steps, size_sequential_nn, focus_range=focus, add_noise=add_noise)
     run_ep_end = time.time()
-    #print(outcome[-6:-1])
     # scale outcome dimensions to [-1,1]
     scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
     gep.perceive(scaled_outcome, policy_params)
     perceive_end = time.time()
-    if not outcome[-1] == 291.5:
-        with open("{}_gepexplore_p_cart2_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
-            pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    # if not outcome[-1] == 291.5:
+    #     with open("{}_gepexplore_p_cart2_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
+    #         pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     # boring book keeping
     b_k['runtimes']['produce'].append(prod_time_end - prod_time_start)

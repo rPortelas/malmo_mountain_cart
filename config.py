@@ -11,6 +11,9 @@ EMMC_B.add('shovel_z', [431.3, 443.7])
 for i in range(5):
     EMMC_B.add('block_' + str(i), [-1, 1])
 EMMC_B.add('cart_x', [285, 297])
+for i in range(5):
+    EMMC_B.add('dist' + str(i) + '_x', [-1., 1.])
+    EMMC_B.add('dist' + str(i) + '_y', [-1., 1.])
 EMMC_B_motor_states = ['agent_x', 'agent_z']
 EMMC_OBJECTS = [['agent_x', 'agent_z'],
                 ['pickaxe_x', 'pickaxe_z'],
