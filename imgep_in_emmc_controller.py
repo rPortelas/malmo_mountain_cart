@@ -207,6 +207,18 @@ if (model_type == "random_flat") or (model_type == "random"):
     config = {'policy_nb_dims': total_policy_params,
               'modules': {'mod1': {'outcome_range': np.arange(0,len(full_outcome),1),
                                    'focus_state_range': np.arange(0,len(full_outcome),1)//nb_traj_steps}}}
+elif model_type == "single_goal_space":
+    nb_t = nb_traj_steps
+    config = {'policy_nb_dims': total_policy_params}
+    config['modules'] = {}
+    for names, inds in zip(objects, objects_idx):
+        mod_name = names[0][:-2]
+        if mod_name == "cart":
+            start_idx = inds[0] * nb_traj_steps
+            end_idx = inds[-1] * nb_traj_steps
+            config['modules'][mod_name] = {}
+            config['modules'][mod_name]['outcome_range'] = np.arange(start_idx, end_idx, 1)
+            config['modules'][mod_name]['focus_state_range'] = np.arange(inds[0], inds[-1], 1)
 elif (model_type == "random_modular") or (args.model_type == "active_modular"):
     nb_t = nb_traj_steps
     config = {'policy_nb_dims': total_policy_params}

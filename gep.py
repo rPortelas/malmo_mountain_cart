@@ -90,7 +90,6 @@ class GEP(object):
         return current_policy, module_outcome_range, add_noise
 
     def perceive(self, outcome, policy):
-        assert(outcome.shape[0] == self.total_outcome_range)
         #add data to modules
         for m_name,m in self.modules.items():
                 mod_sub_outcome = self.modules_config[m_name]['outcome_range']
