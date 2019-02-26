@@ -47,7 +47,10 @@ class GEP(object):
 
     # returns policy parameters following and exploration process if no goal is provided
     # if a goal is provided, returns best parameter policy using NN exploitation
-    def produce(self, normalized_goal=None, goal_range=None, bootstrap=False, context=None):
+    def produce(self, normalized_goal=None, goal_space_name=None, bootstrap=False, context=None):
+        if normalized_goal:
+            policy, add_noise = self.modules[goal_space_name].produce(self.policies, goal=normalized_goal)
+            return policy,None, add_noise
         add_noise = True
         if bootstrap:
             # returns random policy parameters using he_uniform

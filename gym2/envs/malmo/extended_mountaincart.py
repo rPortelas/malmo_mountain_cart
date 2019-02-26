@@ -43,18 +43,15 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                   <DrawingDecorator>
                   
                     <!-- Draw floor -->
-                    <DrawCuboid x1="285" y1="3" z1="431" x2="302" y2="3" z2="446" type="air"/>
-                    <DrawCuboid x1="285" y1="3" z1="431" x2="302" y2="3" z2="446" type="bedrock" />
+                    <DrawCuboid x1="286" y1="3" z1="429" x2="296" y2="3" z2="445" type="air"/>
+                    <DrawCuboid x1="286" y1="3" z1="429" x2="296" y2="2" z2="445" type="log" />
                     
                     <!-- Draw arena long side -->
                     <DrawCuboid x1="287" y1="4" z1="431" x2="295" y2="6" z2="445" type="air"/>
-                    <DrawCuboid x1="287" y1="4" z1="430" x2="295" y2="6" z2="445" type="bedrock"/>
+                    <DrawCuboid x1="287" y1="4" z1="430" x2="295" y2="6" z2="444" type="planks"/>
                     <DrawCuboid x1="289" y1="4" z1="431" x2="293" y2="6" z2="443" type="air"/>
                     <DrawCuboid x1="288" y1="4" z1="431" x2="294" y2="6" z2="439" type="air"/>
                     
-                    <!-- Draw arena width side -->
-                    <DrawCuboid x1="289" y1="6" z1="445" x2="293" y2="6" z2="445" type="air"/>
-                    <DrawCuboid x1="297" y1="6" z1="445" x2="285" y2="9" z2="445" type="bedrock"/> 
                     
                     <!-- Draw diamond blocks -->
                     <DrawCuboid x1="290" y1="5" z1="441" x2="292" y2="5" z2="441" type="diamond_ore"/>
@@ -67,7 +64,7 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                     <!-- Draw rail tracks -->
                     <DrawLine x1="288" y1="4" z1="443" x2="294" y2="4" z2="443" type="air"/>
 
-                    <DrawLine x1="286" y1="5" z1="443" x2="296" y2="5" z2="443" type="bedrock"/>
+                    <DrawLine x1="286" y1="5" z1="443" x2="296" y2="5" z2="443" type="planks"/>
                     <DrawLine x1="287" y1="5" z1="443" x2="295" y2="5" z2="443" type="air"/>
 
                     <DrawLine x1="285" y1="6" z1="443" x2="297" y2="6" z2="443" type="gold_block"/>
@@ -84,30 +81,32 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                     <DrawEntity x="291.5" y="7" z="443" type="MinecartRideable"/>
                     
                     <!-- Draw tools cage -->
-                    <DrawCuboid x1="289" y1="4" z1="437" x2="293" y2="5" z2="437" type="bedrock"/>
-                    <DrawCuboid x1="289" y1="4" z1="435" x2="293" y2="4" z2="435" type="bedrock"/>
-                    <DrawBlock x="291" y="4" z="436" type="bedrock" />
+                    <DrawCuboid x1="289" y1="5" z1="437" x2="293" y2="5" z2="437" type="bedrock"/>
+                    <DrawCuboid x1="289" y1="4" z1="437" x2="293" y2="4" z2="437" type="planks"/>
+                    <DrawCuboid x1="289" y1="4" z1="435" x2="293" y2="4" z2="435" type="planks"/>
+                    <DrawBlock x="291" y="4" z="436" type="planks" />
                     
                      <!-- Draw starting cage -->
                     <!--<DrawCuboid x1="289" y1="4" z1="435" x2="289" y2="4" z2="433" type="bedrock"/>-->
                     <!--<DrawCuboid x1="293" y1="4" z1="435" x2="293" y2="4" z2="433" type="bedrock"/>-->
                     <!--<DrawBlock x="291" y="4" z="436" type="bedrock" />-->
-                    <DrawBlock x="292" y="3" z="434" type="air" />
-                    <DrawBlock x="293" y="3" z="434" type="air" />
-                    <DrawBlock x="292" y="3" z="433" type="air" />
-                    <DrawBlock x="292" y="3" z="432" type="air" />
-                    <DrawBlock x="290" y="3" z="434" type="air" />
-                    <DrawBlock x="289" y="3" z="434" type="air" />
-                    <DrawBlock x="290" y="3" z="433" type="air" />
-                    <DrawBlock x="290" y="3" z="432" type="air" />
-                    <DrawBlock x="288" y="3" z="432" type="air" />
-                    <DrawBlock x="288" y="3" z="431" type="air" />
-                    <DrawBlock x="294" y="3" z="431" type="air" />
-                    <DrawBlock x="294" y="3" z="432" type="air" />
+                    
+                    <DrawBlock x="292" y="3" z="434" type="water" />
+                    <DrawBlock x="293" y="3" z="434" type="water" />
+                    <DrawBlock x="292" y="3" z="433" type="water" />
+                    <DrawBlock x="292" y="3" z="432" type="water" />
+                    <DrawBlock x="290" y="3" z="434" type="water" />
+                    <DrawBlock x="289" y="3" z="434" type="water" />
+                    <DrawBlock x="290" y="3" z="433" type="water" />
+                    <DrawBlock x="290" y="3" z="432" type="water" />
+                    <DrawBlock x="288" y="3" z="432" type="water" />
+                    <DrawBlock x="288" y="3" z="431" type="water" />
+                    <DrawBlock x="294" y="3" z="431" type="water" />
+                    <DrawBlock x="294" y="3" z="432" type="water" />
                     
                     <!-- Draw holes -->
-                    <DrawBlock x="294" y="3" z="439" type="air" />
-                    <DrawBlock x="288" y="3" z="439" type="air" />
+                    <DrawBlock x="294" y="3" z="439" type="water" />
+                    <DrawBlock x="288" y="3" z="439" type="water" />
                     
                     
 
@@ -116,6 +115,14 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                     <DrawItem x="''' + str(PICKAXE_POS[0]) + '''" y="4" z="'''+ str(PICKAXE_POS[1]) + '''" type="diamond_pickaxe"/>
                     <DrawItem x="''' + str(D_TOOL_POS[0]) + '''" y="4" z="'''+ str(D_TOOL_POS[1]) + '''" type="diamond_shovel"/>
 
+                    <!-- Draw distractors -->
+                    <DrawBlock x="291" y="6" z="444" type="grass" />
+                    <DrawBlock x="294" y="6" z="440" type="grass" />
+                    <DrawBlock x="288" y="6" z="440" type="grass" />
+                    <DrawBlock x="291" y="7" z="444" type="red_flower" />
+                    <DrawBlock x="294" y="7" z="440" type="red_flower" />
+                    <DrawBlock x="288" y="7" z="440" type="red_flower" />
+                    
                   </DrawingDecorator>
                   <ServerQuitWhenAnyAgentFinishes/>
                   <ServerQuitFromTimeUp description="" timeLimitMs="'''+ max_time + '''"/>

@@ -24,6 +24,13 @@ register(
     reward_threshold=100.0,
 )
 
+register(
+    id='EMMCWithCam-v0',
+    entry_point='gym2.envs.malmo:EMMCWithCam',
+    max_episode_steps=200,
+    reward_threshold=100.0,
+)
+
 
 
 

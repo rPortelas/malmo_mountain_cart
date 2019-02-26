@@ -36,7 +36,12 @@ class LearningModule(object):
 
     # sample a goal in outcome space and find closest neighbor in (param,outcome) database
     # RETURN policy param with added gaussian noise
-    def produce(self, policies, logboy=False):
+    def produce(self, policies, goal=None, logboy=False):
+        if goal: # test time, no noise
+            _, policy_idx = self.knn.nn_y(goal)
+            policy = copy.deepcopy(policies[policy_idx[0]])
+            return policy, False
+
         # draw randow goal in bounded outcome space
         goal = np.random.random(self.o_size) * 2 - 1
         goal = goal
