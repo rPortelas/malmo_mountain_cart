@@ -285,7 +285,7 @@ print("launching {}".format(b_k['parameters']))
 port = int(args.server_port) if args.server_port else None
 # init env controller
 env = gym2.make('ExtendedMalmoMountainCart-v0')
-env.env.my_init(port=port, skip_step=4, tick_lengths=15, desired_mission_time=10)
+env.env.my_init(port=port, skip_step=4, tick_lengths=10, desired_mission_time=10, seed=seed)
 
 for i in range(starting_iteration, max_iterations):
     print("########### Iteration # %s ##########" % (i))

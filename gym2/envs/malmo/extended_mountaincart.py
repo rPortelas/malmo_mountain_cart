@@ -194,10 +194,10 @@ class ExtendedMalmoMountainCart(gym2.Env):
 
         self.current_step = 0
         self.reset_nb = 0
-        self.seed()
 
     # call this method to change default parameters
-    def my_init(self, port=None, tick_lengths=15, skip_step=4, desired_mission_time=8):
+    def my_init(self, port=None, tick_lengths=15, skip_step=4, desired_mission_time=8,seed=0):
+        s = self.seed(seed=seed)
         self.skip_step = skip_step
         self.tick_lengths = tick_lengths
         self.total_allowed_actions = int((20 / (skip_step + 1)) * desired_mission_time)
@@ -207,11 +207,13 @@ class ExtendedMalmoMountainCart(gym2.Env):
         self.my_mission = MalmoPython.MissionSpec(self.mission_xml, True)
         self.my_mission_record = MalmoPython.MissionRecordSpec()
         self.client_pool = MalmoPython.ClientPool()
+        self.last_cart_x = 291.5
         if port is not None:
             self.client_pool.add(MalmoPython.ClientInfo("127.0.0.1", port))
         else:
             for i in range(20):
                 self.client_pool.add(MalmoPython.ClientInfo("127.0.0.1", 10000 + i))
+
 
     def seed(self, seed=None):
         random.seed(seed)
@@ -330,6 +332,7 @@ class ExtendedMalmoMountainCart(gym2.Env):
         agent_pos = [agent['x'], agent['z']]
         pickaxe_pos = None
         shovel_pos = None
+        cart_x = None
         for e in obs['entities']:
             if e['name'] == 'diamond_pickaxe':
                 pickaxe_pos = [e['x'], e['z']]
@@ -341,6 +344,11 @@ class ExtendedMalmoMountainCart(gym2.Env):
             pickaxe_pos = agent_pos
         if shovel_pos == None:
             shovel_pos = agent_pos
+        if cart_x == None:
+            cart_x = self.last_cart_x
+            print('Agent destroyed the cart, SICK!')
+        else:
+            self.last_cart_x = cart_x
 
         #print(agent_pos + pickaxe_pos + shovel_pos + blocks + cart_x)
         return np.array(agent_pos + pickaxe_pos + shovel_pos + blocks + cart_x)

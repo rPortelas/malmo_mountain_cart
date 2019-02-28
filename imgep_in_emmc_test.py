@@ -305,5 +305,5 @@ for i,g_x in enumerate(pickaxe_goals_x):
 
 test_data = {'cart_goals': cart_goals, 'cart_outcomes': cart_outcomes, 'cart_errors': cart_errors,
              'pickaxe_goals': pickaxe_goals_2d, 'pickaxe_outcomes': pickaxe_outcomes, 'pickaxe_errors': pickaxe_errors,}
-pickle.dump(test_data, open(experiment_name+"_test.pkl", "wb" ))
+pickle.dump(test_data, open(experiment_name+"_test.pickle", "wb" ))
 exit(0)
