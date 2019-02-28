@@ -117,50 +117,17 @@ def get_n_params(model):
 
 # define and parse argument values
 # more info here: https://stackoverflow.com/questions/5423381/checking-if-sys-argvx-is-defined
-arg_names = ['command', 'experiment_name', 'model_type', 'nb_iters', 'nb_bootstrap', 'explo_noise', 'server_port',
-             'distractors', 'trajectories', 'interest_step']
+arg_names = ['command', 'experiment_name', 'server_port']
 args = dict(zip(arg_names, sys.argv))
 Arg_list = collections.namedtuple('Arg_list', arg_names)
 args = Arg_list(*(args.get(arg, None) for arg in arg_names))
-
-exploration_noise = float(args.explo_noise) if args.explo_noise else 0.10
-nb_bootstrap = int(args.nb_bootstrap) if args.nb_bootstrap else 1000
-max_iterations = int(args.nb_iters) if args.nb_iters else 10000
-# possible models: ["random_modular", "random_flat", "active_modular"]
-model_type = args.model_type if args.model_type else "random_modular"
-if args.distractors:
-    if args.distractors == 'True':
-        distractors = True
-    elif args.distractors == 'False':
-        distractors = False
-    else:
-        print('distractor option not recognized, choose True or False')
-        raise NameError
-else:
-    distractors = False
-
-if args.trajectories:
-    if args.trajectories == 'True':
-        trajectories = True
-    elif args.trajectories == 'False':
-        trajectories = False
-    else:
-        print('trajectory option not recognized, choose True or False')
-        raise NameError
-else:
-    trajectories = False
-
-if trajectories:
-    nb_traj_steps = 5
-else:
-    nb_traj_steps = 1
 
 # environment-related init
 nb_blocks = 5
 # define variable's bounds for policy input and outcome
 state_names = ['agent_x', 'agent_z', 'pickaxe_x', 'pickaxe_z', 'shovel_x', 'shovel_z'] + \
               ['block_' + str(i) for i in range(nb_blocks)] + ['cart_x']
-
+distractors = True
 if distractors:
     nb_distractors = 3
     Distractor_simulator = Distractors(nb_distractors=nb_distractors, noise=0.0) # fixed distractors
@@ -189,6 +156,21 @@ params = {'layers': layers, 'activation_function':'relu', 'max_a':1.,
 param_policy = PolicyNN(params)
 total_policy_params = get_n_params(param_policy)
 
+# if a gep save exist, load gep, init it otherwise
+if os.path.isfile(savefile_name):
+    gep, starting_iteration, b_k = load_gep(savefile_name, book_keeping_file_name)
+    print(b_k['parameters'])
+    nb_bootstrap = b_k['parameters']['nb_bootstrap']
+    seed = b_k['parameters']['seed']
+    model_type = b_k['parameters']['model_type']
+    exploration_noise = b_k['parameters']['explo_noise']
+    if b_k['parameters']['trajectories'] == False:
+        nb_traj_steps = 1
+    np.random.seed(seed)
+else:
+    print('FILE IS NOT DETECTED: {}'.format(savefile_name))
+    raise NotImplementedError
+
 # init IMGEP
 full_outcome = input_names
 objects, objects_idx = conf.get_objects('emmc_env')
@@ -202,53 +184,13 @@ for obj in objects:
     full_outcome += obj * nb_traj_steps
 full_outcome_bounds = b.get_bounds(full_outcome)
 
-if (model_type == "random_flat") or (model_type == "random"):
-    outcome1 = full_outcome
-    config = {'policy_nb_dims': total_policy_params,
-              'modules': {'mod1': {'outcome_range': np.arange(0,len(full_outcome),1),
-                                   'focus_state_range': np.arange(0,len(full_outcome),1)//nb_traj_steps}}}
-elif model_type == "single_goal_space":
-    nb_t = nb_traj_steps
-    config = {'policy_nb_dims': total_policy_params}
-    config['modules'] = {}
-    for names, inds in zip(objects, objects_idx):
-        mod_name = names[0][:-2]
-        if mod_name == "cart":
-            start_idx = inds[0] * nb_traj_steps
-            end_idx = inds[-1] * nb_traj_steps
-            config['modules'][mod_name] = {}
-            config['modules'][mod_name]['outcome_range'] = np.arange(start_idx, end_idx, 1)
-            config['modules'][mod_name]['focus_state_range'] = np.arange(inds[0], inds[-1], 1)
-elif (model_type == "random_modular") or (args.model_type == "active_modular"):
-    nb_t = nb_traj_steps
-    config = {'policy_nb_dims': total_policy_params}
-    config['modules'] = {}
-    for names,inds in zip(objects, objects_idx):
-        mod_name = names[0][:-2]
-        start_idx = inds[0] * nb_traj_steps
-        end_idx = inds[-1] * nb_traj_steps
-        config['modules'][mod_name] = {}
-        config['modules'][mod_name]['outcome_range'] = np.arange(start_idx, end_idx, 1)
-        config['modules'][mod_name]['focus_state_range'] = np.arange(inds[0], inds[-1], 1)
-    if model_type == "active_modular": model_babbling_mode = "active"
-else:
-    raise NotImplementedError
-print(config)
-# if a gep save exist, load gep, init it otherwise
-if os.path.isfile(savefile_name):
-    gep, starting_iteration, b_k = load_gep(savefile_name, book_keeping_file_name)
-    print(b_k['parameters'])
-    nb_bootstrap = b_k['parameters']['nb_bootstrap']
-    np.random.seed(b_k['parameters']['seed'])
-else:
-    raise NotImplementedError
 
 print("launching {}".format(b_k['parameters']))
 #####################################################################
 port = int(args.server_port) if args.server_port else None
 # init env controller
 env = gym2.make('ExtendedMalmoMountainCart-v0')
-env.env.my_init(port=port, skip_step=4, tick_lengths=25, desired_mission_time=10)
+env.env.my_init(port=port, skip_step=4, tick_lengths=15, desired_mission_time=10)
 
 # CART GOALS
 step = np.abs((-0.95 - 0.78) /100) # goals are sampled only on reachable space (the cart goal space was loosely defined
