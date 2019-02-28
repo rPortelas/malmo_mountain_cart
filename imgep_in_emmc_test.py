@@ -191,61 +191,74 @@ port = int(args.server_port) if args.server_port else None
 # init env controller
 env = gym2.make('ExtendedMalmoMountainCart-v0')
 env.env.my_init(port=port, skip_step=4, tick_lengths=15, desired_mission_time=10)
-
+test_cart = True
+test_pickaxe = False
 # CART GOALS
 step = np.abs((-0.95 - 0.78) /100) # goals are sampled only on reachable space (the cart goal space was loosely defined
 cart_goals = np.arange(-0.95,0.78,step)
 cart_errors = []
 cart_outcomes = []
-
-for i,g in enumerate(cart_goals):
-    # generate policy using gep
-    prod_time_start = time.time()
-    policy_params, focus, add_noise = gep.produce(normalized_goal=[g], goal_space_name='cart')
-    prod_time_end = time.time()
-    outcome, states = run_episode(model_type, param_policy, policy_params, exploration_noise, distractors, nb_traj_steps, size_sequential_nn, focus_range=None, add_noise=False)
-    run_ep_end = time.time()
-    # scale outcome dimensions to [-1,1]
-    scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
-    cart_outcome = scaled_outcome[11]
-    cart_outcomes.append(cart_outcome)
-    error = np.abs(g - cart_outcome)
-    print("{}: goal was {}, outcome {}, error = {}".format(i, g, cart_outcome, error))
-    cart_errors.append(error)
-    perceive_end = time.time()
-
-# PICKAXE GOALS
-pickaxe_goals_x = np.arange(-1.,1.,0.02)
-pickaxe_goals_z = np.arange(-1.,1.,0.02)
-# for g in goals:
-#     print(scale_vector(np.array(g), b.get_bounds(['cart_x'])))
-# exit(0)
-pickaxe_errors = []
-pickaxe_outcomes = []
-pickaxe_goals_2d = []
-for i,g_x in enumerate(pickaxe_goals_x):
-    for j,g_z in enumerate(pickaxe_goals_z):
-        g = [g_x,g_z]
-        pickaxe_goals_2d.append(g)
+nb_retry = 20
+if test_cart:
+    for i,g in enumerate(cart_goals):
         # generate policy using gep
-        prod_time_start = time.time()
-        policy_params, focus, add_noise = gep.produce(normalized_goal=g, goal_space_name='pickaxe')
-        prod_time_end = time.time()
-        outcome, states = run_episode(model_type, param_policy, policy_params, exploration_noise, distractors, nb_traj_steps, size_sequential_nn, focus_range=None, add_noise=False)
-        run_ep_end = time.time()
-        # scale outcome dimensions to [-1,1]
-        scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
-        #print(outcome)
-        pickaxe_outcome = scaled_outcome[2:4]
-        pickaxe_outcomes.append(pickaxe_outcome)
-        error = np.abs(g - pickaxe_outcome)
-        unsc_g = unscale_vector(np.array(g), np.array(b.get_bounds(['pickaxe_x', 'pickaxe_z'])))
-        print("{}: goal was {} ({}), outcome {}, error = {}".format(i, g, unsc_g, pickaxe_outcome, error))
-        pickaxe_errors.append(error)
-        perceive_end = time.time()
+        policy_params, focus, add_noise = gep.produce(normalized_goal=[g], goal_space_name='cart')
+        batch_errors = []
+        batch_outcomes = []
+        for j in range(nb_retry):
+            outcome, states = run_episode(model_type, param_policy, policy_params, exploration_noise, distractors, nb_traj_steps, size_sequential_nn, focus_range=None, add_noise=False)
+            # scale outcome dimensions to [-1,1]
+            scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
+            cart_outcome = scaled_outcome[11]
+            batch_outcomes.append(cart_outcome)
+            error = np.abs(g - cart_outcome)
+            batch_errors.append(error)
+        cart_outcomes.append(batch_outcomes)
+        cart_errors.append(batch_errors)
+        print("{}: goal was {}, outcome {}, error = {}".format(i, g, batch_outcomes, batch_errors))
+
+if test_pickaxe:
+    # PICKAXE GOALS
+    pickaxe_goals_x = np.arange(-1.,1.,0.02)
+    pickaxe_goals_z = np.arange(-1.,1.,0.02)
+    #pickaxe_goals_x = np.arange(-1.,1.,0.5)
+    #pickaxe_goals_z = np.arange(-1.,1.,0.5)
+    # for g in goals:
+    #     print(scale_vector(np.array(g), b.get_bounds(['cart_x'])))
+    # exit(0)
+    pickaxe_errors = []
+    pickaxe_outcomes = []
+    pickaxe_goals_2d = []
+    for i,g_x in enumerate(pickaxe_goals_x):
+        for j,g_z in enumerate(pickaxe_goals_z):
+            g = [g_x,g_z]
+            pickaxe_goals_2d.append(g)
+            # generate policy using gep
+            prod_time_start = time.time()
+            policy_params, focus, add_noise = gep.produce(normalized_goal=g, goal_space_name='pickaxe', goal_space_range=None)
+            prod_time_end = time.time()
+            outcome, states = run_episode(model_type, param_policy, policy_params, exploration_noise, distractors, nb_traj_steps, size_sequential_nn, focus_range=None, add_noise=False)
+            run_ep_end = time.time()
+            # scale outcome dimensions to [-1,1]
+            scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
+            #print(outcome)
+            pickaxe_outcome = scaled_outcome[2:4]
+            pickaxe_outcomes.append(pickaxe_outcome)
+            error = np.abs(g - pickaxe_outcome)
+            unsc_g = unscale_vector(np.array(g), np.array(b.get_bounds(['pickaxe_x', 'pickaxe_z'])))
+            print("{}: goal was {} ({}), outcome {}, error = {}".format(i, g, unsc_g, pickaxe_outcome, error))
+            pickaxe_errors.append(error)
+            perceive_end = time.time()
 
 
-test_data = {'cart_goals': cart_goals, 'cart_outcomes': cart_outcomes, 'cart_errors': cart_errors,
-             'pickaxe_goals': pickaxe_goals_2d, 'pickaxe_outcomes': pickaxe_outcomes, 'pickaxe_errors': pickaxe_errors,}
+test_data = {}
+if test_cart:
+    test_data['cart_goals'] = cart_goals
+    test_data['cart_outcomes'] = cart_outcomes
+    test_data['cart_errors'] = cart_errors
+if test_pickaxe:
+    test_data['pickaxe_goals'] = pickaxe_goals_2d
+    test_data['pickaxe_outcomes'] = pickaxe_outcomes
+    test_data['pickaxe_errors'] = pickaxe_errors
 pickle.dump(test_data, open(experiment_name+"_test.pickle", "wb" ))
 exit(0)
