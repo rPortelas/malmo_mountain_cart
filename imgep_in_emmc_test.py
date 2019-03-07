@@ -190,7 +190,7 @@ print("launching {}".format(b_k['parameters']))
 port = int(args.server_port) if args.server_port else None
 # init env controller
 env = gym2.make('ExtendedMalmoMountainCart-v0')
-env.env.my_init(port=port, skip_step=4, tick_lengths=15, desired_mission_time=10)
+env.env.my_init(port=port, skip_step=4, tick_lengths=25, desired_mission_time=10)
 test_cart = True
 test_pickaxe = False
 # CART GOALS
@@ -198,7 +198,8 @@ step = np.abs((-0.95 - 0.78) /100) # goals are sampled only on reachable space (
 cart_goals = np.arange(-0.95,0.78,step)
 cart_errors = []
 cart_outcomes = []
-nb_retry = 20
+nb_retry = 10
+#[-0.8635,-0.48290000000000044,-0.10230000000000083,0.4685999999999986,0.693499999999998220]
 if test_cart:
     for i,g in enumerate(cart_goals):
         # generate policy using gep
@@ -219,8 +220,8 @@ if test_cart:
 
 if test_pickaxe:
     # PICKAXE GOALS
-    pickaxe_goals_x = np.arange(-1.,1.,0.02)
-    pickaxe_goals_z = np.arange(-1.,1.,0.02)
+    pickaxe_goals_x = np.arange(-1.,1.,0.1)
+    pickaxe_goals_z = np.arange(-1.,1.,0.05)
     #pickaxe_goals_x = np.arange(-1.,1.,0.5)
     #pickaxe_goals_z = np.arange(-1.,1.,0.5)
     # for g in goals:
@@ -235,7 +236,7 @@ if test_pickaxe:
             pickaxe_goals_2d.append(g)
             # generate policy using gep
             prod_time_start = time.time()
-            policy_params, focus, add_noise = gep.produce(normalized_goal=g, goal_space_name='pickaxe', goal_space_range=None)
+            policy_params, focus, add_noise = gep.produce(normalized_goal=g, goal_space_name='pickaxe')
             prod_time_end = time.time()
             outcome, states = run_episode(model_type, param_policy, policy_params, exploration_noise, distractors, nb_traj_steps, size_sequential_nn, focus_range=None, add_noise=False)
             run_ep_end = time.time()
