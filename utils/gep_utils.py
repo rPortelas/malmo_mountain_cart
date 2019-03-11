@@ -28,7 +28,7 @@ def proportional_choice(v, eps=0.):
 
 def get_random_nn(layers, init_function_params):
     rnd_weights, rnd_biases = he_uniform(layers, init_function_params)
-    return np.concatenate((rnd_weights, rnd_biases))
+    return np.concatenate((rnd_weights, rnd_biases)).astype('float32')
 
 
 def get_random_policy(layers, init_function_params):

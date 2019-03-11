@@ -1,5 +1,4 @@
 from builtins import range
-import os
 import os.path
 import sys
 import time
@@ -8,19 +7,14 @@ import pickle
 import time
 import numpy as np
 from gep import GEP
-from utils.nn_policy import Simple_NN
-import matplotlib.pyplot as plt
 from utils.plot_utils import *
 import collections
-from collections import OrderedDict
 from utils.gep_utils import *
 from utils.neural_network import PolicyNN
-# from malmo_controller import MalmoController
 import gym2
 import config as conf
 
 def get_outcome(states, distractors, nb_traj_steps):
-    #print(len(states))
     step_size = (len(states)-1)//nb_traj_steps
     steps = np.arange(step_size,len(states),step_size)
     outcome = []
@@ -30,7 +24,6 @@ def get_outcome(states, distractors, nb_traj_steps):
             s = states[step].tolist()
             outcome += s[idx[0]:idx[1]]
     return outcome
-
 
 def get_state(state, distractors):
     s = state
@@ -47,7 +40,6 @@ def save_gep(gep, iteration, book_keeping, savefile_name, book_keeping_name):
     with open(book_keeping_name, 'wb') as handle:
         pickle.dump(book_keeping, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-
 def load_gep(savefile_name, book_keeping_name):
     with open(savefile_name, 'rb') as handle:
         gep, starting_iteration = pickle.load(handle)
@@ -55,24 +47,8 @@ def load_gep(savefile_name, book_keeping_name):
         b_k = pickle.load(handle)
     return gep, starting_iteration, b_k
 
-
-
-
-# def run_episode(model):
-#     out = malmo.reset()
-#     state = out['observation']
-#     # Loop until mission/episode ends:
-#     # Loop until mission/episode ends
-#     done = False
-#     while not done:
-#         # extract the world state that will be given to the agent's policy
-#         normalized_state = scale_vector(state, np.array(input_bounds))
-#         actions = model.get_action(normalized_state.reshape(1, -1))
-#         out, _, done, _ = malmo.step(actions[0])
-#         state = out['observation']
-#     return get_outcome(state)
-
-def run_episode(model_type, model, policy_params, explo_noise, distractors, nb_traj_steps, size_sequential_nn, max_step=40, focus_range=None, add_noise=False):
+def run_episode(model_type, model, policy_params, explo_noise, distractors,
+                nb_traj_steps, size_sequential_nn, max_step=40, focus_range=None, add_noise=False):
     if distractors: Distractor_simulator.reset()
     out = env.reset()
     state = get_state(out['observation'], distractors)
@@ -88,7 +64,8 @@ def run_episode(model_type, model, policy_params, explo_noise, distractors, nb_t
     while not done:
         for nn_idx in range(len(policy_params)):
             if add_noise:
-                if (not ([state[i] for i in focus_range] == init_focus_state).all()) or (size_sequential_nn == 1) or (model_type == 'random_flat'):
+                if (not ([state[i] for i in focus_range] == init_focus_state).all()) or \
+                        (size_sequential_nn == 1) or (model_type == 'random_flat'):
                     #object of interest moved during previous neural net, lets add noise for the following nets
                     policy_params[nn_idx] += np.random.normal(0, explo_noise, len(policy_params[nn_idx]))
                     policy_params[nn_idx] = np.clip(policy_params[nn_idx], -1, 1)
@@ -173,7 +150,7 @@ b = conf.get_env_bounds('emmc_env')
 experiment_name = args.experiment_name if args.experiment_name else "experiment"
 savefile_name = experiment_name + "_save.pickle"
 book_keeping_file_name = experiment_name + "_bk.pickle"
-save_step = 1000
+save_step = 2000
 
 # init neural network policy
 size_sequential_nn = 5
@@ -238,7 +215,8 @@ print(config)
 if os.path.isfile(savefile_name):
     gep, starting_iteration, b_k = load_gep(savefile_name, book_keeping_file_name)
     nb_bootstrap = b_k['parameters']['nb_bootstrap']
-    np.random.seed(b_k['parameters']['seed'])
+    seed = b_k['parameters']['seed']
+    np.random.seed(seed)
 
 else:
     seed = np.random.randint(1000)
@@ -297,11 +275,8 @@ for i in range(starting_iteration, max_iterations):
     run_ep_end = time.time()
     # scale outcome dimensions to [-1,1]
     scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
-    gep.perceive(scaled_outcome, policy_params)
+    gep.perceive(scaled_outcome.astype('float32'), policy_params)
     perceive_end = time.time()
-    # if not outcome[-1] == 291.5:
-    #     with open("{}_gepexplore_p_cart2_{}.pickle".format(experiment_name, time.time()), 'wb') as handle:
-    #         pickle.dump(policy_params, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     # boring book keeping
     b_k['runtimes']['produce'].append(prod_time_end - prod_time_start)

@@ -1,7 +1,6 @@
 from learning_module import LearningModule
 import numpy as np
-from sklearn.neighbors import KNeighborsRegressor
-from utils.gep_utils import scale_vector, proportional_choice, get_random_policy
+from utils.gep_utils import proportional_choice, get_random_policy
 
 
 class GEP(object):
@@ -21,7 +20,7 @@ class GEP(object):
 
         self.policy_nb_dims = config['policy_nb_dims']
         self.modules_config = config['modules']
-        #print(explo_noise)
+
         # init learning modules
         self.modules = {}
         #print('MODULES:')
@@ -55,7 +54,6 @@ class GEP(object):
         if bootstrap:
             # returns random policy parameters using he_uniform
             current_policy = get_random_policy(self.layers, self.init_function_params)
-            #print(self.current_policy.shape)
             return current_policy, None, False
 
         coin_toss = np.random.random()
@@ -84,9 +82,6 @@ class GEP(object):
         #print("choosen module: %s with range: " % (module_name))
         self.choosen_modules.append(module_name) # book keeping
         module_outcome_range = self.modules_config[module_name]['focus_state_range']
-        # if module_name == 'stick1':
-        #     logboy=True
-        # else:
         logboy=False
         current_policy, add_noise = self.modules[module_name].produce(self.policies, logboy=logboy)
         #print(self.current_policy.shape)
@@ -122,6 +117,8 @@ class GEP(object):
             m.knn.kdtree = [None, None]
             m.knn.buffer.nn_ready = [False, False]
             m.knn.buffer.kdtree = [None, None]
-            # m.knn.prepare_pickling()
-            # if self.model_babbling_mode == "active":
-            #     m.interest_knn.prepare_pickling()
+            if self.model_babbling_mode == "active":
+                m.interest_knn.nn_ready = [False, False]
+                m.interest_knn.kdtree = [None, None]
+                m.interest_knn.buffer.nn_ready = [False, False]
+                m.interest_knn.buffer.kdtree = [None, None]

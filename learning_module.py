@@ -1,9 +1,5 @@
 import numpy as np
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.neighbors import NearestNeighbors
-from utils.gep_utils import scale_vector
 from utils.gep_utils import get_random_policy
-#from utils.knn_variants import BufferedcKDTree
 from utils.dataset import BufferedDataset
 import copy
 
@@ -32,7 +28,6 @@ class LearningModule(object):
 
 
         self.knn = BufferedDataset(1, self.o_size, buffer_size=1000, lateness=0) #use index instead of policies
-        #self.tmp_outcomes = []
 
     # sample a goal in outcome space and find closest neighbor in (param,outcome) database
     # RETURN policy param with added gaussian noise
@@ -48,7 +43,6 @@ class LearningModule(object):
         if self.LOG: print("goal is {} {}".format(goal[0:3], goal.shape))
         add_noise = True
 
-
         if self.babbling_mode == "active":
             #print self.counter
             self.counter += 1
@@ -58,28 +52,24 @@ class LearningModule(object):
                 add_noise = False
                 self.generated_goals.append(goal)
 
-
         # get closest outcome in database and retreive corresponding policy
         _, policy_idx = self.knn.nn_y(goal)
 
         #if logboy: print("nb:{} val:{}".format(policy_idx, policies[policy_idx[0]][155]))
 
-        #policy = policies[policy_idx]
         policy_knn_idx = self.knn.get_x(policy_idx[0])
         if logboy: print(policy_knn_idx)
         assert(policy_idx[0] == policy_knn_idx)
         policy = copy.deepcopy(policies[policy_idx[0]])
 
-
         # add gaussian noise for exploration
         if add_noise:
-
             if policy_idx[0] == 0:  # the first ever seen is the best == we found nothing, revert to random motor
                 if logboy: print("{} reveeeeert".format(policy_idx))
                 policy = get_random_policy(self.layers, self.init_function_params)
                 add_noise = False
             else:
-                pass
+                pass # noise will be added at run time
                 #if logboy: print("{} old".format(policy_idx))
                 # if self.LOG: print('adding noise: {} on {}'.format(self.explo_noise, policy[0][200]))
                 # for i in range(len(policy)):
@@ -97,23 +87,19 @@ class LearningModule(object):
         # add to knn
         self.knn.add_xy(policy_idx, outcome)
 
-
     def update_interest(self, outcome): # must be called only if module is selected
         if self.babbling_mode == "active":
             # update interest, only if:
             # - not in bootstrap phase since no goal is generated during this phase
             # - not in an exploration phase (update progress when exploiting for better accuracy)
             if len(self.generated_goals) < 3 and ((self.counter % self.update_interest_step) == 0):
-                #self.interest_knn.add(self.generated_goals[-1])
                 self.interest_knn.add_xy(outcome, self.generated_goals[-1])
                 if ((self.counter % self.update_interest_step) == 0):
                     self.counter = 0  # reset counter
-                #self.observed_outcomes.append(outcome)
                 return
             elif ((self.counter % self.update_interest_step) == 0):
                 self.counter = 0 # reset counter
                 #print 'updating interest'
-                #print 'update'gene
                 #assert(len(self.generated_goals) == (len(self.observed_outcomes) + 1))
                 #previous_goals = self.generated_goals[:-1]
                 current_goal = self.generated_goals[-1]
