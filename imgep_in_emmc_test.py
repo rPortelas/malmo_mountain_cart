@@ -138,8 +138,8 @@ if distractors:
 b = conf.get_env_bounds('emmc_env')
 
 experiment_name = args.experiment_name if args.experiment_name else "experiment"
-savefile_name = experiment_name + "_save.pickle"
-book_keeping_file_name = experiment_name + "_bk.pickle"
+savefile_name = 'run_saves/' + experiment_name + "_save.pickle"
+book_keeping_file_name = 'run_saves/' + experiment_name + "_bk.pickle"
 save_step = 1000
 
 # init neural network policy
@@ -193,11 +193,13 @@ env = gym2.make('ExtendedMalmoMountainCart-v0')
 env.env.my_init(port=port, skip_step=4, tick_lengths=25, desired_mission_time=10)
 test_cart = True
 test_pickaxe = False
+cart_states = True
 # CART GOALS
 step = np.abs((-0.95 - 0.78) /100) # goals are sampled only on reachable space (the cart goal space was loosely defined
 cart_goals = np.arange(-0.95,0.78,step)
 cart_errors = []
 cart_outcomes = []
+cart_states = []
 nb_retry = 10
 #[-0.8635,-0.48290000000000044,-0.10230000000000083,0.4685999999999986,0.693499999999998220]
 if test_cart:
@@ -208,6 +210,7 @@ if test_cart:
         batch_outcomes = []
         for j in range(nb_retry):
             outcome, states = run_episode(model_type, param_policy, policy_params, exploration_noise, distractors, nb_traj_steps, size_sequential_nn, focus_range=None, add_noise=False)
+            cart_states.append(states)
             # scale outcome dimensions to [-1,1]
             scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
             cart_outcome = scaled_outcome[11]
@@ -257,9 +260,10 @@ if test_cart:
     test_data['cart_goals'] = cart_goals
     test_data['cart_outcomes'] = cart_outcomes
     test_data['cart_errors'] = cart_errors
+    test_data['cart_states'] = cart_states
 if test_pickaxe:
     test_data['pickaxe_goals'] = pickaxe_goals_2d
     test_data['pickaxe_outcomes'] = pickaxe_outcomes
     test_data['pickaxe_errors'] = pickaxe_errors
-pickle.dump(test_data, open(experiment_name+"_test.pickle", "wb" ))
+pickle.dump(test_data, open(experiment_name+"_testwithstates.pickle", "wb" ))
 exit(0)
