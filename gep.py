@@ -5,7 +5,8 @@ from utils.gep_utils import proportional_choice, get_random_policy
 
 class GEP(object):
 
-    def __init__(self, layers, init_function_params, config, model_babbling_mode="random", explo_noise=0.1, update_interest_step=5, random_motor=0.1, interest_mean_rate=100.):
+    def __init__(self, layers, init_function_params, config, model_babbling_mode="random",
+                 explo_noise=0.1, update_interest_step=5, random_motor=0.1, interest_mean_rate=100., cur_seq=[]):
         
         self.layers = layers
         self.init_function_params = init_function_params
@@ -44,6 +45,10 @@ class GEP(object):
         #self.current_policy = None
         self.policies = []
 
+        self.iteration = 0
+        if model_babbling_mode == "fixed_cur":
+            self.cur_seq = cur_seq
+
     # returns policy parameters following and exploration process if no goal is provided
     # if a goal is provided, returns best parameter policy using NN exploitation
     def produce(self, normalized_goal=None, goal_space_name=None, bootstrap=False, context=None):
@@ -76,9 +81,17 @@ class GEP(object):
             choosen_module_idx = proportional_choice(interests, eps=0.20)
             module_name = mod_name_list[choosen_module_idx]
             #print module_name
+        elif self.model_babbling_mode == "fixed_cur":
+            for (mod_name,max_its) in self.cur_seq:
+                if self.iteration < max_its:
+                    #print('fixed cur {}: {}'.format(self.iteration, mod_name))
+                    module_name = mod_name
+                    break
+
+
         else:
             return NotImplementedError
-
+        self.iteration += 1
         #print("choosen module: %s with range: " % (module_name))
         self.choosen_modules.append(module_name) # book keeping
         module_outcome_range = self.modules_config[module_name]['focus_state_range']

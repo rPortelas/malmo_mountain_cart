@@ -196,7 +196,7 @@ elif model_type == "single_goal_space":
             config['modules'][mod_name] = {}
             config['modules'][mod_name]['outcome_range'] = np.arange(start_idx, end_idx, 1)
             config['modules'][mod_name]['focus_state_range'] = np.arange(inds[0], inds[-1], 1)
-elif (model_type == "random_modular") or (args.model_type == "active_modular"):
+elif (model_type == "random_modular") or (args.model_type == "active_modular") or (args.model_type == "fixed_cur"):
     nb_t = nb_traj_steps
     config = {'policy_nb_dims': total_policy_params}
     config['modules'] = {}
@@ -233,6 +233,9 @@ else:
                   explo_noise=exploration_noise,
                   interest_mean_rate=interest_mean_rate,
                   update_interest_step=interest_step)
+    elif model_type == "fixed_cur":
+        gep = GEP(layers, params, config, model_babbling_mode="fixed_cur", explo_noise=exploration_noise,
+                  cur_seq=[('agent',8000), ('shovel',16000), ('pickaxe',24000), ('block',32000), ('cart',40000)])
     else:  # F-RGB or RMB init
         gep = GEP(layers, params, config, model_babbling_mode="random", explo_noise=exploration_noise)
 

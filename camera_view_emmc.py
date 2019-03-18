@@ -183,8 +183,8 @@ def getXML(reset):
                       <DrawingDecorator>
 
                         <!-- Draw floor -->
-                        <DrawCuboid x1="286" y1="3" z1="429" x2="296" y2="3" z2="445" type="air"/>
-                        <DrawCuboid x1="286" y1="3" z1="429" x2="296" y2="2" z2="445" type="log" />
+                        <DrawCuboid x1="287" y1="3" z1="430" x2="295" y2="3" z2="444" type="air"/>
+                        <DrawCuboid x1="287" y1="3" z1="430" x2="295" y2="2" z2="444" type="log" />
 
                         <!-- Draw arena long side -->
                         <DrawCuboid x1="287" y1="4" z1="431" x2="295" y2="6" z2="445" type="air"/>
