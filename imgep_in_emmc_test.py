@@ -98,6 +98,7 @@ def run_episode(model_type, model, policy_params, explo_noise, distractors, nb_t
                 # extract the world state that will be given to the agent's policy
                 normalized_state = scale_vector(state, np.array(input_bounds))
                 actions = model.get_action(normalized_state.reshape(1, -1))
+                print(actions)
                 out, _, done, _ = env.step(actions[0])
                 #env.render()
                 state = get_state(out['observation'], distractors)
@@ -138,8 +139,8 @@ if distractors:
 b = conf.get_env_bounds('emmc_env')
 
 experiment_name = args.experiment_name if args.experiment_name else "experiment"
-savefile_name = 'run_saves/' + experiment_name + "_save.pickle"
-book_keeping_file_name = 'run_saves/' + experiment_name + "_bk.pickle"
+savefile_name = '' + experiment_name + "_save.pickle"
+book_keeping_file_name = '' + experiment_name + "_bk.pickle"
 save_step = 1000
 
 # init neural network policy
@@ -190,13 +191,14 @@ print("launching {}".format(b_k['parameters']))
 port = int(args.server_port) if args.server_port else None
 # init env controller
 env = gym2.make('ExtendedMalmoMountainCart-v0')
-env.env.my_init(port=port, skip_step=4, tick_lengths=25, desired_mission_time=10)
+env.env.my_init(port=port, skip_step=4, tick_lengths=50, desired_mission_time=10)
 test_cart = True
 test_pickaxe = False
 cart_states = True
 # CART GOALS
 step = np.abs((-0.95 - 0.78) /100) # goals are sampled only on reachable space (the cart goal space was loosely defined
-cart_goals = np.arange(-0.95,0.78,step)
+#cart_goals = np.arange(-0.95,0.78,step)
+cart_goals = [0.468599999]
 cart_errors = []
 cart_outcomes = []
 cart_states = []
