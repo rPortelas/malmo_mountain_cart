@@ -150,8 +150,8 @@ def get_MMC_environment(tick_lengths, total_allowed_actions):
                   <MissionQuitCommands/>
                   <AgentQuitFromReachingCommandQuota total="''' + str((3 * total_allowed_actions)+1) + '''"/>
                   <VideoProducer>
-                    <Width>40</Width>
-                    <Height>30</Height>
+                    <Width>400</Width>
+                    <Height>300</Height>
                   </VideoProducer>
                 </AgentHandlers>
 

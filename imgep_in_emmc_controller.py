@@ -53,9 +53,7 @@ def run_episode(model_type, model, policy_params, explo_noise, distractors,
     out = env.reset()
     state = get_state(out['observation'], distractors)
     if add_noise:
-        #print(state)
         init_focus_state = np.array([state[i] for i in focus_range])
-        #print(init_focus_state)
     # Loop until mission/episode ends:
     done = False
     states = [state]
@@ -76,7 +74,6 @@ def run_episode(model_type, model, policy_params, explo_noise, distractors,
                 normalized_state = scale_vector(state, np.array(input_bounds))
                 actions = model.get_action(normalized_state.reshape(1, -1))
                 out, _, done, _ = env.step(actions[0])
-                #env.render()
                 state = get_state(out['observation'], distractors)
                 states.append(state)
     assert(done)
@@ -103,7 +100,7 @@ args = Arg_list(*(args.get(arg, None) for arg in arg_names))
 exploration_noise = float(args.explo_noise) if args.explo_noise else 0.10
 nb_bootstrap = int(args.nb_bootstrap) if args.nb_bootstrap else 1000
 max_iterations = int(args.nb_iters) if args.nb_iters else 10000
-# possible models: ["random_modular", "random_flat", "active_modular"]
+# possible models: ["random_modular", "random_flat", "active_modular", "random", "fixed_cur", "sgs"]
 model_type = args.model_type if args.model_type else "random_modular"
 if args.distractors:
     if args.distractors == 'True':
@@ -266,7 +263,7 @@ print("launching {}".format(b_k['parameters']))
 port = int(args.server_port) if args.server_port else None
 # init env controller
 env = gym2.make('ExtendedMalmoMountainCart-v0')
-env.env.my_init(port=port, skip_step=4, tick_lengths=10, desired_mission_time=10, seed=seed)
+env.env.my_init(port=port, skip_step=4, tick_lengths=25, desired_mission_time=10, seed=seed)
 
 for i in range(starting_iteration, max_iterations):
     print("########### Iteration # %s ##########" % (i))
@@ -274,7 +271,8 @@ for i in range(starting_iteration, max_iterations):
     prod_time_start = time.time()
     policy_params, focus, add_noise = gep.produce(bootstrap=True) if i < nb_bootstrap else gep.produce()
     prod_time_end = time.time()
-    outcome, states = run_episode(model_type, param_policy, policy_params, exploration_noise, distractors, nb_traj_steps, size_sequential_nn, focus_range=focus, add_noise=add_noise)
+    outcome, states = run_episode(model_type, param_policy, policy_params, exploration_noise, distractors,
+                                  nb_traj_steps, size_sequential_nn, focus_range=focus, add_noise=add_noise)
     run_ep_end = time.time()
     # scale outcome dimensions to [-1,1]
     scaled_outcome = scale_vector(outcome, np.array(full_outcome_bounds))
@@ -285,14 +283,14 @@ for i in range(starting_iteration, max_iterations):
     b_k['runtimes']['produce'].append(prod_time_end - prod_time_start)
     b_k['runtimes']['run'].append(run_ep_end - prod_time_end)
     b_k['runtimes']['perceive'].append(perceive_end - run_ep_end)
-    #print(b_k['runtimes']['produce'][-1])
+    # print(b_k['runtimes']['produce'][-1])
     for out in input_names:
         b_k['end_'+out].append(states[-1][input_names.index(out)])
 
     if ((i + 1) % save_step) == 0:
         print("saving gep")
         b_k['choosen_modules'] = gep.choosen_modules
-        #b_k['modules'] = gep.modules
+        # b_k['modules'] = gep.modules
         if model_type == "active_modular":
             b_k['interests'] = gep.interests
         save_gep(gep, i + 1, b_k, savefile_name, book_keeping_file_name)
